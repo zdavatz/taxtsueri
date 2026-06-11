@@ -214,9 +214,18 @@ impl eframe::App for App {
                     });
                 }
                 ui.add_space(4.0);
-                egui::ScrollArea::vertical().max_height(280.0).show(ui, |ui| {
-                    ui.monospace(&xml);
-                });
+                // Textfarbe ans Theme anpassen: hell auf dunkel, dunkel auf
+                // hell — sonst ist das XML im Dark Mode kaum lesbar.
+                let xml_color = if ui.visuals().dark_mode {
+                    egui::Color32::from_gray(230)
+                } else {
+                    egui::Color32::from_gray(20)
+                };
+                egui::ScrollArea::vertical()
+                    .auto_shrink([false, false])
+                    .show(ui, |ui| {
+                        ui.label(egui::RichText::new(&xml).monospace().color(xml_color));
+                    });
             }
         });
     }
