@@ -45,11 +45,22 @@ cargo run -- examples/input.sample.json                    # synthetische Vorlag
 cargo run -- --from-ech0196 examples/ech0196.sample.xml     # Wertschriften aus eSteuerauszug
 cargo run -- --from-pdf auszug.pdf                          # eCH-0196-XML aus PDF-Anhang
 cargo run -- --from-vermoegensausweis depot.pdf            # Wertschriften aus UBS-Vermögensausweis-PDF
+cargo run -- --barcode statement.xml                       # eCH-0196 → Barcode-Nutzlast (ZLIB) vorbereiten
 cargo run -- --package                                      # zusätzlich Einreichungs-Paket
 cargo run -- --jp                                           # juristische Person (ywesee GmbH) → eCH-0276
 cargo run -- --jp --package                                 # JP + Einreichungs-Paket
 cargo run -- --from-mt940 auszug.mt940                      # MT940-Kontoauszug einlesen (Salden/Buchungen)
 ```
+
+### eCH-0196-Barcode (`--barcode`) — Fundament
+
+Bereitet die Nutzlast für das **2D-Barcode-Blatt** nach «eCH-0196 Beilage 2 –
+Barcode Generierung» vor: der eSteuerauszug-XML wird **ZLIB-komprimiert** (Deflate,
+beste Stufe), die **Barcode-ID** (Kap. 2.1) ermittelt und die dokumentierten
+PDF417-Parameter angewandt (13 Spalten × 35 Zeilen, EC-Level 4, 6 Blöcke/Blatt).
+Die **PDF417-Symbolerzeugung** (Codewörter, Reed-Solomon, Structured Append, Bild)
+ist der nächste Schritt. Hinweis: das ZH-*Steuererklärungs*-Barcode-Format ist
+separat und nur auf Anfrage beim Steueramt erhältlich (siehe oben).
 
 ### Wertschriften aus dem Vermögensausweis-PDF (`--from-vermoegensausweis`)
 

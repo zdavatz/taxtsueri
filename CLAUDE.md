@@ -49,6 +49,11 @@ that **validates against the official XSD**. Three modules:
 - **`src/pdf.rs`** — extracts embedded files (PDF `/Names/EmbeddedFiles` name tree) via
   `lopdf`; `extract_embedded_xml` returns XML attachments. Scans (our `pdf/` samples) have
   none — that's reported, not faked.
+- **`src/barcode.rs`** — eCH-0196 **2D-barcode** payload prep (eCH-0196 Beilage 2): ZLIB/Deflate
+  best-compression of the XML + barcode ID (ch. 2.1) + the documented PDF417 params (13 cols × 35
+  rows, EC level 4, 6 blocks/sheet). `--barcode` reports + writes the zlib payload. The PDF417
+  symbology layer (codewords, Reed-Solomon, Structured Append, image) is the next step. NB: the
+  `pdf417` crate needs nightly (E0554 on stable) — symbology will be self-implemented or via rxing/bwipp.
 - **`src/vermoegensausweis.rs`** — parser for a UBS **Vermögensausweis** (portfolio statement,
   text PDF via `pdftotext -layout`): extracts positions (quantity, name, Valor/ISIN, currency,
   country, market value = tax value, dividend) → `SecurityEntry`. `--from-vermoegensausweis`

@@ -12,6 +12,7 @@
 //!
 //! `data/` (Eingabe + XML + Paket) enthält Personendaten und ist gitignored.
 
+mod barcode;
 mod dataset;
 mod dataset_jp;
 mod ech0196;
@@ -36,6 +37,7 @@ struct Args {
     jp: bool,
     from_mt940: Option<String>,
     from_vermoegensausweis: Option<String>,
+    barcode: Option<String>,
 }
 
 fn parse_args() -> Result<Args, String> {
@@ -53,6 +55,7 @@ fn parse_args() -> Result<Args, String> {
             "--from-vermoegensausweis" => {
                 a.from_vermoegensausweis = Some(it.next().ok_or("--from-vermoegensausweis erwartet einen Pfad")?)
             }
+            "--barcode" => a.barcode = Some(it.next().ok_or("--barcode erwartet einen Pfad (eCH-0196-XML)")?),
             s if s.starts_with("--") => return Err(format!("unbekannte Option: {s}")),
             s => a.input_json = Some(s.to_string()),
         }
@@ -71,6 +74,10 @@ fn main() -> ExitCode {
 
     if let Some(path) = &args.from_mt940 {
         return run_mt940(path);
+    }
+
+    if let Some(path) = &args.barcode {
+        return run_barcode(path);
     }
 
     if args.jp {
@@ -319,6 +326,36 @@ fn run_mt940(path: &str) -> ExitCode {
         Ok(()) => println!("\nReport (inkl. Kategorien + Buchungen) geschrieben nach: {}", out.display()),
         Err(e) => eprintln!("Hinweis: konnte {} nicht schreiben: {e}", out.display()),
     }
+    ExitCode::SUCCESS
+}
+
+/// `--barcode`: eCH-0196-XML → komprimierte Barcode-Nutzlast vorbereiten (Fundament).
+fn run_barcode(path: &str) -> ExitCode {
+    let xml = match std::fs::read(path) {
+        Ok(b) => String::from_utf8_lossy(&b).into_owned(),
+        Err(e) => {
+            eprintln!("Konnte {path} nicht lesen: {e}");
+            return ExitCode::FAILURE;
+        }
+    };
+    let p = barcode::prepare(&xml);
+    println!("eCH-0196 Barcode-Vorbereitung:");
+    println!("  Barcode-ID        : {}", p.id);
+    println!("  XML               : {} Bytes", xml.len());
+    println!("  ZLIB-komprimiert  : {} Bytes ({:.0}%)", p.compressed.len(), p.compressed.len() as f64 / xml.len() as f64 * 100.0);
+    println!(
+        "  PDF417            : {} Spalten × {} Zeilen, EC-Level {}, {} Blöcke/Blatt",
+        barcode::COLUMNS, barcode::ROWS, barcode::EC_LEVEL, barcode::BLOCKS_PER_SHEET
+    );
+    println!("  Geschätzt         : ~{} Segmente → ~{} Blatt/Blätter", p.estimated_segments(), p.sheets());
+
+    let out = Path::new("data").join("barcode-payload.bin");
+    match std::fs::create_dir_all("data").and_then(|_| std::fs::write(&out, &p.compressed)) {
+        Ok(()) => println!("  Nutzlast (zlib)   : {}", out.display()),
+        Err(e) => eprintln!("  Hinweis: konnte {} nicht schreiben: {e}", out.display()),
+    }
+    println!("\nHINWEIS: Symbologie (PDF417-Codewörter, Reed-Solomon, Structured Append, Bild)");
+    println!("ist der nächste Schritt; die ZLIB-Nutzlast + Layout-Parameter stehen.");
     ExitCode::SUCCESS
 }
 
