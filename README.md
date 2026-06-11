@@ -1,3 +1,5 @@
+<a href="mailto:zdavatz@ywesee.com"><img src="assets/logo-256.png" align="right" width="120" height="120" alt="taxtsueri"></a>
+
 # taxtsueri
 
 Steuererklärung für die Stadt Tsüri einreichen.
@@ -51,6 +53,12 @@ Das GUI ist **feature-gated** (`gui`), damit die CLI schlank bleibt (kein
 eframe/reqwest im Standardbuild). Releases (`.github/workflows/release.yml`)
 bauen das GUI bei einem `vX.Y.Z`-Tag für alle drei Plattformen; der In-App-
 Updater (`src/update.rs`) findet die passenden Assets.
+
+Datei-Dialoge: `rfd` nutzt den **GTK3-Backend** (nicht das XDG-Portal), damit
+der Dateiauswahl-Dialog auch ohne laufenden `xdg-desktop-portal`-Dienst öffnet;
+unter Linux braucht der Build daher `libgtk-3-dev`. Die Dialoge laufen auf einem
+eigenen Thread (Ergebnis per Channel), was GTK-Main-Loop-Reentrancy-Crashes
+mit der winit/X11-Eventloop vermeidet.
 
 ## Build & Run (CLI)
 

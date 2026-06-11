@@ -30,6 +30,18 @@ the default build). `src/update.rs` is the GitHub-releases update check (repo `z
 `.github/workflows/release.yml` builds the GUI for the 3 platforms on a `vX.Y.Z` tag with asset names
 matching `update::target_asset_suffix`.
 
+**GUI file dialogs:** `rfd` is configured with `default-features = false, features = ["gtk3"]` — the
+GTK3 backend, not the default XDG-portal one, so the picker opens even when `xdg-desktop-portal` is not
+running (Linux build then needs `libgtk-3-dev`; CI installs it). Both the open and save dialogs run on
+their **own thread** and return via an `mpsc` channel (`App::open_rx`/`save_rx`); the UI `request_repaint`s
+while one is pending. Running `rfd` synchronously on the UI thread crashed on selection (GTK main-loop
+reentrancy vs. the winit/x11 event loop) — keep dialogs off-thread.
+
+**Logo:** `assets/logo.svg` (+ rendered `logo-{64,128,256,512,1024}.png` via `rsvg-convert`) — Zürich
+arms (diagonal blue/white) with a document + barcode strip + green validation check. `feDropShadow` is
+avoided (this librsvg drops the whole filtered group); shadows are manual offset shapes. README shows
+`logo-256.png` top-right, linked to `mailto:zdavatz@ywesee.com`.
+
 ```bash
 
 ./scripts/fetch-schemas.sh  # (re)download the eCH-0119 XSD set into schema/ + wire it for offline use
