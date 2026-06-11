@@ -232,6 +232,7 @@ fn run_mt940(path: &str) -> ExitCode {
         }
     };
 
+    let cur = stmt.closing.as_ref().or(stmt.opening.as_ref()).map(|b| b.currency.clone()).unwrap_or_else(|| "CHF".into());
     println!("MT940-Kontoauszug: {}", stmt.account);
     if let Some(b) = &stmt.opening {
         println!("  Eröffnungssaldo {} : {} {}", b.date, b.currency, mt940::format_cents(b.amount_cents));
@@ -239,19 +240,48 @@ fn run_mt940(path: &str) -> ExitCode {
     if let Some(b) = &stmt.closing {
         println!("  Schlusssaldo    {} : {} {}", b.date, b.currency, mt940::format_cents(b.amount_cents));
     }
-    println!(
-        "  Buchungen: {} (Gutschriften CHF {}, Belastungen CHF {})",
-        stmt.transactions.len(),
-        mt940::format_cents(stmt.total_credit_cents()),
-        mt940::format_cents(stmt.total_debit_cents()),
-    );
+    let (credit, debit) = (stmt.total_credit_cents(), stmt.total_debit_cents());
+    println!("  Buchungen: {}", stmt.transactions.len());
 
+    let categories = mt940::categorize(&stmt);
+    println!("\nKategorien (Geldfluss, heuristisch) — Gutschrift / Belastung:");
+    for c in &categories {
+        println!(
+            "  {:<38} {:>3}x  +{:>12}  -{:>12}",
+            c.category,
+            c.count,
+            mt940::format_cents(c.credit_cents),
+            mt940::format_cents(c.debit_cents),
+        );
+    }
+
+    println!("\nErfolgsrechnung (Cash-Basis, näherungsweise):");
+    println!("  Total Ertrag  (Gutschriften) : {cur} {}", mt940::format_cents(credit));
+    println!("  Total Aufwand (Belastungen)  : {cur} {}", mt940::format_cents(debit));
+    println!("  Geldfluss-Saldo              : {cur} {}", mt940::format_cents(credit - debit));
+    println!("  Hinweis: Cash-Basis ≠ Jahresgewinn (Abgrenzungen/RAG, Abschreibungen nicht enthalten).");
+
+    if let Some(b) = &stmt.closing {
+        println!("\nBilanz-Position:");
+        println!("  Flüssige Mittel (Bank) per {} : {} {}", b.date, b.currency, mt940::format_cents(b.amount_cents));
+    }
+
+    let report = serde_json::json!({
+        "account": stmt.account,
+        "opening": stmt.opening,
+        "closing": stmt.closing,
+        "transactionCount": stmt.transactions.len(),
+        "totalCreditCents": credit,
+        "totalDebitCents": debit,
+        "categories": categories,
+        "transactions": stmt.transactions,
+    });
     let out = Path::new("data").join("mt940-summary.json");
-    match serde_json::to_string_pretty(&stmt)
+    match serde_json::to_string_pretty(&report)
         .map_err(|e| e.to_string())
         .and_then(|j| std::fs::create_dir_all("data").and_then(|_| std::fs::write(&out, j)).map_err(|e| e.to_string()))
     {
-        Ok(()) => println!("Zusammenfassung geschrieben nach: {}", out.display()),
+        Ok(()) => println!("\nReport (inkl. Kategorien + Buchungen) geschrieben nach: {}", out.display()),
         Err(e) => eprintln!("Hinweis: konnte {} nicht schreiben: {e}", out.display()),
     }
     ExitCode::SUCCESS

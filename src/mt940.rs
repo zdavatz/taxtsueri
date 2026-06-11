@@ -33,8 +33,10 @@ pub struct Transaction {
     pub value_date: String,
     pub credit: bool,
     pub amount_cents: i64,
-    /// Transaktionstyp-Kennung (z. B. "NTRF").
+    /// Transaktionstyp-Kennung aus :61: (z. B. "NTRF").
     pub kind: String,
+    /// Klartext-Buchungsart aus der :61:-Fortsetzungszeile (z. B. "Dauerauftrag").
+    pub booking_type: String,
     pub description: String,
 }
 
@@ -50,6 +52,83 @@ impl Statement {
 /// Rappen → "CHF 1'234.56"-artige Anzeige (ganze Zahl mit 2 Dezimalen).
 pub fn format_cents(c: i64) -> String {
     format!("{}.{:02}", c / 100, (c % 100).abs())
+}
+
+/// Heuristische Kategorie einer Buchung (anhand Buchungsart + Verwendungszweck).
+///
+/// Cash-basiert und regelbasiert – eine **Annäherung** an Erfolgsrechnungs-Posten,
+/// keine buchhalterisch exakte Zuordnung. `is_income` markiert Ertrags-Kategorien.
+pub fn category(tx: &Transaction) -> &'static str {
+    let hay = format!("{} {}", tx.booking_type, tx.description).to_lowercase();
+    let has = |k: &str| hay.contains(k);
+    if tx.credit {
+        if has("dividende") || has("zins") {
+            return "Finanzertrag (Dividenden/Zinsen)";
+        }
+        if has("e-banking-gutschrift") || has("gutschrift") || has("verg") {
+            return "Erlös (Gutschriften)";
+        }
+        return "Übrige Erträge";
+    }
+    if has("steuerverwaltung") || has("steueramt") || has("steuern") {
+        return "Steuern";
+    }
+    if has("ausgleichskasse") || has("sva") || has("ahv") || has("pensionskasse")
+        || has("bvg") || has("vorsorge") || has("suva") || has("sozialvers")
+    {
+        return "Sozialversicherungen";
+    }
+    if has("depot") || has("dl-preisabschluss") || has("geb") {
+        return "Bankspesen/Depotgebühren";
+    }
+    if has("bancomat") || has("barbezug") {
+        return "Bargeldbezug";
+    }
+    if has("debitkarte") {
+        return "Spesen Debitkarte (Reise/Verpflegung)";
+    }
+    if has("dauerauftrag") {
+        return "Daueraufträge (Miete/Versicherung)";
+    }
+    if has("lastschrift") || has("paynet") {
+        return "Lastschrift/PayNet (Betriebsaufwand)";
+    }
+    if has("e-banking-auftrag") {
+        return "Überweisungen (e-banking)";
+    }
+    "Übrige Aufwände"
+}
+
+/// Summen je Kategorie.
+#[derive(Debug, Serialize)]
+pub struct CategoryTotal {
+    pub category: String,
+    pub count: usize,
+    pub credit_cents: i64,
+    pub debit_cents: i64,
+}
+
+/// Gruppiert die Buchungen nach [`category`], sortiert nach Betrags-Bedeutung.
+pub fn categorize(stmt: &Statement) -> Vec<CategoryTotal> {
+    let mut map: std::collections::BTreeMap<&'static str, CategoryTotal> = Default::default();
+    for tx in &stmt.transactions {
+        let cat = category(tx);
+        let e = map.entry(cat).or_insert_with(|| CategoryTotal {
+            category: cat.to_string(),
+            count: 0,
+            credit_cents: 0,
+            debit_cents: 0,
+        });
+        e.count += 1;
+        if tx.credit {
+            e.credit_cents += tx.amount_cents;
+        } else {
+            e.debit_cents += tx.amount_cents;
+        }
+    }
+    let mut v: Vec<_> = map.into_values().collect();
+    v.sort_by_key(|c| -(c.credit_cents + c.debit_cents));
+    v
 }
 
 /// MT940-Betrag mit Komma ("105232,94", "34,1", "21,") → Rappen.
@@ -124,7 +203,14 @@ fn parse_61(line: &str) -> Option<Transaction> {
     i += amt.len();
     let amount_cents = parse_amount_cents(&amt)?;
     let kind: String = line[i..].chars().take(4).collect();
-    Some(Transaction { value_date, credit, amount_cents, kind, description: String::new() })
+    Some(Transaction {
+        value_date,
+        credit,
+        amount_cents,
+        kind,
+        booking_type: String::new(),
+        description: String::new(),
+    })
 }
 
 /// Parst einen MT940-Auszug. Tolerant gegenüber Fortsetzungszeilen.
@@ -140,8 +226,10 @@ pub fn parse(input: &str) -> Result<Statement, String> {
             ":60F:" | ":60M:" => stmt.opening = parse_balance(buf),
             ":62F:" | ":62M:" => stmt.closing = parse_balance(buf),
             ":61:" => {
-                let first = buf.lines().next().unwrap_or("");
-                if let Some(tx) = parse_61(first) {
+                let mut lines = buf.lines();
+                let first = lines.next().unwrap_or("");
+                if let Some(mut tx) = parse_61(first) {
+                    tx.booking_type = lines.collect::<Vec<_>>().join(" ").trim().to_string();
                     stmt.transactions.push(tx);
                 }
             }
@@ -214,6 +302,18 @@ mod tests {
         assert_eq!(s.transactions[1].amount_cents, 827_367); // 8273,67
         assert_eq!(s.total_credit_cents(), 827_367);
         assert_eq!(s.total_debit_cents(), 14_690);
+    }
+
+    #[test]
+    fn categorizes() {
+        let s = parse(SAMPLE).expect("parse");
+        assert_eq!(s.transactions[0].booking_type, "Zahlung Debitkarte");
+        assert_eq!(category(&s.transactions[0]), "Spesen Debitkarte (Reise/Verpflegung)");
+        assert_eq!(category(&s.transactions[1]), "Erlös (Gutschriften)");
+        let cats = categorize(&s);
+        assert!(cats
+            .iter()
+            .any(|c| c.category.contains("Debitkarte") && c.debit_cents == 14_690));
     }
 
     #[test]

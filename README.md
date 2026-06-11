@@ -53,11 +53,17 @@ cargo run -- --from-mt940 auszug.mt940                      # MT940-Kontoauszug 
 ### MT940-Kontoauszug (`--from-mt940`)
 
 Liest einen SWIFT-Kontoauszug (`:60F`/`:62F`-Salden, `:61:`/`:86:`-Buchungen),
-gibt eine Zusammenfassung aus und schreibt `data/mt940-summary.json`. Beträge in
-Rappen (kein Float). MT940 liefert **Salden und Transaktionen**, aber keine
-steuerlich kategorisierten Wertschriftendaten (dafür eCH-0196) — nützlich für den
-Jahresend-Kontostand (Bilanz/Guthaben) oder als Gegenprobe (Eröffnung + Gutschriften
-− Belastungen = Schluss).
+**gruppiert die Buchungen heuristisch nach Kategorien** (Erlös, Daueraufträge,
+Lastschriften, Steuern, Sozialversicherungen, Debitkarten-Spesen, Dividenden,
+Bankspesen …) und gibt daraus eine **näherungsweise Erfolgsrechnung** (Cash-Basis:
+Total Ertrag − Aufwand = Geldfluss-Saldo) sowie die **Bilanz-Position** «Flüssige
+Mittel» (Schlusssaldo) aus. Voller Report inkl. Kategorien + Buchungen →
+`data/mt940-summary.json`. Beträge in Rappen (kein Float).
+
+Wichtig: Das ist **cash-basiert** — keine buchhalterisch exakte Erfolgsrechnung
+(Abgrenzungen/RAG, Abschreibungen fehlen; MwSt./Timing in den Cash-Flüssen). Als
+Gegenprobe: Eröffnung + Gutschriften − Belastungen = Schluss. Für steuerlich
+kategorisierte Wertschriftendaten dient eCH-0196, nicht MT940.
 
 ### Juristische Personen (eCH-0276)
 
