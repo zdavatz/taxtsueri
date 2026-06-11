@@ -85,8 +85,8 @@ that **validates against the official XSD**. Three modules:
 published catalog has **no** code for «andere/konfessionslos», so that case stays empty.
 
 `src/settings.rs` loads `settings.json` (gitignored) for identifiers that must **not** live in
-code — currently the JP `uid` and `registerNumber`, applied as overrides in `run_jp`. A
-committed `settings.example.json` documents the format.
+code — the NP `vn` (AHVN13, applied in the NP flow) and the JP `uid`/`registerNumber` (applied in
+`run_jp`). `dataset.rs` holds only placeholders. A committed `settings.example.json` documents the format.
 
 `examples/input.sample.json` (synthetic JSON input) and `examples/ech0196.sample.xml`
 (synthetic eSteuerauszug) are committed; `tests/validation.rs` validates the example dataset

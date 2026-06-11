@@ -182,6 +182,11 @@ fn main() -> ExitCode {
         }
     }
 
+    // 2c) settings.json (gitignored) setzt die AHVN13 – nicht im Code.
+    if let Some(vn) = settings::load().np.vn {
+        doc.content.main_form.person_data_partner1.identification.vn = vn;
+    }
+
     // 3) eCH-0119-XML serialisieren.
     let message = doc.into_message();
     let mut xml = String::from(r#"<?xml version="1.0" encoding="UTF-8"?>"#);

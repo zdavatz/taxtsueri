@@ -90,8 +90,8 @@ mod tests {
     #[test]
     fn id_format() {
         // Land CH, Clearing 00250, Seite 01, AHVN13, Stichtag 20251231, lfdNr 01.
-        let id = build_id("CH", "00250", 1, "7569087687779", "20251231", 1);
-        assert_eq!(id, "CH002500175690876877792025123101");
+        let id = build_id("CH", "00250", 1, "7560000000001", "20251231", 1);
+        assert_eq!(id, "CH002500175600000000012025123101");
         assert!(id.chars().next().unwrap().is_ascii_alphabetic()); // beginnt alphanumerisch
     }
 

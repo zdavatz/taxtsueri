@@ -9,7 +9,15 @@ use serde::Deserialize;
 #[derive(Debug, Default, Deserialize)]
 #[serde(default)]
 pub struct Settings {
+    pub np: NpSettings,
     pub jp: JpSettings,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+pub struct NpSettings {
+    /// AHVN13 / Versichertennummer (Bereich 7560000000001..7569999999999) – nicht im Code.
+    pub vn: Option<u64>,
 }
 
 #[derive(Debug, Default, Deserialize)]

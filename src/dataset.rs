@@ -1,5 +1,6 @@
 //! Konkreter Datensatz aus `pdf/Steuererklärung 2025_privat.pdf`
-//! (Dr. Tax ZH NP 2025, Zeno Davatz, AHVN13 756.9087.6877.79, Stadt Zürich).
+//! (Dr. Tax ZH NP 2025, Zeno Davatz, Stadt Zürich). Die AHVN13 steht nicht im
+//! Code, sondern in `settings.json` (gitignored) und wird beim Lauf gesetzt.
 //!
 //! Die Quell-PDF enthält Personendaten und ist via `.gitignore` vom Commit
 //! ausgeschlossen. Dieser Datensatz dient als Beispiel-Eingabe, bis ein Parser
@@ -61,7 +62,8 @@ pub fn example() -> Document {
             date_of_birth: Some(DateYearMonthDay {
                 year_month_day: "1975-05-20".into(),
             }),
-            vn: 7_569_087_687_779,
+            // Platzhalter (gültiger AHVN13-Bereich); echte Nr. kommt aus settings.json.
+            vn: 7_560_000_000_001,
         },
         address: Some(ch_address(Some("Winterthurerstrasse"), Some("52"), 8006, "Zürich")),
         // Zivilstand «getrennt» = verheiratet (2) mit tatsächlicher Trennung (2).
@@ -255,7 +257,7 @@ mod tests {
     #[test]
     fn serializes_to_xml() {
         let xml = quick_xml::se::to_string(&example().into_message()).expect("serialize");
-        assert!(xml.contains("<vn>7569087687779</vn>"));
+        assert!(xml.contains("<vn>7560000000001</vn>")); // Platzhalter; echt via settings.json
         assert!(xml.contains("<eCH-0007f:municipalityId>261</eCH-0007f:municipalityId>"));
         assert!(xml.contains("<eCH-0011f:separation>2</eCH-0011f:separation>"));
     }
