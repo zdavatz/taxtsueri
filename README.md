@@ -12,17 +12,19 @@ Einreichung erzeugt.
   Personen; kantonale Ergänzungen über `cantonExtensionType`.
 - **eCH-0196** «eSteuerauszug» — maschinenlesbarer Bankauszug (PDF mit
   eingebettetem XML/Barcode).
+- **eCH-0276** «E-Bilanz und E-Tax JP» — Austauschformat für **juristische
+  Personen** (Bilanz, Erfolgsrechnung, Gewinn-/Kapitalsteuer), von eCH + SSK.
 - **eCH-0044 / 0010 / 0011 / 0007** — Basisstandards für Personen-, Adress-
-  und Gemeindedaten, auf denen eCH-0119 aufbaut.
+  und Gemeindedaten, auf denen eCH-0119/0276 aufbauen.
 
 Spezifikationen und XSD-Schemas sind frei (ohne Mitgliedschaft) von
 [www.ech.ch](https://www.ech.ch) beziehbar.
 
 ## XSD-Schemas
 
-Die vollständige Import-Hülle von eCH-0119 v4.0.0 (13 XSD) liegt vendoriert in
-`schema/` und ist offline validierbar; das eCH-0196-XSD (eSteuerauszug) liegt als
-Referenz für den Reader daneben. Neu beziehen / reproduzieren:
+Die vollständigen Import-Hüllen von **eCH-0119** v4.0.0 (NP) und **eCH-0276** v1.0.0
+(JP) liegen vendoriert in `schema/` (26 XSD) und sind offline validierbar; das
+eCH-0196-XSD (eSteuerauszug) liegt als Referenz daneben. Neu beziehen / reproduzieren:
 
 ```bash
 ./scripts/fetch-schemas.sh
@@ -43,7 +45,18 @@ cargo run -- examples/input.sample.json                    # synthetische Vorlag
 cargo run -- --from-ech0196 examples/ech0196.sample.xml     # Wertschriften aus eSteuerauszug
 cargo run -- --from-pdf auszug.pdf                          # eCH-0196-XML aus PDF-Anhang
 cargo run -- --package                                      # zusätzlich Einreichungs-Paket
+cargo run -- --jp                                           # juristische Person (ywesee GmbH) → eCH-0276
+cargo run -- --jp --package                                 # JP + Einreichungs-Paket
 ```
+
+### Juristische Personen (eCH-0276)
+
+`--jp` erzeugt die Steuererklärung einer **juristischen Person** nach **eCH-0276**
+(«E-Bilanz und E-Tax JP», offizieller eCH/SSK-Standard) und **validiert gegen
+`schema/eCH-0276-1-0.xsd`**. Eingabe: `data/input-jp.json` (sonst eingebautes
+ywesee-Beispiel). Abgebildet: Kopf/Sitz, Bilanz (Aktiven/Passiven/Eigenkapital),
+Erfolgsrechnung, steuerliche Korrekturen, Gewinnverwendung und steuerbares
+Eigenkapital — gespeist aus Steuererklärung (StA 500) **und** Jahresrechnung.
 
 ### Eingabe (datengetrieben)
 

@@ -18,7 +18,8 @@ cargo run -- input.json     # use a specific JSON input
 cargo run -- --from-ech0196 statement.xml   # replace securities list from an eCH-0196 eSteuerauszug
 cargo run -- --from-pdf bank.pdf            # extract embedded eCH-0196 XML from a PDF, then as above
 cargo run -- --package                      # also write data/submission/ (XML + SHA-256 manifest)
-cargo test                  # run tests (incl. xmllint validation of example + sample, eCH-0196 parse, PDF roundtrip, SHA-256)
+cargo run -- --jp                           # legal entity (juristische Person) → eCH-0276 XML, validated
+cargo test                  # run tests (incl. xmllint validation of NP eCH-0119 + JP eCH-0276, eCH-0196 parse, PDF roundtrip, SHA-256)
 
 ./scripts/fetch-schemas.sh  # (re)download the eCH-0119 XSD set into schema/ + wire it for offline use
 xmllint --nonet --noout --schema schema/eCH-0119-4-0-0.xsd <file>.xml   # validate against eCH-0119
@@ -48,8 +49,14 @@ that **validates against the official XSD**. Three modules:
 - **`src/pdf.rs`** — extracts embedded files (PDF `/Names/EmbeddedFiles` name tree) via
   `lopdf`; `extract_embedded_xml` returns XML attachments. Scans (our `pdf/` samples) have
   none — that's reported, not faked.
-- **`src/submit.rs`** — `write_package` emits `data/submission/` (XML + MANIFEST with a
-  dependency-free SHA-256 and the real ZH channel guidance: ZHprivateTax / 2D-barcode sheet).
+- **`src/model_jp.rs` / `src/dataset_jp.rs`** — **juristische Personen** per **eCH-0276**
+  «E-Bilanz und E-Tax JP» (built from `schema/eCH-0276-1-0.xsd` + `eCH-0276-beispiel.xml`):
+  root `eBalanceSheetETaxLegalEntity` → `header`(title) + `content` (assets, equityAndLiabilities,
+  incomeStatement, fiscalCorrections, profitAppropriation, taxableEquityAfterProfitAppropriation).
+  Every element is prefixed `eCH-0276:`; amounts are `xs:long` (whole CHF). `dataset_jp::example()`
+  is ywesee GmbH from the StA-500 + Jahresrechnung PDFs. `--jp` validates against the eCH-0276 XSD.
+- **`src/submit.rs`** — `write_package`/`write_package_jp` emit `data/submission[-jp]/` (XML + MANIFEST
+  with a dependency-free SHA-256 and the real ZH channel guidance: ZHprivateTax / ZHCorporateTax / barcode).
 - **`src/main.rs`** — CLI: resolves input (arg → `data/input.json` → built-in example),
   optionally replaces securities from eCH-0196 (`--from-ech0196` / `--from-pdf`), serializes
   to `data/steuererklaerung-2025.xml`, runs `xmllint`, and with `--package` writes the bundle.

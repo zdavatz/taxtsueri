@@ -13,8 +13,10 @@
 //! `data/` (Eingabe + XML + Paket) enthält Personendaten und ist gitignored.
 
 mod dataset;
+mod dataset_jp;
 mod ech0196;
 mod model;
+mod model_jp;
 mod pdf;
 mod submit;
 
@@ -28,6 +30,7 @@ struct Args {
     from_ech0196: Option<String>,
     from_pdf: Option<String>,
     package: bool,
+    jp: bool,
 }
 
 fn parse_args() -> Result<Args, String> {
@@ -40,6 +43,7 @@ fn parse_args() -> Result<Args, String> {
             }
             "--from-pdf" => a.from_pdf = Some(it.next().ok_or("--from-pdf erwartet einen Pfad")?),
             "--package" => a.package = true,
+            "--jp" => a.jp = true,
             s if s.starts_with("--") => return Err(format!("unbekannte Option: {s}")),
             s => a.input_json = Some(s.to_string()),
         }
@@ -55,6 +59,10 @@ fn main() -> ExitCode {
             return ExitCode::FAILURE;
         }
     };
+
+    if args.jp {
+        return run_jp(&args);
+    }
 
     // 1) Basis-Document beschaffen.
     let default_input = PathBuf::from("data/input.json");
@@ -196,15 +204,114 @@ fn extract_ech0196_from_pdf(path: &Path) -> Result<Option<String>, String> {
     Ok(xmls.into_iter().map(|(_, content)| content).next())
 }
 
-fn load_document(path: &Path) -> Result<Document, String> {
+fn load_document<T: serde::de::DeserializeOwned>(path: &Path) -> Result<T, String> {
     let text = std::fs::read_to_string(path).map_err(|e| e.to_string())?;
     serde_json::from_str(&text).map_err(|e| e.to_string())
 }
 
-fn write_json(path: &Path, doc: &Document) -> Result<(), String> {
+fn write_json<T: serde::Serialize>(path: &Path, doc: &T) -> Result<(), String> {
     if let Some(parent) = path.parent() {
         std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
     }
     let json = serde_json::to_string_pretty(doc).map_err(|e| e.to_string())?;
     std::fs::write(path, json).map_err(|e| e.to_string())
+}
+
+/// Serialisiert eine Nachricht zu eingerücktem XML mit XML-Deklaration.
+fn to_xml<T: serde::Serialize>(message: &T) -> Result<String, String> {
+    let mut xml = String::from(r#"<?xml version="1.0" encoding="UTF-8"?>"#);
+    xml.push('\n');
+    let mut ser = quick_xml::se::Serializer::new(&mut xml);
+    ser.indent(' ', 2);
+    message.serialize(ser).map_err(|e| e.to_string())?;
+    xml.push('\n');
+    Ok(xml)
+}
+
+/// JP-Modus (`--jp`): Steuererklärung juristische Person (StA 500), inoffiziell.
+fn run_jp(args: &Args) -> ExitCode {
+    let default_input = PathBuf::from("data/input-jp.json");
+    let doc: model_jp::Document = if let Some(path) = &args.input_json {
+        match load_document(Path::new(path)) {
+            Ok(d) => {
+                println!("JP-Eingabe gelesen aus: {path}");
+                d
+            }
+            Err(e) => {
+                eprintln!("Konnte {path} nicht lesen: {e}");
+                return ExitCode::FAILURE;
+            }
+        }
+    } else if default_input.exists() {
+        match load_document(&default_input) {
+            Ok(d) => {
+                println!("JP-Eingabe gelesen aus: {}", default_input.display());
+                d
+            }
+            Err(e) => {
+                eprintln!("Konnte {} nicht lesen: {e}", default_input.display());
+                return ExitCode::FAILURE;
+            }
+        }
+    } else {
+        let d = dataset_jp::example();
+        if let Err(e) = write_json(&default_input, &d) {
+            eprintln!("Hinweis: konnte Vorlage nicht schreiben: {e}");
+        } else {
+            println!(
+                "Keine JP-Eingabe gefunden – Beispiel nach {} geschrieben (editierbar).",
+                default_input.display()
+            );
+        }
+        d
+    };
+
+    let message = doc.into_message();
+    let xml = match to_xml(&message) {
+        Ok(x) => x,
+        Err(e) => {
+            eprintln!("Fehler beim Serialisieren: {e}");
+            return ExitCode::FAILURE;
+        }
+    };
+
+    let out_path = Path::new("data").join("steuererklaerung-jp-2025.xml");
+    if let Err(e) = std::fs::create_dir_all("data").and_then(|_| std::fs::write(&out_path, &xml)) {
+        eprintln!("Konnte {} nicht schreiben: {e}", out_path.display());
+        return ExitCode::FAILURE;
+    }
+    println!("JP-XML (eCH-0276) geschrieben nach: {}", out_path.display());
+    println!("{} Bytes, {} Zeilen", xml.len(), xml.lines().count());
+
+    // Validierung gegen das offizielle eCH-0276-XSD (falls vorhanden).
+    let schema = Path::new("schema/eCH-0276-1-0.xsd");
+    if schema.exists() {
+        match std::process::Command::new("xmllint")
+            .args(["--nonet", "--noout", "--schema"])
+            .arg(schema)
+            .arg(&out_path)
+            .status()
+        {
+            Ok(s) if s.success() => println!("eCH-0276-Validierung: OK"),
+            Ok(_) => {
+                eprintln!("eCH-0276-Validierung fehlgeschlagen (siehe xmllint-Ausgabe oben)");
+                return ExitCode::FAILURE;
+            }
+            Err(_) => println!("Hinweis: xmllint nicht gefunden – Validierung übersprungen"),
+        }
+    } else {
+        println!("Hinweis: schema/eCH-0276-1-0.xsd fehlt – ./scripts/fetch-schemas.sh ausführen");
+    }
+
+    if args.package {
+        match submit::write_package_jp(&xml, &message) {
+            Ok(dir) => println!("JP-Einreichungs-Paket geschrieben nach: {}", dir.display()),
+            Err(e) => {
+                eprintln!("Konnte JP-Paket nicht schreiben: {e}");
+                return ExitCode::FAILURE;
+            }
+        }
+    }
+
+    ExitCode::SUCCESS
 }

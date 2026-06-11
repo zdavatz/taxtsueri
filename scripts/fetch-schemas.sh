@@ -46,10 +46,30 @@ dl "$IMCE/0001-0030/eCH-0007/6.00/Beilagen/eCH-0007-6-0f.xsd" eCH-0007-6-0f.xsd
 dl "$IMCE/0031-0060/eCH-0046/5.0/Beilagen/eCH-0046-5-0f.xsd"  eCH-0046-5-0f.xsd
 dl "$IMCE/0001-0030/eCH-0010/7.0/Beilagen/eCH-0010-7-0f.xsd"  eCH-0010-7-0f.xsd
 
+echo "eCH-0276 (E-Bilanz und E-Tax JP) + Beispiel:"
+B0276="$IMCE/0271-0310/eCH-0276/1.0.0/Beilagen/D_F"
+dl "$B0276/eCH-0276-1-0.xsd"                                eCH-0276-1-0.xsd
+dl "$B0276/Beispiel_XML_eBalanceSheetETaxLegalEntity.xml"  eCH-0276-beispiel.xml
+
+echo "eCH-0276 Import-Hülle (xmlns-Pfad):"
+dl "$XMLNS/eCH-0007/6/eCH-0007-6-0.xsd"        eCH-0007-6-0.xsd
+dl "$XMLNS/eCH-0008/3/eCH-0008-3-0.xsd"        eCH-0008-3-0.xsd
+dl "$XMLNS/eCH-0010/6/eCH-0010-6-0.xsd"        eCH-0010-6-0.xsd
+dl "$XMLNS/eCH-0010/7/eCH-0010-7-0.xsd"        eCH-0010-7-0.xsd
+dl "$XMLNS/eCH-0010/8/eCH-0010-8-0.xsd"        eCH-0010-8-0.xsd
+dl "$XMLNS/eCH-0044/4/eCH-0044-4-0.xsd"        eCH-0044-4-0.xsd
+dl "$XMLNS/eCH-0046/6/eCH-0046-6-0.xsd"        eCH-0046-6-0.xsd
+dl "$XMLNS/eCH-0097/2/eCH-0097-2-0.xsd"        eCH-0097-2-0.xsd
+dl "$XMLNS/eCH-0097/4/eCH-0097-4-0.xsd"        eCH-0097-4-0.xsd
+dl "$XMLNS/eCH-0108/7/eCH-0108-7-0.xsd"        eCH-0108-7-0.xsd
+dl "$XMLNS/eCH-0129/6/eCH-0129-6-0.xsd"        eCH-0129-6-0.xsd
+
 cd ..
 echo "schemaLocation für Offline-Validierung verdrahten:"
 python3 scripts/patch_schema_locations.py schema
 
-echo "Verifikation (offizielle eCH-Testdatei):"
+echo "Verifikation (offizielle eCH-Testdateien):"
 xmllint --nonet --noout --schema schema/eCH-0119-4-0-0.xsd \
-  schema/test.eCH-0119.v4.0.0.major.xml && echo "OK"
+  schema/test.eCH-0119.v4.0.0.major.xml && echo "eCH-0119 OK"
+xmllint --nonet --noout --schema schema/eCH-0276-1-0.xsd \
+  schema/eCH-0276-beispiel.xml && echo "eCH-0276 OK"

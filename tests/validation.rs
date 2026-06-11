@@ -8,6 +8,41 @@ use std::process::Command;
 mod model;
 #[path = "../src/dataset.rs"]
 mod dataset;
+#[path = "../src/model_jp.rs"]
+mod model_jp;
+#[path = "../src/dataset_jp.rs"]
+mod dataset_jp;
+
+fn validate(schema: &str, xml: &str, tmp_name: &str) -> bool {
+    if !std::path::Path::new(schema).exists()
+        || Command::new("xmllint").arg("--version").output().is_err()
+    {
+        eprintln!("übersprungen: {schema} oder xmllint fehlt");
+        return true;
+    }
+    let tmp = std::env::temp_dir().join(tmp_name);
+    std::fs::write(&tmp, xml).expect("write tmp");
+    let out = Command::new("xmllint")
+        .args(["--nonet", "--noout", "--schema", schema])
+        .arg(&tmp)
+        .output()
+        .expect("run xmllint");
+    let _ = std::fs::remove_file(&tmp);
+    if !out.status.success() {
+        eprintln!("{}", String::from_utf8_lossy(&out.stderr));
+    }
+    out.status.success()
+}
+
+#[test]
+fn jp_example_validates_against_ech0276() {
+    let xml = quick_xml::se::to_string(&dataset_jp::example().into_message()).expect("serialize");
+    assert!(validate(
+        "schema/eCH-0276-1-0.xsd",
+        &xml,
+        "taxtsueri-jp-validation.xml"
+    ));
+}
 
 #[test]
 fn generated_xml_validates_against_ech0119() {

@@ -1,6 +1,10 @@
 # Privat- und Steuerdaten — niemals committen
 *.pdf
 pdf/
+xls/
+*.xls
+*.xlsx
+*.csv
 /data/
 *.xml.private
 

@@ -1,0 +1,2012 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:eCH-0007="http://www.ech.ch/xmlns/eCH-0007/6" xmlns:eCH-0010="http://www.ech.ch/xmlns/eCH-0010/8" xmlns:eCH-0046="http://www.ech.ch/xmlns/eCH-0046/6" xmlns:eCH-0108="http://www.ech.ch/xmlns/eCH-0108/7" xmlns:eCH-0129="http://www.ech.ch/xmlns/eCH-0129/6" xmlns:eCH-0276="http://www.ech.ch/xmlns/eCH-0276/1" targetNamespace="http://www.ech.ch/xmlns/eCH-0276/1" elementFormDefault="qualified" attributeFormDefault="unqualified" version="0">
+	<xs:annotation>
+		<xs:documentation xml:lang="de">SSK E-Bilanz und E-Tax JP</xs:documentation>
+	</xs:annotation>
+	<xs:import namespace="http://www.ech.ch/xmlns/eCH-0007/6" schemaLocation="eCH-0007-6-0.xsd"/>
+	<xs:import namespace="http://www.ech.ch/xmlns/eCH-0010/8" schemaLocation="eCH-0010-8-0.xsd"/>
+	<xs:import namespace="http://www.ech.ch/xmlns/eCH-0046/6" schemaLocation="eCH-0046-6-0.xsd"/>
+	<xs:import namespace="http://www.ech.ch/xmlns/eCH-0108/7" schemaLocation="eCH-0108-7-0.xsd"/>
+	<xs:import namespace="http://www.ech.ch/xmlns/eCH-0129/6" schemaLocation="eCH-0129-6-0.xsd"/>
+	<!-- definition of simple types -->
+	<!-- percentage type -->
+	<xs:simpleType name="percentageType">
+		<xs:restriction base="xs:decimal">
+			<xs:maxInclusive value="100"/>
+			<xs:minInclusive value="-100"/>
+			<xs:fractionDigits value="4"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- choice of currencies -->
+	<xs:simpleType name="currencyShareEquityType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="CHF"/>
+			<xs:enumeration value="EUR"/>
+			<xs:enumeration value="USD"/>
+			<xs:enumeration value="GBP"/>
+			<xs:enumeration value="JPY"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- currency -->
+	<xs:simpleType name="currencyFinancialReportingType">
+		<xs:restriction base="xs:string">
+			<xs:length value="3"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- iban -->
+	<xs:simpleType name="ibanType">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[C]{1}[H]{1}[0-9]{19}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- tax adjustments increasing taxable result -->
+	<xs:simpleType name="taxableResultIncreaseReasonDescriptionType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="unjustifiedBusinessDepreciationAndCostsForAcquisitionProductionOrIncreaseInValueOfAsset"/>
+			<xs:enumeration value="provisionsNotSubstantiatedByBusiness"/>
+			<xs:enumeration value="unallowableDepreciationOfRevaluedAssets"/>
+			<xs:enumeration value="contributionsToReserves"/>
+			<xs:enumeration value="concealedProfitDistributionsAndUnjustifiedPaymentsToThirdParties"/>
+			<xs:enumeration value="excessiveGrants"/>
+			<xs:enumeration value="insufficientInterest"/>
+			<xs:enumeration value="excessiveInterest"/>
+			<xs:enumeration value="bookprofitsFromHigherValuationOfRealEstateAndParticipations"/>
+			<xs:enumeration value="otherTaxableIncomeNotCreditedToTheIncomeStatement"/>
+			<xs:enumeration value="expensesNotJustifiedByBusiness"/>
+			<xs:enumeration value="correctionOfTaxExpense"/>
+			<xs:enumeration value="dissolutionOfTaxedHiddenNegativeReserves"/>
+			<xs:enumeration value="nonDeductibleDepreciation"/>
+			<xs:enumeration value="nonPeriodicExpensesToEnsureThePrincipleOfPeridiodicity"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- tax adjustments decreasing taxable result -->
+	<xs:simpleType name="taxableResultDecreaseReasonDescriptionType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="reversalOfTaxedUndisclosedReserves"/>
+			<xs:enumeration value="dissolutionOfDeclaredHiddenReserves"/>
+			<xs:enumeration value="contributionsToPensionFundsForBenefitOfOwnStaff"/>
+			<xs:enumeration value="voluntaryPaymentForExclusivelyCharitablePurposes"/>
+			<xs:enumeration value="capitalDepositsSurchargePaymentsFondsPerdu"/>
+			<xs:enumeration value="netProfitSubjectToPropertyGainsTaxMonisticSystem"/>
+			<xs:enumeration value="otherNonTaxableIncomeCreditedToTheIncomeStatement"/>
+			<xs:enumeration value="correctionOfTaxExpense"/>
+			<xs:enumeration value="nonPeriodicIncomeToEnsureThePrincipleOfPeridiodicity"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- document type -->
+	<xs:simpleType name="documentIdentificationType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="completeTaxDeclaration"/>
+			<xs:enumeration value="balanceSheetIncomeStatementNotes"/>
+			<xs:enumeration value="netBalance"/>
+			<xs:enumeration value="notesToAnnualStatement"/>
+			<xs:enumeration value="formPrimeCosts"/>
+			<xs:enumeration value="taxSegregation"/>
+			<xs:enumeration value="taxReturnOfTheCantonOfDomicile"/>
+			<xs:enumeration value="auditReport"/>
+			<xs:enumeration value="informationOnShareholdings"/>
+			<xs:enumeration value="wageStatement"/>
+			<xs:enumeration value="staf"/>
+			<xs:enumeration value="accountSheet"/>
+			<xs:enumeration value="offsettingLosses"/>
+			<xs:enumeration value="hiddenEquity"/>
+			<xs:enumeration value="properties"/>
+			<xs:enumeration value="shareholdersAssociates"/>
+			<xs:enumeration value="depreciation"/>
+			<xs:enumeration value="financialAssets"/>
+			<xs:enumeration value="taxableRecord"/>
+			<xs:enumeration value="otherAttachments"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- type of Securities / Code -->
+	<xs:simpleType name="typeOfSecurityCodeType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="shares"/>
+			<xs:enumeration value="capitalContributions"/>
+			<xs:enumeration value="cooperativeShares"/>
+			<xs:enumeration value="participationCertificates"/>
+			<xs:enumeration value="profitParticipationCertificates"/>
+			<xs:enumeration value="sharesInTheCapitalOfASicaf"/>
+			<xs:enumeration value="othertypeOfSecurity"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Code patents / cantonal speciality-->
+	<xs:simpleType name="percentageReductionInEquityTaxCodeType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="participations"/>
+			<xs:enumeration value="patentsAndComparableRights"/>
+			<xs:enumeration value="loansToGroupCompanies"/>
+			<xs:enumeration value="cantonalSpecialities"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Type of related Party -->
+	<xs:simpleType name="typeOfRelatedPartyType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="shareholderNaturalPerson"/>
+			<xs:enumeration value="shareholderLegalEntity"/>
+			<xs:enumeration value="groupCompanies"/>
+			<xs:enumeration value="subsidiaries"/>
+			<xs:enumeration value="otherRelatedParties"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Type of object / property -->
+	<xs:simpleType name="objectTypeType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="agriculturalProperties"/>
+			<xs:enumeration value="singleFamilyHousesflatOwnershipForResidentialPurposes"/>
+			<xs:enumeration value="multiFamilyAndCommercialBuildingsCondominiumsForBusinessPurposes"/>
+			<xs:enumeration value="industrialOrCommercialProperties"/>
+			<xs:enumeration value="otherPropertiesNotUsedForAgriculturalPurposes"/>
+			<xs:enumeration value="undevelopedProperty"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Operating property or investment property -->
+	<xs:simpleType name="operatingPropertyOrInvestmentPropertyType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="operatingProperty"/>
+			<xs:enumeration value="investmentProperty"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- textFieldType -->
+	<xs:simpleType name="textFieldType">
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="500"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- definition of complex types -->
+	<xs:complexType name="assetsType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">assets (register A on forms)</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="currentAssets" type="eCH-0276:currentAssetsType" minOccurs="0"/>
+			<xs:element name="noncurrentAssets" type="eCH-0276:noncurrentAssetsType" minOccurs="0"/>
+			<xs:element name="totalAssets" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="currentAssetsType">
+		<xs:sequence>
+			<xs:element name="cashAndCashEquivalentsAndCurrentAssetsWithStockMarketPrice" type="eCH-0276:cashAndCashEquivalentsAndCurrentAssetsWithStockMarketPriceType" minOccurs="0"/>
+			<xs:element name="tradeAndOtherCurrentReceivables" type="eCH-0276:tradeAndOtherCurrentReceivablesType" minOccurs="0"/>
+			<xs:element name="otherShortTermReceivables" type="eCH-0276:otherShortTermReceivablesType" minOccurs="0"/>
+			<xs:element name="inventoriesAndWorkInProgress" type="eCH-0276:inventoriesAndWorkInProgressType" minOccurs="0"/>
+			<xs:element name="accruedIncomeAndPrepaidExpenses" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalCurrentAssets" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="cashAndCashEquivalentsAndCurrentAssetsWithStockMarketPriceType">
+		<xs:sequence>
+			<xs:element name="cashAndCashEquivalents" type="xs:long" minOccurs="0"/>
+			<xs:element name="currentAssetsWithStockMarketPrice" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="tradeAndOtherCurrentReceivablesType">
+		<xs:sequence>
+			<xs:element name="tradeReceivablesPayableByThirdParties" type="xs:long" minOccurs="0"/>
+			<xs:element name="tradeReceivablesPayableByParticipations" type="xs:long" minOccurs="0"/>
+			<xs:element name="tradeReceivablesPayableByParticipantsAndManagingOfficers" type="xs:long" minOccurs="0"/>
+			<xs:element name="valueAdjustmentTradeAndOtherCurrentReceivables" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="otherShortTermReceivablesType">
+		<xs:sequence>
+			<xs:element name="otherShortTermReceivablesPayableByThirdParties" type="xs:long" minOccurs="0"/>
+			<xs:element name="otherShortTermReceivablesPayableByParticipations" type="xs:long" minOccurs="0"/>
+			<xs:element name="otherShortTermReceivablesPayableByParticipationsAndManagingOfficers" type="xs:long" minOccurs="0"/>
+			<xs:element name="downPaymentAdvancePaymentsToSuppliers" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="inventoriesAndWorkInProgressType">
+		<xs:sequence>
+			<xs:element name="inventories" type="xs:long" minOccurs="0"/>
+			<xs:element name="valueAdjustmentInventories" type="xs:long" minOccurs="0"/>
+			<xs:element name="workInProgress" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="noncurrentAssetsType">
+		<xs:sequence>
+			<xs:element name="financialAssets" type="eCH-0276:financialAssetsType" minOccurs="0"/>
+			<xs:element name="participations" type="xs:long" minOccurs="0"/>
+			<xs:element name="propertyPlantEquipment" type="eCH-0276:propertyPlantEquipmentType" minOccurs="0"/>
+			<xs:element name="intangibleAssets" type="eCH-0276:intangibleAssetsType" minOccurs="0"/>
+			<xs:element name="unpaidShareCapital" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalNoncurrentAssets" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="financialAssetsType">
+		<xs:sequence>
+			<xs:element name="longTermSecurities" type="xs:long" minOccurs="0"/>
+			<xs:element name="otherFinancialAssets" type="xs:long"/>
+			<xs:element name="longTermThirdPartyReceivables" type="xs:long" minOccurs="0"/>
+			<xs:element name="longTermAffiliatesReceivables" type="xs:long" minOccurs="0"/>
+			<xs:element name="longTermShareholdersReceivables" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="propertyPlantEquipmentType">
+		<xs:sequence>
+			<xs:element name="machinery" type="xs:long" minOccurs="0"/>
+			<xs:element name="furnitureAndOfficeEquipment" type="xs:long" minOccurs="0"/>
+			<xs:element name="officeEquipmentItAndCommunicationsTechnology" type="xs:long" minOccurs="0"/>
+			<xs:element name="vehicles" type="xs:long" minOccurs="0"/>
+			<xs:element name="toolsAndEquipment" type="xs:long" minOccurs="0"/>
+			<xs:element name="otherMobileTangibleAssets" type="xs:long" minOccurs="0"/>
+			<xs:element name="fixedTangibleAssets" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="intangibleAssetsType">
+		<xs:sequence>
+			<xs:element name="licencesPatents" type="xs:long" minOccurs="0"/>
+			<xs:element name="goodwill" type="xs:long" minOccurs="0"/>
+			<xs:element name="otherIntangibleAssets" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="equityAndLiabilitiesType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">equityAndLiabilities (register B on forms)</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="currentLiabilities" type="eCH-0276:currentLiabilitiesType" minOccurs="0"/>
+			<xs:element name="noncurrentLiabilities" type="eCH-0276:noncurrentLiabilitiesType" minOccurs="0"/>
+			<xs:element name="fundCapitalEarmarked" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalFundCapitalEarmarked" type="xs:long" minOccurs="0"/>
+			<xs:element name="equity" type="eCH-0276:equityType" minOccurs="0"/>
+			<xs:element name="totalEquityAndLiabilities" type="xs:long" minOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="currentLiabilitiesType">
+		<xs:sequence>
+			<xs:element name="tradeAndOtherCurrentPayables" type="eCH-0276:tradeAndOtherCurrentPayablesType" minOccurs="0"/>
+			<xs:element name="currentInterestBearingLiabilities" type="eCH-0276:currentInterestBearingLiabilitiesType" minOccurs="0"/>
+			<xs:element name="otherCurrentLieabilitiesIntrestFree" type="eCH-0276:otherCurrentLieabilitiesIntrestFreeType" minOccurs="0"/>
+			<xs:element name="accruedExpenses" type="xs:long" minOccurs="0"/>
+			<xs:element name="currentProvisions" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalCurrentLiabilities" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="tradeAndOtherCurrentPayablesType">
+		<xs:sequence>
+			<xs:element name="currentPayablesThirdParties" type="xs:long" minOccurs="0"/>
+			<xs:element name="prepayments" type="xs:long" minOccurs="0"/>
+			<xs:element name="currentPayablesAffiliates" type="xs:long" minOccurs="0"/>
+			<xs:element name="currentPayablesShareholders" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="currentInterestBearingLiabilitiesType">
+		<xs:sequence>
+			<xs:element name="currentInterestBearingLiabilitiesThirdParties" type="xs:long" minOccurs="0"/>
+			<xs:element name="currentInterestBearingLiabilitiesAffiliates" type="xs:long" minOccurs="0"/>
+			<xs:element name="currentInterestBearingLiabilitiesShareholders" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="otherCurrentLieabilitiesIntrestFreeType">
+		<xs:sequence>
+			<xs:element name="otherCurrentLieabilitiesIntrestFreeThirdParties" type="xs:long" minOccurs="0"/>
+			<xs:element name="otherCurrentLieabilitiesIntrestFreeAffiliates" type="xs:long" minOccurs="0"/>
+			<xs:element name="otherCurrentLieabilitiesIntrestFreeShareholders" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="noncurrentLiabilitiesType">
+		<xs:sequence>
+			<xs:element name="noncurrentInterestBearingLiabilities" type="eCH-0276:noncurrentInterestBearingLiabilitiesType" minOccurs="0"/>
+			<xs:element name="otherNoncurrentLieabilitiesIntrestFree" type="eCH-0276:otherNoncurrentLieabilitiesIntrestFreeType" minOccurs="0"/>
+			<xs:element name="provisionsAndSimilarItemsStipulatedByLaw" type="eCH-0276:provisionsAndSimilarItemsStipulatedByLawType" minOccurs="0"/>
+			<xs:element name="totalNoncurrentLiabilities" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="noncurrentInterestBearingLiabilitiesType">
+		<xs:sequence>
+			<xs:element name="noncurrentInterestBearingLiabilitiesThirdParties" type="xs:long" minOccurs="0"/>
+			<xs:element name="noncurrentInterestBearingLiabilitiesAffiliates" type="xs:long" minOccurs="0"/>
+			<xs:element name="noncurrentInterestBearingLiabilitiesShareholders" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="otherNoncurrentLieabilitiesIntrestFreeType">
+		<xs:sequence>
+			<xs:element name="otherNoncurrentLieabilitiesIntrestFreeThirdParties" type="xs:long" minOccurs="0"/>
+			<xs:element name="otherNoncurrentLieabilitiesIntrestFreeAffiliates" type="xs:long" minOccurs="0"/>
+			<xs:element name="otherNoncurrentLieabilitiesIntrestFreeShareholders" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="provisionsAndSimilarItemsStipulatedByLawType">
+		<xs:sequence>
+			<xs:element name="guaranteeProvisions" type="xs:long" minOccurs="0"/>
+			<xs:element name="provisionForMajorRepairs" type="xs:long" minOccurs="0"/>
+			<xs:element name="provisionsForResearchAndDevelopment" type="xs:long" minOccurs="0"/>
+			<xs:element name="provisionForRestructuringAndEnvironmentalProtection" type="xs:long" minOccurs="0"/>
+			<xs:element name="provisionForTaxes" type="xs:long" minOccurs="0"/>
+			<xs:element name="otherProvisions" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="equityType">
+		<xs:sequence>
+			<xs:element name="shareCapitalShareholderCapitalAssociationCapitalFoundationCapital" type="xs:long" minOccurs="1"/>
+			<xs:element name="voluntaryProfitReservesAssociationFoundation" type="eCH-0276:voluntaryProfitReservesAssociationFoundationType" minOccurs="0"/>
+			<xs:element name="statuatoryCapitalReserveLimitedCompanies" type="eCH-0276:statuatoryCapitalReserveLimitedCompaniesType" minOccurs="0"/>
+			<xs:element name="statutoryProfitReserveLimitedCompanies" type="eCH-0276:statutoryProfitReserveLimitedCompaniesType" minOccurs="0"/>
+			<xs:element name="voluntaryProfitReservesLimitedCompanies" type="eCH-0276:voluntaryProfitReservesLimitedCompaniesType" minOccurs="0"/>
+			<xs:element name="ownCapitalShares" type="eCH-0276:ownCapitalSharesType" minOccurs="0"/>
+			<xs:element name="netProfitOrLoss" type="eCH-0276:netProfitOrLossType" minOccurs="0"/>
+			<xs:element name="totalEquity" type="xs:long" minOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="voluntaryProfitReservesAssociationFoundationType">
+		<xs:sequence>
+			<xs:element name="tiedCapitalFreeFundsCommercialLaw" type="xs:long" minOccurs="0"/>
+			<xs:element name="freeCapitalReservesCommercialLaw" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="statuatoryCapitalReserveLimitedCompaniesType">
+		<xs:sequence>
+			<xs:element name="statuatoryCapitalReserveLimitedCompaniesAmount" type="xs:long" minOccurs="0"/>
+			<xs:element name="capitalDepositReserve" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="statutoryProfitReserveLimitedCompaniesType">
+		<xs:sequence>
+			<xs:element name="statutoryProfitReserveLimitedCompaniesAmount" type="xs:long" minOccurs="0"/>
+			<xs:element name="revaluationReserve" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="voluntaryProfitReservesLimitedCompaniesType">
+		<xs:sequence>
+			<xs:element name="voluntaryProfitReservesLimitedCompaniesAmount" type="xs:long" minOccurs="0"/>
+			<xs:element name="exchangeDifferencesFunctionalCurrencyTechnical" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ownCapitalSharesType">
+		<xs:sequence>
+			<xs:element name="ownCapitalSharesAsNegativeItem" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="netProfitOrLossType">
+		<xs:sequence>
+			<xs:element name="profitOrLossBroughtForward" type="xs:long" minOccurs="0"/>
+			<xs:element name="interimDividendDistribution" type="xs:long" minOccurs="0"/>
+			<xs:element name="contributionToStatutoryRetainedEarningFromInterimProfit" type="xs:long" minOccurs="0"/>
+			<xs:element name="contributionToVoluntaryRetainedEarningFromInterimProfit" type="xs:long" minOccurs="0"/>
+			<xs:element name="annualProfitOrAnnualLoss" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="incomeStatementType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">incomeStatement (register C on forms)</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="deliveriesAndServicesRevenue" type="eCH-0276:deliveriesAndServicesRevenueType" minOccurs="0"/>
+			<xs:element name="revenueReductionsProductionTradeServices" type="xs:long" minOccurs="0"/>
+			<xs:element name="associationsAndFoundations" type="eCH-0276:associationsAndFoundationsType" minOccurs="0"/>
+			<xs:element name="totalOperatingRevenueFromDeliveriesAndServices" type="xs:long" minOccurs="0"/>
+			<xs:element name="expenses" type="eCH-0276:expensesType" minOccurs="0"/>
+			<xs:element name="depreciationValueAdjustmentNoncurrentAssets" type="eCH-0276:depreciationValueAdjustmentNoncurrentAssetsType" minOccurs="0"/>
+			<xs:element name="financialExpensesAndFinancialIncome" type="eCH-0276:financialExpensesAndFinancialIncomeType" minOccurs="0"/>
+			<xs:element name="profitOtherOperatingAncillaryBusiness" type="eCH-0276:profitOtherOperatingAncillaryBusinessType" minOccurs="0"/>
+			<xs:element name="externalExpensesAndExternalIncome" type="eCH-0276:externalExpensesAndExternalIncomeType" minOccurs="0"/>
+			<xs:element name="externalExtraordinaryOneoffOrNonperiodicExpensesAndIncome" type="eCH-0276:externalExtraordinaryOneoffOrNonperiodicExpensesAndIncomeType" minOccurs="0"/>
+			<xs:element name="fundPerformance" type="eCH-0276:fundPerformanceType" minOccurs="0"/>
+			<xs:element name="directTaxes" type="xs:long" minOccurs="0"/>
+			<xs:element name="annualProfitOrAnnualLoss" type="xs:long" minOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="deliveriesAndServicesRevenueType">
+		<xs:sequence>
+			<xs:element name="productionRevenue" type="xs:long" minOccurs="0"/>
+			<xs:element name="tradeRevenue" type="xs:long" minOccurs="0"/>
+			<xs:element name="serviceRevenue" type="xs:long" minOccurs="0"/>
+			<xs:element name="otherOperatingRevenue" type="xs:long" minOccurs="0"/>
+			<xs:element name="publicSectorContributions" type="xs:long" minOccurs="0"/>
+			<xs:element name="ownWork" type="xs:long" minOccurs="0"/>
+			<xs:element name="revenueReduction" type="xs:long" minOccurs="0"/>
+			<xs:element name="lossesOnReceivablesChangeInValueAdjustments" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalDeliveriesAndServicesRevenue" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="associationsAndFoundationsType">
+		<xs:sequence>
+			<xs:element name="membershipFees" type="xs:long" minOccurs="0"/>
+			<xs:element name="incomeFromDonationsGiftsAndBequests" type="xs:long" minOccurs="0"/>
+			<xs:element name="patronContributions" type="xs:long" minOccurs="0"/>
+			<xs:element name="mandateContributionsRelatedToPoliticalParties" type="xs:long" minOccurs="0"/>
+			<xs:element name="publicSectorContributionsDonation" type="xs:long" minOccurs="0"/>
+			<xs:element name="contributionsReceived" type="xs:long" minOccurs="0"/>
+			<xs:element name="distributionsAllocationsToThirdParties" type="xs:long" minOccurs="0"/>
+			<xs:element name="distributionsAllocationsToBeneficiariesOrRelatedParties" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalAssociationsAndFoundations" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="expensesType">
+		<xs:sequence>
+			<xs:element name="expensesForMaterialsGoodsServices" type="eCH-0276:expensesForMaterialsGoodsServicesType" minOccurs="0"/>
+			<xs:element name="employeeExpenses" type="eCH-0276:employeeExpensesType" minOccurs="0"/>
+			<xs:element name="otherOperatingExpenses" type="eCH-0276:otherOperatingExpensesType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="expensesForMaterialsGoodsServicesType">
+		<xs:sequence>
+			<xs:element name="productionMaterialCosts" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalExpensesGoodsForResale" type="xs:long" minOccurs="0"/>
+			<xs:element name="expensesForPurchasedServices" type="xs:long" minOccurs="0"/>
+			<xs:element name="powerExpensesGoodsAndServices" type="xs:long" minOccurs="0"/>
+			<xs:element name="otherDirectExpenses" type="xs:long" minOccurs="0"/>
+			<xs:element name="externalExpenses" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalExpensesForMaterialsGoodsServices" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="employeeExpensesType">
+		<xs:sequence>
+			<xs:element name="salaryExpenses" type="xs:long" minOccurs="0"/>
+			<xs:element name="temporaryEmployeesExpenses" type="xs:long" minOccurs="0"/>
+			<xs:element name="socialSecurityExpenses" type="xs:long" minOccurs="0"/>
+			<xs:element name="otherEmployeeExpenses" type="xs:long" minOccurs="0"/>
+			<xs:element name="expensesThirdParties" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalEmployeeExpenses" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="otherOperatingExpensesType">
+		<xs:sequence>
+			<xs:element name="rentalExpense" type="xs:long" minOccurs="0"/>
+			<xs:element name="maintenanceRepairsReplacementOfMobileAssets" type="xs:long" minOccurs="0"/>
+			<xs:element name="vehicleTransportationExpenses" type="xs:long" minOccurs="0"/>
+			<xs:element name="privateShareVehicleExpenses" type="xs:long" minOccurs="0"/>
+			<xs:element name="insuranceContributionFeeApprovalExpenses" type="xs:long" minOccurs="0"/>
+			<xs:element name="energyAndDisposalExpenses" type="xs:long" minOccurs="0"/>
+			<xs:element name="administrativeAndItExpenses" type="xs:long" minOccurs="0"/>
+			<xs:element name="advertisingExpense" type="xs:long" minOccurs="0"/>
+			<xs:element name="travelAndRepresentationExpenses" type="xs:long" minOccurs="0"/>
+			<xs:element name="miscellaneousOperatingExpenses" type="xs:long" minOccurs="0"/>
+			<xs:element name="otherPrivateShares" type="xs:long" minOccurs="0"/>
+			<xs:element name="TotalOtherOperatingExpenses" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="depreciationValueAdjustmentNoncurrentAssetsType">
+		<xs:sequence>
+			<xs:element name="depreciationValueAdjustmentLongTermSecurities" type="xs:long" minOccurs="0"/>
+			<xs:element name="depreciationValueAdjustmentOtherFinancialAssets" type="xs:long" minOccurs="0"/>
+			<xs:element name="depreciationValueAdjustmentLongTermReceivables" type="xs:long" minOccurs="0"/>
+			<xs:element name="depreciationValueAdjustmentParticipations" type="xs:long" minOccurs="0"/>
+			<xs:element name="depreciationValueAdjustmentMachinery" type="xs:long" minOccurs="0"/>
+			<xs:element name="depreciationValueAdjustmentFurnitureAndOfficeEquipment" type="xs:long" minOccurs="0"/>
+			<xs:element name="depreciationValueAdjustmentOfficeEquipmentItAndCommunicationsTechnology" type="xs:long" minOccurs="0"/>
+			<xs:element name="depreciationValueAdjustmentVehicles" type="xs:long" minOccurs="0"/>
+			<xs:element name="depreciationValueAdjustmentToolsAndEquipment" type="xs:long" minOccurs="0"/>
+			<xs:element name="depreciationValueAdjustmentOtherMobileTangibleAssets" type="xs:long" minOccurs="0"/>
+			<xs:element name="depreciationValueAdjustmentFixedTangibleAssets" type="xs:long" minOccurs="0"/>
+			<xs:element name="depreciationValueAdjustmentLicencesPatents" type="xs:long" minOccurs="0"/>
+			<xs:element name="depreciationValueAdjustmentGoodwill" type="xs:long" minOccurs="0"/>
+			<xs:element name="depreciationValueAdjustmentOtherIntangibleAssets" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalDepreciationValueAdjustmentNoncurrentAssets" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="financialExpensesAndFinancialIncomeType">
+		<xs:sequence>
+			<xs:element name="interestExpenseFromLiabilities" type="xs:long" minOccurs="0"/>
+			<xs:element name="capitalLossesOnInvestments" type="xs:long" minOccurs="0"/>
+			<xs:element name="otherFinancialExpenses" type="xs:long" minOccurs="0"/>
+			<xs:element name="financialIncomeFromCurrentAssets" type="xs:long" minOccurs="0"/>
+			<xs:element name="investmentIncome" type="xs:long" minOccurs="0"/>
+			<xs:element name="financialIncomeFromNoncurrentAssets" type="xs:long" minOccurs="0"/>
+			<xs:element name="otherFinancialIncome" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalFinancialExpensesAndFinancialIncome" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="profitOtherOperatingAncillaryBusinessType">
+		<xs:sequence>
+			<xs:element name="incomeFromAncillaryOperationsAndOperatingProperties" type="xs:long" minOccurs="0"/>
+			<xs:element name="expensesFromAncillaryOperationsAndOperatingProperties" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalProfitOtherOperatingAncillaryBusiness" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="externalExpensesAndExternalIncomeType">
+		<xs:sequence>
+			<xs:element name="expensesNonoperatingProperties" type="xs:long" minOccurs="0"/>
+			<xs:element name="otherExternalExpenses" type="xs:long" minOccurs="0"/>
+			<xs:element name="incomeNonoperatingProperties" type="xs:long" minOccurs="0"/>
+			<xs:element name="otherExternalIncome" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalExternalExpensesAndExternalIncome" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="externalExtraordinaryOneoffOrNonperiodicExpensesAndIncomeType">
+		<xs:sequence>
+			<xs:element name="externalExtraordinaryOneoffOrNonperiodicExpenses" type="xs:long" minOccurs="0"/>
+			<xs:element name="externalExtraordinaryOneoffOrNonperiodicIncome" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalExternalExtraordinaryOneoffOrNonperiodicExpensesAndIncome" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="fundPerformanceType">
+		<xs:sequence>
+			<xs:element name="withdrawalFromEarmarkedFunds" type="xs:long" minOccurs="0"/>
+			<xs:element name="contributionToEarmarkedFunds" type="xs:long" minOccurs="0"/>
+			<xs:element name="withdrawalFromRestrictedCapital" type="xs:long" minOccurs="0"/>
+			<xs:element name="contributionToRestrictedCapital" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalFundPerformance" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="fiscalCorrectionsType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">fiscal Corrections (register D on forms)</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="taxAdjustmentsIncreasingTaxableResult" type="eCH-0276:taxAdjustmentsIncreasingTaxableResultType" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="taxAdjustmentsDecreasingTaxableResult" type="eCH-0276:taxAdjustmentsDecreasingTaxableResultType" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="netProfitOrLossActualYear" type="eCH-0276:taxAmountType" minOccurs="1"/>
+			<xs:element name="determinationOfRelevantProfitLossBeforeOffsettingLosses" type="eCH-0276:determinationOfRelevantProfitLossBeforeOffsettingLossesType" minOccurs="0"/>
+			<xs:element name="taxLossCarriedForwardList" type="eCH-0276:taxLossCarriedForwardListType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="taxAdjustmentsIncreasingTaxableResultType">
+		<xs:sequence>
+			<xs:element name="taxableResultIncreaseReason" type="eCH-0276:taxableResultIncreaseReasonType" minOccurs="0"/>
+			<xs:element name="otherReasonTaxAdjustmentsIncreasingTaxableResult" type="eCH-0276:taxAmountFreeInputFieldType" minOccurs="0"/>
+			<xs:element name="totalTaxAdjustmentsIncreasingTaxableResult" type="eCH-0276:taxAmountType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="taxableResultIncreaseReasonType">
+		<xs:sequence>
+			<xs:element name="taxableResultIncreaseReasonDescription" type="eCH-0276:taxableResultIncreaseReasonDescriptionType" minOccurs="0"/>
+			<xs:element name="taxableResultIncreaseReasonAmount" type="eCH-0276:taxAmountType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="taxAdjustmentsDecreasingTaxableResultType">
+		<xs:sequence>
+			<xs:element name="taxableResultDecreaseReason" type="eCH-0276:taxableResultDecreaseReasonType" minOccurs="0"/>
+			<xs:element name="otherReasontaxAdjustmentsDecreasingTaxableResult" type="eCH-0276:taxAmountFreeInputFieldType" minOccurs="0"/>
+			<xs:element name="totalTaxAdjustmentsDecreasingTaxableResult" type="eCH-0276:taxAmountType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="taxableResultDecreaseReasonType">
+		<xs:sequence>
+			<xs:element name="taxableResultDecreaseReasonDescription" type="eCH-0276:taxableResultDecreaseReasonDescriptionType" minOccurs="0"/>
+			<xs:element name="taxableResultDecreaseReasonAmount" type="eCH-0276:taxAmountType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="determinationOfRelevantProfitLossBeforeOffsettingLossesType">
+		<xs:sequence>
+			<xs:element name="incomeFromMembershipFeesAccordingToTheIncomeStatement" type="xs:long" minOccurs="0"/>
+			<xs:element name="ordinaryAssociationExpensesNonTaxableIncome" type="xs:long" minOccurs="0"/>
+			<xs:element name="taxFreeMembershipFeeSurplus" type="xs:long" minOccurs="0"/>
+			<xs:element name="additionsToAssetsFromDonationsGiftsInheritances" type="xs:long" minOccurs="0"/>
+			<xs:element name="usufructuariesBeneficiariesMembers" type="xs:long" minOccurs="0"/>
+			<xs:element name="thirdParties" type="eCH-0276:freeInputFieldType" minOccurs="0"/>
+			<xs:element name="timberDistributedInNaturaToCitizensShareholders" type="eCH-0276:freeInputFieldType" minOccurs="0"/>
+			<xs:element name="taxAdjustmentsIncreasingCitizenBenefits" type="xs:long" minOccurs="0"/>
+			<xs:element name="freeInputDeterminationOfRelevantProfitLossBeforeOffsettingLosses" type="eCH-0276:freeInputFieldType" minOccurs="0"/>
+			<xs:element name="relevantProfitLossBeforeOffsettingLosses" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="taxLossCarriedForwardListType">
+		<xs:sequence>
+			<xs:element name="offsettingOperatingLossMonisticSystem" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxableNetProfitOrLossAfterOffsettingLosses" type="eCH-0276:taxAmountType" minOccurs="1"/>
+			<xs:element name="thereofTaxableAbroad" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxableNetProfitOrLossSwitzerlandFc" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxableNetProfitOrLossSwitzerlandChf" type="eCH-0276:taxAmountType" minOccurs="1"/>
+			<xs:element name="taxableNetProfitOrLossAfterStaf" type="xs:long" minOccurs="0"/>
+			<xs:element name="thereofTaxableInOtherCantons" type="xs:long" minOccurs="0"/>
+			<xs:element name="taxableNetProfitOrLossCantonXyBeforeCantonalReliefs" type="xs:long" minOccurs="0"/>
+			<xs:element name="cantonalDeductions" type="xs:long" minOccurs="0"/>
+			<xs:element name="taxableNetProfitOrLossCantonXyAfterCantonalReliefsFc" type="xs:long" minOccurs="0"/>
+			<xs:element name="taxableNetProfitOrLossCantonXyAfterCantonalReliefsChf" type="xs:long" minOccurs="1"/>
+			<xs:element name="positionD1600perCentD1500" type="eCH-0276:percentageType" minOccurs="0"/>
+			<xs:element name="taxRelief" type="eCH-0276:taxAmountType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="profitAppropriationType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">profit Appropriation (register E on forms)</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="profitOrLossCarriedForward" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalProfitToBeDistributed" type="xs:long" minOccurs="1"/>
+			<xs:element name="distributionOfDividendsRoyalties" type="xs:long" minOccurs="0"/>
+			<xs:element name="depositInStatutoryCapitalReserves" type="xs:long" minOccurs="0"/>
+			<xs:element name="depositInReserversCapitalDeposit" type="xs:long" minOccurs="0"/>
+			<xs:element name="depositInOwnParticipationRights" type="xs:long" minOccurs="0"/>
+			<xs:element name="depositInStatutoryProfitReserves" type="xs:long" minOccurs="0"/>
+			<xs:element name="depositInRevaluationReserves" type="xs:long" minOccurs="0"/>
+			<xs:element name="depositInOwnSharesReserves" type="xs:long" minOccurs="0"/>
+			<xs:element name="depositInVoluntaryProfitReserves" type="xs:long" minOccurs="0"/>
+			<xs:element name="depositInOwnCapitalSharesNegativeValue" type="xs:long" minOccurs="0"/>
+			<xs:element name="depositIntiedCapitalFreeFunds" type="xs:long" minOccurs="0"/>
+			<xs:element name="depositInfreeCapitalReserves" type="xs:long" minOccurs="0"/>
+			<xs:element name="otherProfitAppropriation" type="eCH-0276:freeInputFieldType" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="totalProfitAppropriation" type="xs:long" minOccurs="1"/>
+			<xs:element name="profitOrLossBroughtForward" type="xs:long" minOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="taxableEquityAfterProfitAppropriationType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">taxable equity after profit appropriation (register F on forms)</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="taxableEquity" type="eCH-0276:taxableEquityType" minOccurs="0"/>
+			<xs:element name="taxedHiddenReserves" type="eCH-0276:taxAmountFreeInputFieldType" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="carryingAmountFixedTangibleAssets" type="xs:long" minOccurs="0"/>
+			<xs:element name="taxValueFixedTangibleAssets" type="xs:long" minOccurs="0"/>
+			<xs:element name="differenceCarryingAmountAndTaxValueFixedTangibleAssets" type="xs:long" minOccurs="0"/>
+			<xs:element name="carryingAmountSecurities" type="xs:long" minOccurs="0"/>
+			<xs:element name="taxValueSecurities" type="xs:long" minOccurs="0"/>
+			<xs:element name="differenceCarryingAmountAndTaxValueSecurities" type="xs:long" minOccurs="0"/>
+			<xs:element name="carryingAmountOtherAssets" type="xs:long" minOccurs="0"/>
+			<xs:element name="taxValueOtherAssets" type="xs:long" minOccurs="0"/>
+			<xs:element name="differenceCarryingAmountAndTaxValueOtherAssets" type="xs:long" minOccurs="0"/>
+			<xs:element name="nonInterestBearingShareCertificates" type="xs:long" minOccurs="0"/>
+			<xs:element name="percentage80DeductionFromTaxValueOfPatentsAndComparableRights" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalTaxableEquity" type="eCH-0276:taxAmountType" minOccurs="1"/>
+			<xs:element name="thereofTaxableAbroad" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxableEquityInSwitzerlandFc" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxableEquityInSwitzerlandChf" type="eCH-0276:taxAmountType" minOccurs="1"/>
+			<xs:element name="thereofTaxableInOtherCantons" type="xs:long" minOccurs="0"/>
+			<xs:element name="disclosedHiddenReserves" type="xs:long" minOccurs="0"/>
+			<xs:element name="additionRDExpensesEnteringPatentBox" type="xs:long" minOccurs="0"/>
+			<xs:element name="equityReductionAccordingToSTAF" type="xs:long" minOccurs="0"/>
+			<xs:element name="reductionsNonmaterialPurposesTaxFreeAmount" type="xs:long" minOccurs="0"/>
+			<xs:element name="taxableEquityCantonXyBeforeCantonalReliefs" type="xs:long" minOccurs="0"/>
+			<xs:element name="cantonalReductions" type="xs:long" minOccurs="0"/>
+			<xs:element name="forestryFund" type="xs:long" minOccurs="0"/>
+			<xs:element name="waterSupplyFund" type="xs:long" minOccurs="0"/>
+			<xs:element name="taxableEquityCantonXyAfterCantonalReliefsFc" type="xs:long" minOccurs="0"/>
+			<xs:element name="taxableEquityCantonXyAfterCantonalReliefs" type="xs:long" minOccurs="1"/>
+			<xs:element name="taxableEquityCantonXyAfterCantonalReliefsinPercentOftaxableEquityInSwitzerland" type="eCH-0276:percentageType" minOccurs="0"/>
+			<xs:element name="equityShareTaxPerUnitChf" type="xs:long" minOccurs="0"/>
+			<xs:element name="equityShareFixedTaxChf" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalAssetsAbroad" type="xs:long" minOccurs="0"/>
+			<xs:element name="eligibleAssetsAbroad" type="xs:long" minOccurs="0"/>
+			<xs:element name="taxRelief" type="eCH-0276:percentageType" minOccurs="0"/>
+			<xs:element name="disclosedHiddenReserves" type="xs:long" minOccurs="0"/>
+			<xs:element name="capitalShareSwissSectorBaselMulhouseAirport" type="xs:long" minOccurs="0"/>
+			<xs:element name="taxValuePropertiesAccording114StG" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="taxableEquityType">
+		<xs:sequence>
+			<xs:element name="paidInCapitalOrNetAsset" type="xs:long" minOccurs="1"/>
+			<xs:element name="tiedCapitalFreeFundsTaxLaw" type="xs:long" minOccurs="0"/>
+			<xs:element name="freeCapitalReservesTaxLaw" type="xs:long" minOccurs="0"/>
+			<xs:element name="statutoryCapitalReserves" type="xs:long" minOccurs="0"/>
+			<xs:element name="reservesCapitalDeposit" type="xs:long" minOccurs="0"/>
+			<xs:element name="statutoryProfitReserves" type="xs:long" minOccurs="0"/>
+			<xs:element name="revaluationReserves" type="xs:long" minOccurs="0"/>
+			<xs:element name="voluntaryProfitReserves" type="xs:long" minOccurs="0"/>
+			<xs:element name="correctionForOwnShares" type="xs:long" minOccurs="0"/>
+			<xs:element name="exchangeDifferencesFromFunctionalCurrency" type="xs:long" minOccurs="0"/>
+			<xs:element name="inputField" type="eCH-0276:freeInputFieldType" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="subtotalTaxableEquity" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="variantIncomeAndAssetStatementType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">variant Income- and Asset Statement (register D2 on forms)</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="balanceSheetAssetsStatement" type="eCH-0276:balanceSheetAssetsStatementType" minOccurs="0"/>
+			<xs:element name="recognisedExpensesUnrelatedToIncombeTaxGeneratingActivities" type="eCH-0276:recognisedExpensesUnrelatedToIncombeTaxGeneratingActivitiesType" minOccurs="0"/>
+			<xs:element name="calculationOfTaxableProfit" type="eCH-0276:calculationOfTaxableProfitType" minOccurs="0"/>
+			<xs:element name="taxableEquityFoundation" type="eCH-0276:taxableEquityFoundationType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="balanceSheetAssetsStatementType">
+		<xs:sequence>
+			<xs:element name="equityOrNetAssetsBeginning" type="xs:long" minOccurs="0"/>
+			<xs:element name="equityOrNetAssetsEnd" type="xs:long" minOccurs="0"/>
+			<xs:element name="netChangeInAssets" type="xs:long" minOccurs="0"/>
+			<xs:element name="taxRelevantChangeInAssets" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="recognisedExpensesUnrelatedToIncombeTaxGeneratingActivitiesType">
+		<xs:sequence>
+			<xs:element name="additionsToAssetsFromDonationsGiftsAndBequests" type="xs:long" minOccurs="0"/>
+			<xs:element name="expensesForRecognisedTangibleAssets" type="xs:long" minOccurs="0"/>
+			<xs:element name="otherExpensesUnrelatedToIncombeTaxGeneratingActivities" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalRecognisedExpensesUnrelatedToIncombeTaxGeneratingActivities" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="calculationOfTaxableProfitType">
+		<xs:sequence>
+			<xs:element name="balanceFromMembershipFeesMinusExpenses" type="xs:long" minOccurs="0"/>
+			<xs:element name="carryForwardOfThePositiveBalance" type="xs:long" minOccurs="0"/>
+			<xs:element name="taxableProfitOrLossBeforeOffsettingLosses" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="taxableEquityFoundationType">
+		<xs:sequence>
+			<xs:element name="recognisedCapitalAndNetAssetsAccordingToTheAnnualFinancialStatements" type="xs:long" minOccurs="0"/>
+			<xs:element name="carryForwardOfThePositiveBalance" type="xs:long" minOccurs="0"/>
+			<xs:element name="taxableProfitOrLossBeforeOffsettingLosses" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="additionalInformationForCivicCommunitiesType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">additional Information for civic Communities (register R on forms)</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="segregationOfAssetsServingPublicPurposes" type="eCH-0276:segregationOfAssetsServingPublicPurposesType" minOccurs="0"/>
+			<xs:element name="cantonalTaxCapitalisationRate" type="eCH-0276:cantonalTaxCapitalisationRateType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="segregationOfAssetsServingPublicPurposesType">
+		<xs:sequence>
+			<xs:element name="cashContributions" type="xs:long" minOccurs="0"/>
+			<xs:element name="municipalSchoolOrChurchCommunities" type="xs:long" minOccurs="0"/>
+			<xs:element name="otherSegregationOfAssetsServingPublicPurposes" type="eCH-0276:freeInputFieldType" minOccurs="0"/>
+			<xs:element name="totalSegregationOfAssetsServingPublicPurposes" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="cantonalTaxCapitalisationRateType">
+		<xs:sequence>
+			<xs:element name="totalNetProfitOrLossAndBenefitsInFavourOfPublicPurposes" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalNetProfitOrLossAndBenefitsInFavourOfPublicPurposesDevidedByTaxableEquityCantonXyBeforeCantonalReliefs" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalSegregationOfAssetsServingPublicPurposesTimeshundredDividedByTotalNetProfitOrLossAndBenefitsInFavourOfPublicPurposesDevidedByTaxableEquityCantonXyBeforeCantonalRelief" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="attachmentsType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Attachments (register G on forms)</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="documentIdentification" type="eCH-0276:documentIdentificationType" minOccurs="0"/>
+			<xs:element name="documentTitle" type="eCH-0276:textFieldType" minOccurs="0"/>
+			<xs:element name="documentFormat" type="eCH-0276:textFieldType" minOccurs="0"/>
+			<xs:element name="documentAttachedToNumber" type="eCH-0276:textFieldType" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="remarksType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Remarks (register H on forms)</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="structure" type="eCH-0276:structureType" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="variousQuestions" type="eCH-0276:variousQuestionsType" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="cantonExtension" type="eCH-0276:cantonExtensionType" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="structureType">
+		<xs:sequence>
+			<xs:element name="position" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="remark" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="generalRemarks" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="variousQuestionsType">
+		<xs:sequence>
+			<xs:element name="applicationForTaxationForNonmaterialPurposes" type="xs:boolean" minOccurs="0"/>
+			<xs:element name="applicationForLowerCapitalTaxationDueToLackOfBusinessActivityInSwitzerland" type="xs:boolean" minOccurs="0"/>
+			<xs:element name="minimumTaxCollected" type="xs:boolean" minOccurs="0"/>
+			<xs:element name="minimumTaxAmount" type="xs:long" minOccurs="0"/>
+			<xs:element name="applicationForCreditingForeignWithholdingTaxesForForeignDividendsAndInterest" type="xs:boolean" minOccurs="0"/>
+			<xs:element name="applicationForCreditingForeignWithholdinTaxesForForeignLicenceFees" type="xs:boolean" minOccurs="0"/>
+			<xs:element name="changesToTheEmployerContributionReserves" type="xs:boolean" minOccurs="0"/>
+			<xs:element name="changesToTheEmployerContributionReservesAccumulation" type="xs:long" minOccurs="0"/>
+			<xs:element name="changesToTheEmployerContributionReservesDissolution" type="xs:long" minOccurs="0"/>
+			<xs:element name="taxableProfitCantonalAndMunicipalTaxes" type="xs:long" minOccurs="0"/>
+			<xs:element name="taxableProfitDirectFederalTax" type="xs:long" minOccurs="0"/>
+			<xs:element name="taxableCapitalCantonalAndMunicipalTaxes" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="additionsTradeAndOtherCurrentReceivablesType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Additions trade and other current receivables (register H2 on forms)</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="tradeReceivablesPayableByThirdPartiesSwitzerland" type="xs:long" minOccurs="0" />
+			<xs:element name="valueAdjustmentTradeReceivablesPayableByThirdPartiesSwitzerland" type="xs:long" minOccurs="0" />
+			<xs:element name="tradeReceivablesPayableByThirdPartiesForeignCountries" type="xs:long" minOccurs="0" />
+			<xs:element name="valueAdjustmentTradeReceivablesPayableByThirdPartiesForeignCountries" type="xs:long" minOccurs="0" />
+			<xs:element name="valueAdjustmentTradeReceivablesPayableByParticipations" type="xs:long" minOccurs="0" />
+			<xs:element name="valueAdjustmentTradeReceivablesPayableByParticipationsAndManagingOfficers" type="xs:long" minOccurs="0" />
+			<xs:element name="tradeReceivablesPayableByThirdPartiesSwitzerlandChf" type="xs:long" minOccurs="0" />
+			<xs:element name="valueAdjustmentTradeReceivablesPayableByThirdPartiesSwitzerlandChf" type="xs:long" minOccurs="0" />
+			<xs:element name="tradeReceivablesPayableByThirdPartiesForeignCountriesChf" type="xs:long" minOccurs="0" />
+			<xs:element name="valueAdjustmentTradeReceivablesPayableByThirdPartiesForeignCountryChf" type="xs:long" minOccurs="0" />
+			<xs:element name="tradeReceivablesPayableByThirdPartiesForeignCountriesForeignCurrency" type="xs:long" minOccurs="0" />
+			<xs:element name="valueAdjustmentTradeReceivablesPayableByThirdPartiesForeignCountryForeignCurrency" type="xs:long" minOccurs="0" />
+			<xs:element name="valueAdjustmentsForTradeReceivablesPayableByParticipations" type="xs:long" minOccurs="0" />
+			<xs:element name="valueAdjustmentsForTradeReceivablesPayableByParticipationsAndManagingOfficers" type="xs:long" minOccurs="0" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="conversionOfEquityFromTheFunctionalCurrencyIntoChfType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Conversion of equity from the functional currency into CHF (register H3 on forms)</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="exchangeRate" type="eCH-0276:exchangeRateType" minOccurs="0" />
+			<xs:element name="equityAndLiabilitiesForeignCurrency" type="eCH-0276:equityAndLiabilitiesForeignCurrencyType" minOccurs="0" />
+			<xs:element name="equityAndLiabilitiesCHF" type="eCH-0276:equityAndLiabilitiesChfType" minOccurs="0" />
+			<xs:element name="conversionEquityToCHF" type="eCH-0276:conversionEquityToChfType" minOccurs="0" />
+			<xs:element name="profitBroughtForwardFromPreviousYear" type="eCH-0276:profitBroughtForwardFromPreviousYearType" minOccurs="0" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="exchangeRateType">
+		<xs:sequence>
+			<xs:element name="closingRate" type="eCH-0276:rateDateType" minOccurs="0"/>
+			<xs:element name="averageRate" type="eCH-0276:rateDateType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="equityAndLiabilitiesForeignCurrencyType">
+		<xs:sequence>
+			<xs:element name="totalLiabilities" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="equityHistoricalConversion" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="shareCapital" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="statutoryProfitReserve" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="generalReserves" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="netProfit" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="broughtForwardFromPreviousYear" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="annualProfit" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="totalEquityHistoricalConversion" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="totalEquityAndLiabilitiesForeignCurrency" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="equityAndLiabilitiesChfType">
+		<xs:sequence>
+			<xs:element name="totalLiabilities" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="equityHistoricalConversion" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="shareCapital" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="statutoryProfitReserve" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="generalReserves" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="foreignCurrencyDifferences" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="netProfit" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="broughtForwardFromPreviousYear" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="annualProfit" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="totalEquityHistoricalConversion" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="totalEquityAndLiabilitiesChf" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="conversionEquityToChfType">
+		<xs:sequence>
+			<xs:element name="profitBroughtForwardClosingRateN2" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="profitBroughtForwardClosingRateN1" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="profitBroughtForwardClosingRateN" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="differenceProfitBroughtForward" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="shareCapitalReservesClosingRateN2" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="shareCapitalReservesClosingRateN1" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="shareCapitalReservesClosingRateN" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="differenceShareCapitalReserves" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="annualProfitAverageRate" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="annualProfitClosingRate" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="differenceAnnualProfitAverageRateClosingRate" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="totalDifferences" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="differencePreviousYear" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="totalForeignCurrencyDifferences" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="profitBroughtForwardFromPreviousYearType">
+		<xs:sequence>
+			<xs:element name="broughtForwardFromPreviousYearForeignCurrency" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="annualProfitForeignCurrency" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="dividendsForeignCurrency" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="profitBroughtForwardAfterProfitDistributionForeignCurrency" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="broughtForwardFromPreviousYearChf" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="annualProfitChf" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="dividendsChf103" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="profitBroughtForwardAfterProfitDistributionChf" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="investmentsAndSecuritiesType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Investments and securities (register I on forms)</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="bankBalancesSecuritiesLoansAndOtherInvestments" type="eCH-0276:bankBalancesSecuritiesLoansAndOtherInvestmentsType" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="interestFreeReceivables" type="eCH-0276:interestFreeReceivablesType" minOccurs="0" maxOccurs="unbounded" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="bankBalancesSecuritiesLoansAndOtherInvestmentsType">
+		<xs:sequence>
+			<xs:element name="investmentsAndSecuritiesNumber" type="xs:integer" minOccurs="0"/>
+			<xs:element name="totalNominalValue" type="xs:long" minOccurs="0"/>
+			<xs:element name="interestRate" type="eCH-0276:percentageType" minOccurs="0"/>
+			<xs:element name="descriptionOfInvestment" type="xs:string" minOccurs="0"/>
+			<xs:element name="transferFromSupplementarySheetsBookValueAtBalanceSheetDate" type="xs:long" minOccurs="0"/>
+			<xs:element name="transferFromSupplementarySheetsTaxValueOnTheBalanceSheetDate" type="xs:long" minOccurs="0"/>
+			<xs:element name="transferFromSupplementarySheetsGrossIncomeWithoutAnyDeduction" type="xs:long" minOccurs="0"/>
+			<xs:element name="carryingAmountSecuritiesGrossIncomeWithoutAnyDeduction" type="xs:long" minOccurs="0"/>
+			<xs:element name="marketValue" type="xs:long" minOccurs="0"/>
+			<xs:element name="earningValue" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalMarketValueEarningValue" type="xs:long" minOccurs="0"/>
+			<xs:element name="averageMarketValueEarningValue" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="balanceSheetDateBusinessYearType">
+		<xs:sequence>
+			<xs:element name="bookValueAtBalanceSheetDate" type="xs:long" minOccurs="0"/>
+			<xs:element name="rateAccordingToRateList" type="xs:long" minOccurs="0"/>
+			<xs:element name="taxValueOnTheBalanceSheetDate" type="xs:long" minOccurs="0"/>
+			<xs:element name="grossIncomeWithoutAnyDeduction" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="interestFreeReceivablesType">
+		<xs:sequence>
+			<xs:element name="interestFreeReceivablesNumber" type="xs:integer" minOccurs="0"/>
+			<xs:element name="nominalValue" type="xs:long" minOccurs="0"/>
+			<xs:element name="debtorAddress" type="xs:string" minOccurs="0"/>
+			<xs:element name="interestFreeReceivablesAmount" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="participationsType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Participations (register I on forms)</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="generalParticipations" type="eCH-0276:generalParticipationsType" minOccurs="0" maxOccurs="unbounded" />
+			<xs:element name="netIncomeFromParticipations" type="eCH-0276:netIncomeFromParticipationsType" minOccurs="0" maxOccurs="unbounded" />
+			<xs:element name="primeCosts" type="eCH-0276:primeCostsType" minOccurs="0" maxOccurs="unbounded" />
+			<xs:element name="percentageReductionInEquityTax" type="eCH-0276:percentageReductionInEquityTaxType" minOccurs="0" maxOccurs="unbounded" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="generalParticipationsType">
+		<xs:sequence>
+			<xs:element name="generalParticipationsNumber" type="xs:integer" minOccurs="0"/>
+			<xs:element name="company" type="eCH-0276:companyType" minOccurs="0"/>
+			<xs:element name="participationInformation" type="eCH-0276:participationInformationType" minOccurs="0"/>
+			<xs:element name="profitTaxValue" type="eCH-0276:profitTaxValueType" minOccurs="0"/>
+			<xs:element name="totalProfitTaxValueOfParticipations" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="incomTaxValueOfTotalAssetsAtTheEndOfTheTaxPeriod" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="totalFinancingCostsDuringTheTaxPeriod" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalAdministrativeExpensesDuringTheTaxPeriod" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="companyType">
+		<xs:sequence>
+			<xs:element name="numberOfSecurities" type="xs:integer" minOccurs="0"/>
+			<xs:element name="typeOfSecurityCode" type="eCH-0276:typeOfSecurityCodeType" minOccurs="0"/>
+			<xs:element name="descriptionAndLegalFormOfTheCompany" type="xs:string" minOccurs="0"/>
+			<xs:element name="currencyOfTheInvestment" type="xs:string" minOccurs="0"/>
+			<xs:element name="nominalAmountOfTotalCapitalInDomesticCurrency" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="participationInformationType">
+		<xs:sequence>
+			<xs:element name="nominalAmountOfTheInvestmentDomesticCurrency" type="xs:long" minOccurs="0"/>
+			<xs:element name="participationInPercent" type="eCH-0276:percentageType" minOccurs="0"/>
+			<xs:element name="marketValueOfTheInvestment" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="profitTaxValueType">
+		<xs:sequence>
+			<xs:element name="participationInPercent" type="eCH-0276:percentageType" minOccurs="0"/>
+			<xs:element name="depreciationValueAdjustments" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="amountInTheCurrencyOfTheFinancialStatements" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="profitTaxValueInPercentOfAssets" type="eCH-0276:taxAmountPercentageType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="netIncomeFromParticipationsType">
+		<xs:sequence>
+			<xs:element name="netIncomeFromParticipationsNumber" type="xs:integer" minOccurs="0"/>
+			<xs:element name="grossIncomeFromDistributions" type="xs:long" minOccurs="0"/>
+			<xs:element name="grossIncomeFromCapitalGains" type="xs:long" minOccurs="0"/>
+			<xs:element name="depreciationAndAmortisationInConnectionWithIncome" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="relevantIncome" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="administrativeExpenses" type="xs:long" minOccurs="0"/>
+			<xs:element name="financingExpenses" type="xs:long" minOccurs="0"/>
+			<xs:element name="netIncomeProfit" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="netIncomeLoss" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="totalGrossIncomeFromDistributions" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalGrossIncomeFromCapitalGains" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalDepreciationAndAmortisationInConnectionWithIncome" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="totalRelevantIncome" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="totalAdministrativeExpenses" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalFinancingExpenses" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalNetIncomeProfit" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="totalNetIncomeLoss" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="netIncomeFromParticipations" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="participationExemptionProfitTaxInPercent" type="eCH-0276:taxAmountPercentageType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="primeCostsType">
+		<xs:sequence>
+			<xs:element name="primeCostsNumber" type="xs:integer" minOccurs="0"/>
+			<xs:element name="acquisition" type="eCH-0276:acquisitionType" minOccurs="0"/>
+			<xs:element name="generalPrimeCosts" type="eCH-0276:generalPrimeCostsType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="acquisitionType">
+		<xs:sequence>
+			<xs:element name="dateOfTheFirstAcquisitionOfSharesInTheParticipation" type="xs:date" minOccurs="0"/>
+			<xs:element name="acquisitionDuringTheTaxPeriodPurchasePriceForTheSharesAcquiredInTheTaxPeriod" type="xs:long" minOccurs="0"/>
+			<xs:element name="acquisitionDuringTheTaxPeriodDateOfAcquisition" type="xs:date" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="generalPrimeCostsType">
+		<xs:sequence>
+			<xs:element name="atTheBeginningOfTheTaxPeriod" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="changeIncrease" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="changeDecrease" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="atTheEndOfTheTaxPeriod" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="disposalDuringTaxPeriod" type="xs:boolean" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="percentageReductionInEquityTaxType">
+		<xs:sequence>
+			<xs:element name="totalProfitTaxValuesOfPatents" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalOther" type="xs:long" minOccurs="0"/>
+			<xs:element name="sumOfTheProfitTaxValuesThatAreEntitledForReductionInEquityTax" type="xs:long" minOccurs="0"/>
+			<xs:element name="percentageReductionInEquityTaxNumber" type="xs:integer" minOccurs="0"/>
+			<xs:element name="percentageReductionInEquityTaxCode" type="eCH-0276:percentageReductionInEquityTaxCodeType" minOccurs="0"/>
+			<xs:element name="designationPatentedCantonalSpeciality" type="xs:string" minOccurs="0"/>
+			<xs:element name="profitTaxValueAtTheBeginningOfTheReportingYear" type="xs:long" minOccurs="0"/>
+			<xs:element name="profitTaxValueAdditions" type="xs:long" minOccurs="0"/>
+			<xs:element name="profitTaxValueDisposals" type="xs:long" minOccurs="0"/>
+			<xs:element name="profitTaxValueDepreciation" type="xs:long" minOccurs="0"/>
+			<xs:element name="profitTaxValueAtTheEndOfTheReportingYear" type="xs:long" minOccurs="0"/>
+			<xs:element name="participationExemptionEquityTaxInPercent" type="eCH-0276:percentageType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="loansAndDebtsToRelatedPartiesType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Loans and debts to related parties (register I2 on forms)</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="assetsLoansReceivable" type="eCH-0276:assetsLoansReceivableType" minOccurs="0" maxOccurs="unbounded" />
+			<xs:element name="debtsLoansAndLiabilities" type="eCH-0276:debtsLoansAndLiabilitiesType" minOccurs="0" maxOccurs="unbounded" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="assetsLoansReceivableType">
+		<xs:sequence>
+			<xs:element name="ahvUid" type="xs:string" minOccurs="0"/>
+			<xs:element name="name" type="xs:string" minOccurs="0"/>
+			<xs:element name="municipality" type="xs:string" minOccurs="0"/>
+			<xs:element name="canton" type="xs:string" minOccurs="0"/>
+			<xs:element name="country" type="xs:string" minOccurs="0"/>
+			<xs:element name="typeOfRelatedParty" type="eCH-0276:typeOfRelatedPartyType" minOccurs="0"/>
+			<xs:element name="openingBalance" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="closingBalance" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="interestRate" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="accountedInterest" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="debtWaiverValueAdjustment" type="eCH-0276:taxAmountType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="debtsLoansAndLiabilitiesType">
+		<xs:sequence>
+			<xs:element name="ahvUid" type="xs:string" minOccurs="0"/>
+			<xs:element name="name" type="xs:string" minOccurs="0"/>
+			<xs:element name="municipality" type="xs:string" minOccurs="0"/>
+			<xs:element name="canton" type="xs:string" minOccurs="0"/>
+			<xs:element name="country" type="xs:string" minOccurs="0"/>
+			<xs:element name="typeOfRelatedParty" type="eCH-0276:typeOfRelatedPartyType" minOccurs="0"/>
+			<xs:element name="openingBalance" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="closingBalance" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="interestRate" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="accountedInterest" type="eCH-0276:taxAmountType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="attestationType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Attestation (register J on forms)</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="beneficiary" type="eCH-0276:beneficiaryType" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="performanceFunctionalAndOtherCompensations" type="xs:boolean" minOccurs="0"/>
+			<xs:element name="expenseReimbursements" type="eCH-0276:expenseReimbursementsType" minOccurs="0"/>
+			<xs:element name="privateUseOfCompanyVehiclesAndInfrastructure" type="eCH-0276:privateUseOfCompanyVehiclesAndInfrastructureType" minOccurs="0"/>
+			<xs:element name="paymentsToBeneficiaries" type="xs:boolean" minOccurs="0"/>
+			<xs:element name="textInput" type="eCH-0276:textFieldType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="beneficiaryType">
+		<xs:sequence>
+			<xs:element name="name" type="xs:string" minOccurs="0"/>
+			<xs:element name="firstName" type="xs:string" minOccurs="0"/>
+			<xs:element name="adress" type="xs:string" minOccurs="0"/>
+			<xs:element name="zipCodeTown" type="xs:string" minOccurs="0"/>
+			<xs:element name="canton" type="xs:string" minOccurs="0"/>
+			<xs:element name="ahvNumber" type="xs:string" minOccurs="0"/>
+			<xs:element name="role" type="xs:string" minOccurs="0"/>
+			<xs:element name="shareholdersOrAssociates" type="eCH-0276:shareholdersOrAssociatesType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="shareholdersOrAssociatesType">
+		<xs:sequence>
+			<xs:element name="numberOfSharesUnits" type="xs:integer" minOccurs="0"/>
+			<xs:element name="nominalValuePerShare" type="xs:long" minOccurs="0"/>
+			<xs:element name="currency" type="xs:string" minOccurs="0"/>
+			<xs:element name="sharesInPercentage" type="eCH-0276:percentageType" minOccurs="0"/>
+			<xs:element name="withholdingTaxSettled" type="xs:boolean" minOccurs="0"/>
+			<xs:element name="cantonWithholdingTax" type="xs:string" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="expenseReimbursementsType">
+		<xs:sequence>
+			<xs:element name="expenseReimbursementsPaid" type="xs:boolean" minOccurs="0"/>
+			<xs:element name="expenseReimbursementsAmountOfFixedExpenses" type="xs:long" minOccurs="0"/>
+			<xs:element name="expenseReimbursementsAmountOfActualExpenses" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="privateUseOfCompanyVehiclesAndInfrastructureType">
+		<xs:sequence>
+			<xs:element name="privateUseOfCompanyVehiclesAndInfrastructureQuestion" type="xs:boolean" minOccurs="0"/>
+			<xs:element name="privateUseOfCompanyVehiclesAndInfrastructureDetails" type="xs:string" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="taxLossCarriedForwardType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Tax loss carried forward type (register K on forms)</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="taxLossCarriedForwardPeriodN-1" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxLossCarriedForwardPeriodN-2" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxLossCarriedForwardPeriodN-3" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxLossCarriedForwardPeriodN-4" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxLossCarriedForwardPeriodN-5" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxLossCarriedForwardPeriodN-6" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxLossCarriedForwardPeriodN-7" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="subtotalTaxLossCarriedForward" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="thereofLossesAlreadyOffset" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="totalTaxLossCarriedForward" type="eCH-0276:taxAmountType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="reliefStafType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Relief STAF (register M on forms)</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="calculationOfRelevantProfitBeforeOffsettingLossesAndExcludingNetInvestmentIncome" type="eCH-0276:calculationOfRelevantProfitBeforeOffsettingLossesAndExcludingNetInvestmentIncomeType" minOccurs="0"/>
+			<xs:element name="deductions" type="eCH-0276:deductionsType" minOccurs="0"/>
+			<xs:element name="reliefLimitation" type="xs:long" minOccurs="0"/>
+			<xs:element name="effectiveReliefStaf" type="xs:long" minOccurs="0"/>
+			<xs:element name="boxEntry" type="eCH-0276:boxEntryType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="calculationOfRelevantProfitBeforeOffsettingLossesAndExcludingNetInvestmentIncomeType">
+		<xs:sequence>
+			<xs:element name="compensationForResearchAndDevelopmentOnCostPlusBasis" type="xs:long" minOccurs="0"/>
+			<xs:element name="relevantProfitBeforeOffsettingLosses" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="deductionsType">
+		<xs:sequence>
+			<xs:element name="patentBox" type="xs:long" minOccurs="0"/>
+			<xs:element name="additionalDeductionForResearchAndDevelopment" type="xs:long" minOccurs="0"/>
+			<xs:element name="depreciationStepUp" type="xs:long" minOccurs="0"/>
+			<xs:element name="deductionForSelfFinancing" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalDeductions" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="boxEntryType">
+		<xs:sequence>
+			<xs:element name="boxEntryPlus" type="xs:long" minOccurs="0"/>
+			<xs:element name="boxEntryMinus" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="taxSegregationType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Tax segregation (register L on forms)</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="corporations" type="eCH-0276:corporationsType" minOccurs="0"/>
+			<xs:element name="associationsFoundations" type="eCH-0276:associationsFoundationsType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="corporationsType">
+		<xs:sequence>
+			<xs:element name="taxSegregationTotalDetails" type="eCH-0276:taxSegregationTotalDetailsType" minOccurs="0"/>
+			<xs:element name="taxSegregationMainTaxDomicile" type="eCH-0276:taxSegregationMainTaxDomicileType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="taxSegregationTotalDetailsType">
+		<xs:sequence>
+			<xs:element name="taxSegregationTotalCapital" type="eCH-0276:taxSegregationTotalCapitalType" minOccurs="0"/>
+			<xs:element name="taxSegregationTotalProfit" type="eCH-0276:taxSegregationTotalProfitType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="taxSegregationTotalCapitalType">
+		<xs:sequence>
+			<xs:element name="capitalFactors" type="eCH-0276:capitalFactorsTotalType" minOccurs="0"/>
+			<xs:element name="totalAssets" type="eCH-0276:totalAssetsTotalType" minOccurs="0"/>
+			<xs:element name="taxReduction" type="eCH-0276:taxReductionTotalType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="capitalFactorsTotalType">
+		<xs:sequence>
+			<xs:element name="localisedOperationalAssets" type="eCH-0276:localisedOperationalAssetsTotalType" minOccurs="0"/>
+			<xs:element name="mobileOperatingAssets" type="eCH-0276:mobileOperatingAssetsype" minOccurs="0"/>
+			<xs:element name="assetsNotRequiredForOperations" type="eCH-0276:assetsNotRequiredForOperationsType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="localisedOperationalAssetsTotalType">
+		<xs:sequence>
+			<xs:element name="operationalProperties" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="machineryMovablesVehicles" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="inventories" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="otherLocalisedAssets" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="timeWeightingForInflowsAndOutflowsLocalisedOperationalAssets" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="totalLocalisedOperationalAssets" type="eCH-0276:taxAmountType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="totalAssetsTotalType">
+		<xs:sequence>
+			<xs:element name="totalLocalisedOperationalAssetsMobileOperatingAssetsAssetsNotRequiredForOperations" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxableEquityReductionsCorrections" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxableEquityFc" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxableEquityChf" type="eCH-0276:taxAmountType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="taxReductionTotalType">
+		<xs:sequence>
+			<xs:element name="assetsEligibleForReduction" type="xs:long" minOccurs="0"/>
+			<xs:element name="shareOfCapitalInPercentThatBenefitsFromReduction" type="eCH-0276:percentageType" minOccurs="0"/>
+			<xs:element name="shareOfCapitalThatBenefitsFromReduction" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalTaxableEquityAfterStaf" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="taxSegregationTotalProfitType">
+		<xs:sequence>
+			<xs:element name="earningFactors" type="eCH-0276:earningFactorsTotalType" minOccurs="0"/>
+			<xs:element name="turnoverFactors" type="eCH-0276:turnoverFactorsTotalType" minOccurs="0"/>
+			<xs:element name="otherEliminatoryMethods" type="eCH-0276:otherEliminatoryMethodsTotalType" minOccurs="0"/>
+			<xs:element name="precedingInTheCantonInPercent" type="eCH-0276:taxAmountPercentageType" minOccurs="0"/>
+			<xs:element name="objectBasedSegregationPreallocation" type="eCH-0276:objectBasedSegregationPreallocationTotalType" minOccurs="0"/>
+			<xs:element name="taxableFactors" type="eCH-0276:taxableFactorsTotalType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="earningFactorsTotalType">
+		<xs:sequence>
+			<xs:element name="salariesWages" type="xs:long" minOccurs="0"/>
+			<xs:element name="rents" type="xs:long" minOccurs="0"/>
+			<xs:element name="salariesWagesCapitalised" type="xs:long" minOccurs="0"/>
+			<xs:element name="rentsCapitalised" type="xs:long" minOccurs="0"/>
+			<xs:element name="operationalAssets" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="totalEarningFactors" type="eCH-0276:taxAmountType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="turnoverFactorsTotalType">
+		<xs:sequence>
+			<xs:element name="turnoverFactorsAmount" type="eCH-0276:taxAmountType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="otherEliminatoryMethodsTotalType">
+		<xs:sequence>
+			<xs:element name="otherEliminatoryMethodsAmount" type="eCH-0276:taxAmountFreeInputFieldType" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="objectBasedSegregationPreallocationTotalType">
+		<xs:sequence>
+			<xs:element name="propertyIncome" type="xs:long" minOccurs="0"/>
+			<xs:element name="otherPropertyRelatedGrossIncome" type="xs:long" minOccurs="0"/>
+			<xs:element name="administrativeCosts" type="xs:long" minOccurs="0"/>
+			<xs:element name="maintenanceCostsAndCharges" type="xs:long" minOccurs="0"/>
+			<xs:element name="otherObjectBasedExpenses" type="eCH-0276:freeInputFieldType" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="taxes" type="xs:long" minOccurs="0"/>
+			<xs:element name="depreciationOfProperties" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="overalTotalInterestOnDebt" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalInterestOnDebt" type="xs:long" minOccurs="0"/>
+			<xs:element name="proportionalInterestOnDebt" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="totalObjectBasedExpenses" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="netPropertyIncome" type="xs:long" minOccurs="0"/>
+			<xs:element name="furtherNetPropertyIncome" type="xs:long" minOccurs="0"/>
+			<xs:element name="grossCapitalGains" type="xs:long" minOccurs="0"/>
+			<xs:element name="sellingCosts" type="xs:long" minOccurs="0"/>
+			<xs:element name="taxesFromPropertySales" type="xs:long" minOccurs="0"/>
+			<xs:element name="netCapitalGains" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalPropertyIncome" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="taxableFactorsTotalType">
+		<xs:sequence>
+			<xs:element name="allocationByObject" type="xs:long" minOccurs="0"/>
+			<xs:element name="operatingProfit" type="xs:long" minOccurs="0"/>
+			<xs:element name="allocationPreceding" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="allocationByFactors" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="businessPremisesAccountingProportionateDirectAllocation" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="reliefStaf" type="xs:long" minOccurs="0"/>
+			<xs:element name="outcome" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="lossAllocation1" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="lossAllocation2" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxableIncome" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxableIncometaxableIncomeReductions" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxableIncomeFc" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxableIncomeChf" type="eCH-0276:taxAmountType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="taxSegregationMainTaxDomicileType">
+		<xs:sequence>
+			<xs:element name="taxSegregationMainTaxDomicileDetails" type="eCH-0276:taxSegregationDetailsType" minOccurs="0"/>
+			<xs:element name="taxSegregationSecondaryTaxDomicile" type="eCH-0276:taxSegregationDetailsType" minOccurs="1" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="taxSegregationDetailsType">
+		<xs:sequence>
+			<xs:element name="taxSegregationGeneralInformation" type="eCH-0276:taxSegregationGeneralInformationType" minOccurs="0"/>
+			<xs:element name="taxSegregationCapital" type="eCH-0276:taxSegregationCapitalType" minOccurs="0"/>
+			<xs:element name="taxSegregationProfit" type="eCH-0276:taxSegregationProfitType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="taxSegregationGeneralInformationType">
+		<xs:sequence>
+			<xs:element name="cantonOfBusinessPremises" type="xs:string" minOccurs="0"/>
+			<xs:element name="municipalityOfBusinessPremises" type="xs:string" minOccurs="0"/>
+			<xs:element name="establishmentOfBusinessPremises" type="xs:date" minOccurs="0"/>
+			<xs:element name="suspensionOfBusinessPremises" type="xs:date" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="taxSegregationCapitalType">
+		<xs:sequence>
+			<xs:element name="capitalFactors" type="eCH-0276:capitalFactorsType" minOccurs="0"/>
+			<xs:element name="totalAssets" type="eCH-0276:totalAssetsType" minOccurs="0"/>
+			<xs:element name="taxReduction" type="eCH-0276:taxReductionType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="capitalFactorsType">
+		<xs:sequence>
+			<xs:element name="localisedOperationalAssets" type="eCH-0276:localisedOperationalAssetsType" minOccurs="0"/>
+			<xs:element name="mobileOperatingAssets" type="eCH-0276:mobileOperatingAssetsype" minOccurs="0"/>
+			<xs:element name="assetsNotRequiredForOperations" type="eCH-0276:assetsNotRequiredForOperationsType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="localisedOperationalAssetsType">
+		<xs:sequence>
+			<xs:element name="operationalProperties" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="machineryMovablesVehicles" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="inventories" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="otherLocalisedAssets" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="timeWeightingForInflowsAndOutflowsLocalisedOperationalAssets" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="totalLocalisedOperationalAssets" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="totalLocalisedOperationalAssetsPercentage" type="eCH-0276:percentageType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="mobileOperatingAssetsype">
+		<xs:sequence>
+			<xs:element name="liquidAssets" type="xs:long" minOccurs="0"/>
+			<xs:element name="receivablesSecurities" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="participations" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="intangibleAssets" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="otherMobileAssets" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="timeWeightingForInflowsAndOutflowsMobileOperatingAssets" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="totalMobileOperatingAssets" type="eCH-0276:taxAmountType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="assetsNotRequiredForOperationsType">
+		<xs:sequence>
+			<xs:element name="capitalInvestmentProperties" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="timeWeightingOfInvestmentProperties" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="additionalAssetsNotRequiredForOperations" type="eCH-0276:taxAmountFreeInputFieldType" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="otherAssetsNotRequiredForOperations" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="totalAssetsNotRequiredForOperations" type="eCH-0276:taxAmountType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="totalAssetsType">
+		<xs:sequence>
+			<xs:element name="totalLocalisedOperationalAssetsMobileOperatingAssetsAssetsNotRequiredForOperations" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="totalLocalisedOperationalAssetsMobileOperatingAssetsAssetsNotRequiredForOperationsPercentage" type="eCH-0276:percentageType" minOccurs="0"/>
+			<xs:element name="taxableEquity" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxableEquityReductionsCorrections" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxableEquityFc" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxableEquityChf" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxableEquityPercentage" type="eCH-0276:percentageType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="taxReductionType">
+		<xs:sequence>
+			<xs:element name="assetsEligibleForReduction" type="xs:long" minOccurs="0"/>
+			<xs:element name="shareOfCapitalThatBenefitsFromReduction" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalTaxableEquityAfterStaf" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="taxSegregationProfitType">
+		<xs:sequence>
+			<xs:element name="earningFactors" type="eCH-0276:earningFactorsType" minOccurs="0"/>
+			<xs:element name="turnoverFactors" type="eCH-0276:turnoverFactorsType" minOccurs="0"/>
+			<xs:element name="otherEliminatoryMethods" type="eCH-0276:otherEliminatoryMethodsType" minOccurs="0"/>
+			<xs:element name="precedingInTheCantonInPercent" type="eCH-0276:taxAmountPercentageType" minOccurs="0"/>
+			<xs:element name="objectBasedSegregationPreallocation" type="eCH-0276:objectBasedSegregationPreallocationType" minOccurs="0"/>
+			<xs:element name="taxableFactors" type="eCH-0276:taxableFactorsType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="earningFactorsType">
+		<xs:sequence>
+			<xs:element name="salariesWages" type="xs:long" minOccurs="0"/>
+			<xs:element name="rents" type="xs:long" minOccurs="0"/>
+			<xs:element name="salariesWagesCapitalised" type="xs:long" minOccurs="0"/>
+			<xs:element name="rentsCapitalised" type="xs:long" minOccurs="0"/>
+			<xs:element name="operationalAssets" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="totalEarningFactors" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="totalEarningFactorsPercentage" type="eCH-0276:percentageType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="turnoverFactorsType">
+		<xs:sequence>
+			<xs:element name="turnoverFactorsAmount" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="turnoverFactorsPercentage" type="eCH-0276:percentageType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="otherEliminatoryMethodsType">
+		<xs:sequence>
+			<xs:element name="otherEliminatoryMethodsAmount" type="eCH-0276:taxAmountFreeInputFieldType" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="otherEliminatoryMethodsPercentage" type="eCH-0276:percentageType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="objectBasedSegregationPreallocationType">
+		<xs:sequence>
+			<xs:element name="propertyIncome" type="xs:long" minOccurs="0"/>
+			<xs:element name="otherPropertyRelatedGrossIncome" type="xs:long" minOccurs="0"/>
+			<xs:element name="administrativeCosts" type="xs:long" minOccurs="0"/>
+			<xs:element name="maintenanceCostsAndCharges" type="xs:long" minOccurs="0"/>
+			<xs:element name="otherObjectBasedExpenses" type="eCH-0276:freeInputFieldType" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="taxes" type="xs:long" minOccurs="0"/>
+			<xs:element name="depreciationOfProperties" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="totalInterestOnDebt" type="xs:long" minOccurs="0"/>
+			<xs:element name="proportionalInterestOnDebt" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="totalObjectBasedExpenses" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="netPropertyIncome" type="xs:long" minOccurs="0"/>
+			<xs:element name="furtherNetPropertyIncome" type="xs:long" minOccurs="0"/>
+			<xs:element name="grossCapitalGains" type="xs:long" minOccurs="0"/>
+			<xs:element name="sellingCosts" type="xs:long" minOccurs="0"/>
+			<xs:element name="taxesFromPropertySales" type="xs:long" minOccurs="0"/>
+			<xs:element name="netCapitalGains" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalPropertyIncome" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="taxableFactorsType">
+		<xs:sequence>
+			<xs:element name="allocationByObject" type="xs:long" minOccurs="0"/>
+			<xs:element name="allocationPreceding" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="allocationByFactors" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="businessPremisesAccountingProportionateDirectAllocation" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="reliefStaf" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="outcome" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="lossAllocation1" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="lossAllocation2" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxableIncome" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxableIncomeReductions" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxableIncomeFc" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxableIncomeChf" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxableIncomePercentage" type="eCH-0276:taxAmountPercentageType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="associationsFoundationsType">
+		<xs:sequence>
+			<xs:element name="taxSegregationTotalDetailsAssociationsFoundations" type="eCH-0276:taxSegregationTotalDetailsAssociationsFoundationsType" minOccurs="0"/>
+			<xs:element name="taxSegregationMainTaxDomicileAssociationsFoundations" type="eCH-0276:taxSegregationMainTaxDomicileAssociationsFoundationsType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="taxSegregationTotalDetailsAssociationsFoundationsType">
+		<xs:sequence>
+			<xs:element name="determinationOfPropertyFactors" type="eCH-0276:determinationOfPropertyFactorsType" minOccurs="0"/>
+			<xs:element name="segregationOfCapitalFactorsAssets" type="eCH-0276:segregationOfCapitalFactorsAssetsTotalType" minOccurs="0"/>
+			<xs:element name="assetsWithoutProperties" type="eCH-0276:assetsWithoutPropertiesTotalType" minOccurs="0"/>
+			<xs:element name="segregationProperties" type="eCH-0276:segregationPropertiesType" minOccurs="0"/>
+			<xs:element name="otherIncome" type="eCH-0276:otherIncomeTotalType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="segregationOfCapitalFactorsAssetsTotalType">
+		<xs:sequence>
+			<xs:element name="propertyRepartitionValues" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="assetsWithoutPropertiesTotalType">
+		<xs:sequence>
+			<xs:element name="totalAssetsWithRepartitionValues" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="ratioForDebtInterestDistributionInPercent" type="eCH-0276:taxAmountPercentageType" minOccurs="0"/>
+			<xs:element name="correctionOfRepartitionValues" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="totalAssetsAsPerBalanceSheet" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="ratioForWealthTaxInPercent" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxableEquity1" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxableEquityReductionsCorrections" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxableEquity2" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="assetsWithoutPropertiesShareOfHstdInPercent" type="eCH-0276:taxAmountPercentageType" minOccurs="0"/>
+			<xs:element name="assetsWithoutPropertiesDistributionOfHstdInPercent" type="eCH-0276:taxAmountPercentageType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="otherIncomeTotalType">
+		<xs:sequence>
+			<xs:element name="otherIncomeDetails" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="outcome" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="lossAllocation1" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="lossAllocation2" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxableIncome1" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="reductions" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxableIncome2" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="overallShareOfHstdInPercent" type="eCH-0276:taxAmountPercentageType" minOccurs="0"/>
+			<xs:element name="overallDistributionOfHstdInPercent" type="eCH-0276:taxAmountPercentageType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="taxSegregationMainTaxDomicileAssociationsFoundationsType">
+		<xs:sequence>
+			<xs:element name="taxSegregationMainTaxDomicileDetailsAssociationsFoundations" type="eCH-0276:taxSegregationDetailsAssociationsFoundationsType" minOccurs="0"/>
+			<xs:element name="taxSegregationSecondaryTaxDomicileAssociationsFoundations" type="eCH-0276:taxSegregationDetailsAssociationsFoundationsType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="taxSegregationDetailsAssociationsFoundationsType">
+		<xs:sequence>
+			<xs:element name="taxSegregationGeneralInformation" type="eCH-0276:taxSegregationGeneralInformationType" minOccurs="0"/>
+			<xs:element name="determinationOfPropertyFactors" type="eCH-0276:determinationOfPropertyFactorsType" minOccurs="0"/>
+			<xs:element name="segregationOfCapitalFactorsAssets" type="eCH-0276:segregationOfCapitalFactorsAssetsType" minOccurs="0"/>
+			<xs:element name="assetsWithoutProperties" type="eCH-0276:assetsWithoutPropertiesType" minOccurs="0"/>
+			<xs:element name="segregationProperties" type="eCH-0276:segregationPropertiesType" minOccurs="0"/>
+			<xs:element name="otherIncome" type="eCH-0276:otherIncomeType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="determinationOfPropertyFactorsType">
+		<xs:sequence>
+			<xs:element name="bookValueOfProperties" type="xs:long" minOccurs="0"/>
+			<xs:element name="taxableValueOfProperties" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="differencePropertyFactors" type="eCH-0276:taxAmountType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="segregationOfCapitalFactorsAssetsType">
+		<xs:sequence>
+			<xs:element name="agriculturalLandCantpnalTaxValues" type="xs:long" minOccurs="0"/>
+			<xs:element name="otherPropertiesCantonalTaxValues" type="xs:long" minOccurs="0"/>
+			<xs:element name="repartitionRatesForAgriculturalLandInPercent" type="eCH-0276:percentageType" minOccurs="0"/>
+			<xs:element name="repartitionRatesForOtherPropertiesInPercent" type="eCH-0276:percentageType" minOccurs="0"/>
+			<xs:element name="propertyRepartitionValues" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="assetsWithoutPropertiesType">
+		<xs:sequence>
+			<xs:element name="totalAssetsWithRepartitionValues" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="ratioForDebtInterestDistributionInPercent" type="eCH-0276:taxAmountPercentageType" minOccurs="0"/>
+			<xs:element name="correctionOfRepartitionValues" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="totalAssetsAsPerBalanceSheet" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="ratioForWealthTaxInPercent" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxableEquity1" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxableEquityReductionsCorrections" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxableEquity2" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxableEquityPercentage" type="eCH-0276:percentageType" minOccurs="0"/>
+			<xs:element name="assetsWithoutPropertiesShareOfHstdInPercent" type="eCH-0276:taxAmountPercentageType" minOccurs="0"/>
+			<xs:element name="assetsWithoutPropertiesDistributionOfHstdInPercent" type="eCH-0276:taxAmountPercentageType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="segregationPropertiesType">
+		<xs:sequence>
+			<xs:element name="rentalIncomeImputedRentalValue" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="gainsOnDisposal" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalPropertyIncome" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="proportionalInterestOnDebt" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="administrativeExpenses" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="maintenanceCostsAndCharges" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="depreciationOfProperties" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="otherPropertyExpenses" type="eCH-0276:taxAmountFreeInputFieldType" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="totalPropertyExpenses" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="netPropertyIncome" type="eCH-0276:taxAmountType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="otherIncomeType">
+		<xs:sequence>
+			<xs:element name="otherIncomeDetails" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="outcome" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="lossAllocation1" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="lossAllocation2" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxableIncome1" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxableIncomePercentage" type="eCH-0276:taxAmountPercentageType" minOccurs="0"/>
+			<xs:element name="reductions" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxableIncome2" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="overallShareOfHstdInPercent" type="eCH-0276:taxAmountPercentageType" minOccurs="0"/>
+			<xs:element name="overallDistributionOfHstdInPercent" type="eCH-0276:taxAmountPercentageType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="propertiesType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Properties (register N on forms)</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="masterData" type="eCH-0276:masterDataType" minOccurs="1" maxOccurs="unbounded"/>
+			<xs:element name="changesDuringTheReportingPeriod" type="eCH-0276:changesDuringTheReportingPeriodType" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="propertyIncomeInTheReportingPeriod" type="eCH-0276:propertyIncomeInTheReportingPeriodType" minOccurs="0"/>
+			<xs:element name="utilisationOfThePropertyInTheReportingPeriod" type="eCH-0276:utilisationOfThePropertyInTheReportingPeriodType" minOccurs="0"/>
+			<xs:element name="purposeOfThePropertyInTheReportingPeriod" type="eCH-0276:purposeOfThePropertyInTheReportingPeriodType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="masterDataType">
+		<xs:sequence>
+			<xs:element name="objectNumber" type="xs:integer" minOccurs="0"/>
+			<xs:element name="designation" type="xs:string" minOccurs="0"/>
+			<xs:element name="adress" type="xs:string" minOccurs="0"/>
+			<xs:element name="zipCodeTown" type="xs:string" minOccurs="0"/>
+			<xs:element name="municipality" type="xs:string" minOccurs="0"/>
+			<xs:element name="municipalityId" type="eCH-0007:municipalityIdType" minOccurs="0"/>
+			<xs:element name="egrid" type="eCH-0129:EGRIDType" minOccurs="0"/>
+			<xs:element name="canton" type="xs:string" minOccurs="0"/>
+			<xs:element name="objectType" type="eCH-0276:objectTypeType" minOccurs="0"/>
+			<xs:element name="operatingPropertyOrInvestmentProperty" type="eCH-0276:operatingPropertyOrInvestmentPropertyType" minOccurs="0"/>
+			<xs:element name="buildingInsuranceNumber" type="xs:string" minOccurs="0"/>
+			<xs:element name="insuredValue" type="xs:long" minOccurs="0"/>
+			<xs:element name="landRegisterNumber" type="xs:string" minOccurs="0"/>
+			<xs:element name="yearOfConstruction" type="xs:integer" minOccurs="1"/>
+			<xs:element name="marketValue" type="xs:long" minOccurs="0"/>
+			<xs:element name="officialTaxValue" type="xs:long" minOccurs="0"/>
+			<xs:element name="accumulatedDepreciation" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="bookValue" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="minimumTaxRelevant" type="xs:boolean" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="changesDuringTheReportingPeriodType">
+		<xs:sequence>
+			<xs:element name="objectNumber" type="xs:integer" minOccurs="0"/>
+			<xs:element name="purchase" type="xs:long" minOccurs="0"/>
+			<xs:element name="sale" type="xs:long" minOccurs="0"/>
+			<xs:element name="depreciation" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="revaluation" type="eCH-0276:taxAmountType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="propertyIncomeInTheReportingPeriodType">
+		<xs:sequence>
+			<xs:element name="objectNumber" type="xs:integer" minOccurs="0"/>
+			<xs:element name="thirdPartyRentalIncome" type="xs:long" minOccurs="0"/>
+			<xs:element name="ownRentalValue" type="xs:long" minOccurs="0"/>
+			<xs:element name="rentalValueOfOwnBusiness" type="xs:long" minOccurs="0"/>
+			<xs:element name="paidBuildingLeaseInterest" type="xs:long" minOccurs="0"/>
+			<xs:element name="ownRentRecorded" type="xs:boolean" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="utilisationOfThePropertyInTheReportingPeriodType">
+		<xs:sequence>
+			<xs:element name="objectNumber" type="xs:integer" minOccurs="0"/>
+			<xs:element name="from66.6to100" type="xs:boolean" minOccurs="0"/>
+			<xs:element name="from33.3to66.6" type="xs:boolean" minOccurs="0"/>
+			<xs:element name="from0to33" type="xs:boolean" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="purposeOfThePropertyInTheReportingPeriodType">
+		<xs:sequence>
+			<xs:element name="objectNumber" type="xs:integer" minOccurs="0"/>
+			<xs:element name="publicCharitableReligiousPurposesAndTaxExempt" type="xs:boolean" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="shareholdersAssociatesType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Shareholders and Associates (register O on forms)</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="detailsShareholdersAssociates" type="eCH-0276:detailsShareholdersAssociatesType" minOccurs="0"/>
+			<xs:element name="totalShareholdersAssociates" type="eCH-0276:totalShareholdersAssociatesType" minOccurs="0"/>
+			<xs:element name="changeOfShareholdersAssociates" type="xs:boolean" minOccurs="0"/>
+			<xs:element name="changeOfMajoritiesOfShares" type="xs:boolean" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="detailsShareholdersAssociatesType">
+		<xs:sequence>
+			<xs:element name="name" type="xs:string" minOccurs="0"/>
+			<xs:element name="givenName" type="xs:string" minOccurs="0"/>
+			<xs:element name="adress" type="xs:string" minOccurs="0"/>
+			<xs:element name="zipCodeTown" type="xs:string" minOccurs="0"/>
+			<xs:element name="canton" type="xs:string" minOccurs="0"/>
+			<xs:element name="ahvUid" type="xs:string" minOccurs="0"/>
+			<xs:element name="amount" type="xs:integer" minOccurs="0"/>
+			<xs:element name="nominal" type="xs:long" minOccurs="0"/>
+			<xs:element name="percentage" type="eCH-0276:percentageType" minOccurs="0"/>
+			<xs:element name="shareholdersAssociatesWithParticipationOfLessThan10Percent" type="eCH-0276:shareholdersAssociatesWithParticipationOfLessThan10PercentType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="shareholdersAssociatesWithParticipationOfLessThan10PercentType">
+		<xs:sequence>
+			<xs:element name="shareholdersAssociatesWithParticipationOfLessThan10PercentAmount" type="xs:integer" minOccurs="0"/>
+			<xs:element name="shareholdersAssociatesWithParticipationOfLessThan10PercentNominal" type="xs:long" minOccurs="0"/>
+			<xs:element name="shareholdersAssociatesWithParticipationOfLessThan10PercentPercentage" type="eCH-0276:percentageType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="totalShareholdersAssociatesType">
+		<xs:sequence>
+			<xs:element name="totalShareholdersAssociatesAmount" type="xs:integer" minOccurs="0"/>
+			<xs:element name="totalShareholdersAssociatesNominal" type="xs:long" minOccurs="0"/>
+			<xs:element name="totalShareholdersAssociatesPercentage" type="eCH-0276:percentageType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="hiddenEquityAndInterestType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Hidden equity amd interest (register P on forms)</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="calculationOfPermittedExternalFinancing" type="eCH-0276:calculationOfPermittedExternalFinancingType" minOccurs="0"/>
+			<xs:element name="calculationHiddenEquity" type="eCH-0276:calculationHiddenEquityType" minOccurs="0"/>
+			<xs:element name="calculationInterestOnHiddenEquity" type="eCH-0276:calculationInterestOnHiddenEquityType" minOccurs="0"/>
+			<xs:element name="maximumInterestRatesPermittedAccordingToTheFtaCircular" type="eCH-0276:maximumInterestRatesPermittedAccordingToTheFtaCircularType" minOccurs="0"/>
+			<xs:element name="interestOnHiddenEquity" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="calculationOfPermittedExternalFinancingType">
+		<xs:sequence>
+			<xs:element name="calculationCashAndCashEquivalents" type="eCH-0276:calculationOfPermittedExternalFinancingDetailsType" minOccurs="0"/>
+			<xs:element name="calculationDebtors" type="eCH-0276:calculationOfPermittedExternalFinancingDetailsType" minOccurs="0"/>
+			<xs:element name="calculationOtherReceivables" type="eCH-0276:calculationOfPermittedExternalFinancingDetailsType" minOccurs="0"/>
+			<xs:element name="calculationLoans" type="eCH-0276:calculationOfPermittedExternalFinancingDetailsType" minOccurs="0"/>
+			<xs:element name="calculationInventoriesValueAdjustments" type="eCH-0276:calculationOfPermittedExternalFinancingDetailsType" minOccurs="0"/>
+			<xs:element name="calculationWorkInProgressPrepayments" type="eCH-0276:calculationOfPermittedExternalFinancingDetailsType" minOccurs="0"/>
+			<xs:element name="calculationOtherCurrentAssets" type="eCH-0276:calculationOfPermittedExternalFinancingDetailsType" minOccurs="0"/>
+			<xs:element name="calculationObligationsChf" type="eCH-0276:calculationOfPermittedExternalFinancingDetailsType" minOccurs="0"/>
+			<xs:element name="calculationObligationsForeignCurrency" type="eCH-0276:calculationOfPermittedExternalFinancingDetailsType" minOccurs="0"/>
+			<xs:element name="calculationListedShares" type="eCH-0276:calculationOfPermittedExternalFinancingDetailsType" minOccurs="0"/>
+			<xs:element name="calculationOtherSharesAndLimitedCompanyShares" type="eCH-0276:calculationOfPermittedExternalFinancingDetailsType" minOccurs="0"/>
+			<xs:element name="calculationParticipations" type="eCH-0276:calculationOfPermittedExternalFinancingDetailsType" minOccurs="0"/>
+			<xs:element name="calculationFactoryProperties" type="eCH-0276:calculationOfPermittedExternalFinancingDetailsType" minOccurs="0"/>
+			<xs:element name="calculationVillasCondominiumsHolidayHomesBuildingLand" type="eCH-0276:calculationOfPermittedExternalFinancingDetailsType" minOccurs="0"/>
+			<xs:element name="calculationOtherProperties" type="eCH-0276:calculationOfPermittedExternalFinancingDetailsType" minOccurs="0"/>
+			<xs:element name="calculationOperatingFacilities" type="eCH-0276:calculationOfPermittedExternalFinancingDetailsType" minOccurs="0"/>
+			<xs:element name="calculationIntangibleAssets" type="eCH-0276:calculationOfPermittedExternalFinancingDetailsType" minOccurs="0"/>
+			<xs:element name="calculationFormationCapitalIncreaseOrganisationalCosts" type="eCH-0276:calculationOfPermittedExternalFinancingDetailsType" minOccurs="0"/>
+			<xs:element name="calculationBalanceSheetTotal" type="eCH-0276:calculationBalanceSheetTotalType" minOccurs="0"/>
+			<xs:element name="totalMarketValues" type="eCH-0276:calculationOfPermittedExternalFinancingDetailsType" minOccurs="0"/>
+			<xs:element name="totalPermittedExternalFinancing" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="calculationOfPermittedExternalFinancingDetailsType">
+		<xs:sequence>
+			<xs:element name="profitTaxOrMarketValuesBegining" type="xs:long" minOccurs="0"/>
+			<xs:element name="profitTaxOrMarketValuesEnd" type="xs:long" minOccurs="0"/>
+			<xs:element name="calculatedAverageValue" type="xs:long" minOccurs="0"/>
+			<xs:element name="correctedAverageValue" type="xs:long" minOccurs="0"/>
+			<xs:element name="permittedExternalFinancing" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="calculationBalanceSheetTotalType">
+		<xs:sequence>
+			<xs:element name="overallPercentage" type="eCH-0276:percentageType" minOccurs="0"/>
+			<xs:element name="profitTaxOrMarketValuesBegining" type="eCH-0276:percentageType" minOccurs="0"/>
+			<xs:element name="profitTaxOrMarketValuesEnd" type="eCH-0276:percentageType" minOccurs="0"/>
+			<xs:element name="calculatedAverageValue" type="eCH-0276:percentageType" minOccurs="0"/>
+			<xs:element name="correctedAverageValue" type="eCH-0276:percentageType" minOccurs="0"/>
+			<xs:element name="permittedExternalFinancing" type="eCH-0276:percentageType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="calculationHiddenEquityType">
+		<xs:sequence>
+			<xs:element name="permittedExternalFinancing" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="commercialLiabilities" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="excessiveExternalFinancing" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="liabilitiesFromParticipations" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="equalisationOfNegativeNetReserves" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+			<xs:element name="hiddenEquity" type="eCH-0276:amountCurrentPreviousPeriodType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="calculationInterestOnHiddenEquityType">
+		<xs:sequence>
+			<xs:element name="recordedInterestOnLiabilitiesFromRelatedParties" type="xs:long" minOccurs="0"/>
+			<xs:element name="permittedInterestOnLiabilitiesFromRelatedParties" type="xs:long" minOccurs="0"/>
+			<xs:element name="avarageLiabilitiesFromRelatedParties" type="xs:long" minOccurs="0"/>
+			<xs:element name="avarageHiddenEquity" type="xs:long" minOccurs="0"/>
+			<xs:element name="averageInterestBearingDebtCapitalFromRelatedParties" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="maximumInterestRatesPermittedAccordingToTheFtaCircularType">
+		<xs:sequence>
+			<xs:element name="operatingCompany" type="xs:boolean" minOccurs="0"/>
+			<xs:element name="holdingAssetManagementCompanies" type="xs:boolean" minOccurs="0"/>
+			<xs:element name="residentialBuildings" type="xs:boolean" minOccurs="0"/>
+			<xs:element name="industrialCommercialBuildings" type="xs:boolean" minOccurs="0"/>
+			<xs:element name="operatingLoansTradeManufacturingUpTo1Mio" type="eCH-0276:percentageType" minOccurs="0"/>
+			<xs:element name="operatingLoansTradeManufacturingAbove1Mio" type="eCH-0276:percentageType" minOccurs="0"/>
+			<xs:element name="holdingAssetManagementCompaniesUpTo1Mio" type="eCH-0276:percentageType" minOccurs="0"/>
+			<xs:element name="holdingAssetManagementCompaniesAbove1Mio" type="eCH-0276:percentageType" minOccurs="0"/>
+			<xs:element name="residentialBuildingsUpToTwoThirdsFromTheMarketValue" type="eCH-0276:percentageType" minOccurs="0"/>
+			<xs:element name="residentialBuildingsUpTo80PercentFromTheMarketValue" type="eCH-0276:percentageType" minOccurs="0"/>
+			<xs:element name="industrialCommercialBuildingsUpToTwoThirdsFromTheMarketValue" type="eCH-0276:percentageType" minOccurs="0"/>
+			<xs:element name="industrialCommercialBuildingsUpTo80PercentFromTheMarketValue" type="eCH-0276:percentageType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="depreciationType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Depreciation (register Q on forms)</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="depreciationMachinery" type="eCH-0276:depreciationDetailType" minOccurs="0"/>
+			<xs:element name="depreciationFurniture" type="eCH-0276:depreciationDetailType" minOccurs="0"/>
+			<xs:element name="depreciationOfficeEquipmentItAndCommunicationTechnology" type="eCH-0276:depreciationDetailType" minOccurs="0"/>
+			<xs:element name="depreciationVehicles" type="eCH-0276:depreciationDetailType" minOccurs="0"/>
+			<xs:element name="depreciationToolsAndEquipement" type="eCH-0276:depreciationDetailType" minOccurs="0"/>
+			<xs:element name="depreciationOtherMobileTangibleAssets" type="eCH-0276:depreciationDetailType" minOccurs="0"/>
+			<xs:element name="depreciationFixedTangibleAssets" type="eCH-0276:depreciationDetailType" minOccurs="0"/>
+			<xs:element name="depreciationLicencesPatents" type="eCH-0276:depreciationDetailType" minOccurs="0"/>
+			<xs:element name="depreciationGoodwill" type="eCH-0276:depreciationDetailGoodwillType" minOccurs="0"/>
+			<xs:element name="depreciationOtherIntangibleAssets" type="eCH-0276:depreciationDetailType" minOccurs="0"/>
+			<xs:element name="depreciationTotal" type="eCH-0276:depreciationDetailType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="depreciationDetailType">
+		<xs:sequence>
+			<xs:element name="permittedDepreciationRate" type="eCH-0276:taxAmountPercentageType" minOccurs="0"/>
+			<xs:element name="statusAtTheBeginningOfTheBusinessYear" type="xs:long" minOccurs="0"/>
+			<xs:element name="additions" type="xs:long" minOccurs="0"/>
+			<xs:element name="oneTimeDepreciation" type="xs:long" minOccurs="0"/>
+			<xs:element name="disposals" type="xs:long" minOccurs="0"/>
+			<xs:element name="revaluationUpToMaxAcquisitionCost" type="xs:long" minOccurs="0"/>
+			<xs:element name="carryingAmountBeforeDepreciation" type="xs:long" minOccurs="0"/>
+			<xs:element name="permittedDepreciation" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="accountedDepreciationOrderly" type="xs:long" minOccurs="0"/>
+			<xs:element name="accountedDepreciationImmediately" type="xs:long" minOccurs="0"/>
+			<xs:element name="valueAtTheEndOfTheBusinessYear" type="xs:long" minOccurs="0"/>
+			<xs:element name="overDepreciation" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="equalisationAmountPercent" type="eCH-0276:percentageType" minOccurs="0"/>
+			<xs:element name="taxAdjustmentsIncreasingTaxableResultOneOffSettlementProcedure" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxValueBeginningFinancialYear" type="xs:long" minOccurs="0"/>
+			<xs:element name="changeInTaxedHiddenReserves" type="xs:long" minOccurs="0"/>
+			<xs:element name="taxValueEndFinancialYear" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="depreciationDetailGoodwillType">
+		<xs:sequence>
+			<xs:element name="permittedDepreciationRate" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="statusAtTheBeginningOfTheBusinessYear" type="xs:long" minOccurs="0"/>
+			<xs:element name="additions" type="xs:long" minOccurs="0"/>
+			<xs:element name="disposals" type="xs:long" minOccurs="0"/>
+			<xs:element name="revaluationUpToMaxAcquisitionCost" type="xs:long" minOccurs="0"/>
+			<xs:element name="carryingAmountBeforeDepreciation" type="xs:long" minOccurs="0"/>
+			<xs:element name="permittedDepreciation" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="accountedDepreciationOrderly" type="xs:long" minOccurs="0"/>
+			<xs:element name="valueAtTheEndOfTheBusinessYear" type="xs:long" minOccurs="0"/>
+			<xs:element name="overDepreciation" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="equalisationAmountPercent" type="eCH-0276:percentageType" minOccurs="0"/>
+			<xs:element name="taxAdjustmentsIncreasingTaxableResultOneOffSettlementProcedure" type="eCH-0276:taxAmountType" minOccurs="0"/>
+			<xs:element name="taxValueBeginningFinancialYear" type="xs:long" minOccurs="0"/>
+			<xs:element name="changeInTaxedHiddenReserves" type="xs:long" minOccurs="0"/>
+			<xs:element name="taxValueEndFinancialYear" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- free input field -->
+	<xs:complexType name="freeInputFieldType">
+		<xs:sequence>
+			<xs:element name="description" type="eCH-0276:textFieldType" minOccurs="0"/>
+			<xs:element name="amount" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- tax amount type -->
+	<xs:complexType name="taxAmountType">
+		<xs:sequence>
+			<xs:element name="cantonalTax" type="xs:long" minOccurs="0"/>
+			<xs:element name="federalTax" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- tax amount percentage type -->
+	<xs:complexType name="taxAmountPercentageType">
+		<xs:sequence>
+			<xs:element name="cantonalTax" type="eCH-0276:percentageType" minOccurs="0"/>
+			<xs:element name="federalTax" type="eCH-0276:percentageType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- tax amount and free input field type -->
+	<xs:complexType name="taxAmountFreeInputFieldType">
+		<xs:sequence>
+			<xs:element name="description" type="eCH-0276:textFieldType" minOccurs="0"/>
+			<xs:element name="cantonalTax" type="xs:long" minOccurs="0"/>
+			<xs:element name="federalTax" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- exchange rate on different dates -->
+	<xs:complexType name="rateDateType">
+		<xs:sequence>
+			<xs:element name="rateEndOfCurrentPeriod" type="xs:long" minOccurs="0"/>
+			<xs:element name="rateEndOfPreviousPeriod" type="xs:long" minOccurs="0"/>
+			<xs:element name="rateEndOfPeriodBeforePreviousPeriod" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Amount for current and previous period -->
+	<xs:complexType name="amountCurrentPreviousPeriodType">
+		<xs:sequence>
+			<xs:element name="amountEndOfCurrentPeriod" type="xs:long" minOccurs="0"/>
+			<xs:element name="amountEndOfPreviousPeriod" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Extensions for cantons -->
+	<xs:complexType name="cantonExtensionType">
+		<xs:sequence>
+			<xs:any namespace="##other" processContents="strict"/>
+			<xs:element name="canton" type="eCH-0007:cantonFlAbbreviationType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- header definition -->
+	<xs:complexType name="headerType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">complex type for content of the title page</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="title" type="eCH-0276:titleType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="titleType">
+		<xs:sequence>
+			<xs:element name="identifier" type="xs:string" minOccurs="0"/>
+			<xs:element name="sourceSystem" type="xs:string" minOccurs="0"/>
+			<xs:element name="versionSourceSystem" type="xs:string" minOccurs="0"/>
+			<xs:element name="transactionNumber" type="xs:string" minOccurs="0"/>
+			<xs:element name="organisationName" type="eCH-0108:unitNameType" minOccurs="1"/>
+			<xs:element name="registerNumber" type="xs:long" minOccurs="1"/>
+			<xs:element name="cantonalRegisterNumber" type="xs:long" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="uid" type="eCH-0108:uidType" minOccurs="0"/>
+			<xs:element name="assessmentMunicipality" type="eCH-0007:municipalityNameType" minOccurs="1"/>
+			<xs:element name="assessmentMunicipalityId" type="eCH-0007:municipalityIdType" minOccurs="0"/>
+			<xs:element name="headOffice" type="eCH-0276:headOfficeType" minOccurs="1"/>
+			<xs:element name="placeOfActualAdministration" type="eCH-0276:placeOfActualAdministrationType" minOccurs="0"/>
+			<xs:element name="secondaryTaxDomicile" type="eCH-0276:secondaryTaxDomicileType" minOccurs="0"  maxOccurs="unbounded"/>
+			<xs:element name="taxPeriodFrom" type="xs:date" minOccurs="1"/>
+			<xs:element name="taxPeriodTo" type="xs:date" minOccurs="1"/>
+			<xs:element name="businessConcludedInFoundingYear" type="xs:boolean" minOccurs="0"/>
+			<xs:element name="currencyShareEquity" type="eCH-0276:currencyShareEquityType" minOccurs="1"/>
+			<xs:element name="currencyFinancialReporting" type="eCH-0276:currencyFinancialReportingType" minOccurs="1"/>
+			<xs:element name="averageRateForProfitConversion" type="xs:long" minOccurs="0"/>
+			<xs:element name="closingRateForCapitalConversion" type="xs:long" minOccurs="0"/>
+			<xs:element name="chairmanOfTheBoardOfDirectors" type="xs:string" minOccurs="0"/>
+			<xs:element name="management" type="xs:string" minOccurs="0"/>
+			<xs:element name="responsibleForAccounting" type="xs:string" minOccurs="0"/>
+			<xs:element name="contactForInquiries" type="eCH-0276:contactForInquiriesType" minOccurs="0"/>
+			<xs:element name="bankDetailsForRefund" type="eCH-0276:bankDetailsForRefundType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="headOfficeType">
+		<xs:sequence>
+			<xs:element name="additionalInformation1HeadOffice" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="streetHeadOffice" type="eCH-0010:streetType" minOccurs="1"/>
+			<xs:element name="houseNumberHeadOffice" type="eCH-0010:houseNumberType" minOccurs="1"/>
+			<xs:element name="additionalInformation2HeadOffice" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="zipCodeHeadOffice" type="eCH-0010:swissZipCodeType" minOccurs="1"/>
+			<xs:element name="townHeadOffice" type="eCH-0010:townType" minOccurs="1"/>
+			<xs:element name="headOfficeMunicipalityId" type="eCH-0007:municipalityIdType" minOccurs="1"/>
+			<xs:element name="headOfficeCanton" type="eCH-0007:cantonAbbreviationType" minOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="placeOfActualAdministrationType">
+		<xs:sequence>
+			<xs:element name="additionalInformation1PlaceOfActualAdministration" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="streetPlaceOfActualAdministration" type="eCH-0010:streetType" minOccurs="0"/>
+			<xs:element name="houseNumberPlaceOfActualAdministration" type="eCH-0010:houseNumberType" minOccurs="0"/>
+			<xs:element name="additionalInformation2PlaceOfActualAdministration" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="zipCodePlaceOfActualAdministration" type="eCH-0010:swissZipCodeType" minOccurs="0"/>
+			<xs:element name="townPlaceOfActualAdministration" type="eCH-0010:townType" minOccurs="0"/>
+			<xs:element name="placeOfActualAdministrationMunicipalityId" type="eCH-0007:municipalityIdType" minOccurs="0"/>
+			<xs:element name="placeOfActualAdministrationCanton" type="eCH-0007:cantonAbbreviationType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="secondaryTaxDomicileType">
+		<xs:sequence>
+			<xs:element name="countrySecondaryTaxDomicile" type="eCH-0010:countryType" minOccurs="0"/>
+			<xs:element name="cantonSecondaryTaxDomicile" type="eCH-0007:cantonAbbreviationType" minOccurs="0"/>
+			<xs:element name="townSecondaryTaxDomicile" type="eCH-0010:townType" minOccurs="0"/>
+			<xs:element name="streetSecondaryTaxDomicile" type="eCH-0010:streetType" minOccurs="0"/>
+			<xs:element name="houseNumberSecondaryTaxDomicile" type="eCH-0010:houseNumberType" minOccurs="0"/>
+			<xs:element name="secondaryTaxDomicileMunicipalityId" type="eCH-0007:municipalityIdType" minOccurs="0"/>
+			<xs:element name="typeOfPropertySecondaryTaxDomicile" type="xs:string" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="contactForInquiriesType">
+		<xs:sequence>
+			<xs:element name="nameOfContact" type="xs:string" minOccurs="0"/>
+			<xs:element name="phoneNumberOfContact" type="eCH-0046:phoneType" minOccurs="0"/>
+			<xs:element name="emailAdressOfContact" type="eCH-0046:emailType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="bankDetailsForRefundType">
+		<xs:sequence>
+			<xs:element name="iban" type="eCH-0276:ibanType" minOccurs="0"/>
+			<xs:element name="beneficiary" type="xs:string" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- content definition -->
+	<xs:complexType name="contentType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">complex type for content of e balance sheet and tax declaration for legal entities</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="assets" type="eCH-0276:assetsType" minOccurs="0"/>
+			<xs:element name="equityAndLiabilities" type="eCH-0276:equityAndLiabilitiesType" minOccurs="0"/>
+			<xs:element name="incomeStatement" type="eCH-0276:incomeStatementType" minOccurs="1"/>
+			<xs:element name="fiscalCorrections" type="eCH-0276:fiscalCorrectionsType" minOccurs="0"/>
+			<xs:element name="profitAppropriation" type="eCH-0276:profitAppropriationType" minOccurs="1"/>
+			<xs:element name="taxableEquityAfterProfitAppropriation" type="eCH-0276:taxableEquityAfterProfitAppropriationType" minOccurs="0"/>
+			<xs:element name="variantIncomeAndAssetStatement" type="eCH-0276:variantIncomeAndAssetStatementType" minOccurs="0"/>
+			<xs:element name="additionalInformationForCivicCommunities" type="eCH-0276:additionalInformationForCivicCommunitiesType" minOccurs="0"/>
+			<xs:element name="attachments" type="eCH-0276:attachmentsType" minOccurs="0"/>
+			<xs:element name="remarks" type="eCH-0276:remarksType" minOccurs="0"/>
+			<xs:element name="additionsTradeAndOtherCurrentReceivables" type="eCH-0276:additionsTradeAndOtherCurrentReceivablesType" minOccurs="0"/>
+			<xs:element name="conversionOfEquityFromTheFunctionalCurrencyIntoChf" type="eCH-0276:conversionOfEquityFromTheFunctionalCurrencyIntoChfType" minOccurs="0"/>
+			<xs:element name="investmentsAndSecurities" type="eCH-0276:investmentsAndSecuritiesType" minOccurs="0"/>
+			<xs:element name="participations" type="eCH-0276:participationsType" minOccurs="0"/>
+			<xs:element name="loansAndDebtsToRelatedParties" type="eCH-0276:loansAndDebtsToRelatedPartiesType" minOccurs="0"/>
+			<xs:element name="attestation" type="eCH-0276:attestationType" minOccurs="0"/>
+			<xs:element name="taxLossCarriedForward" type="eCH-0276:taxLossCarriedForwardType" minOccurs="0"/>
+			<xs:element name="reliefStaf" type="eCH-0276:reliefStafType" minOccurs="0"/>
+			<xs:element name="taxSegregation" type="eCH-0276:taxSegregationType" minOccurs="0"/>
+			<xs:element name="properties" type="eCH-0276:propertiesType" minOccurs="0"/>
+			<xs:element name="shareholdersAssociates" type="eCH-0276:shareholdersAssociatesType" minOccurs="0"/>
+			<xs:element name="hiddenEquityAndInterest" type="eCH-0276:hiddenEquityAndInterestType" minOccurs="0"/>
+			<xs:element name="depreciation" type="eCH-0276:depreciationType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- element definition -->
+	<xs:element name="eBalanceSheetETaxLegalEntity">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">root element for the ebalance sheet and tax declaration of a legal entity</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="header" type="eCH-0276:headerType"/>
+				<xs:element name="content" type="eCH-0276:contentType"/>
+			</xs:sequence>
+			<xs:attribute name="minorVersion" type="xs:integer" use="required"/>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

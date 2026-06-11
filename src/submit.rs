@@ -14,17 +14,54 @@
 //! die Software-/Barcode-Einreichung.
 
 use crate::model::Message;
+use crate::model_jp;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-/// Schreibt das Einreichungs-Paket nach `data/submission/` und gibt den Pfad zurück.
-pub fn write_package(xml: &str, message: &Message) -> Result<PathBuf, String> {
-    let dir = Path::new("data").join("submission");
+/// Schreibt ein Einreichungs-Paket (XML + MANIFEST) nach `data/<subdir>/`.
+fn write_bundle(subdir: &str, xml_name: &str, xml: &str, manifest: &str) -> Result<PathBuf, String> {
+    let dir = Path::new("data").join(subdir);
     fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+    fs::write(dir.join(xml_name), xml).map_err(|e| e.to_string())?;
+    fs::write(dir.join("MANIFEST.txt"), manifest).map_err(|e| e.to_string())?;
+    Ok(dir)
+}
 
-    let xml_path = dir.join("eCH-0119.xml");
-    fs::write(&xml_path, xml).map_err(|e| e.to_string())?;
+/// Einreichungs-Paket juristische Person nach eCH-0276 (`data/submission-jp/`).
+pub fn write_package_jp(xml: &str, message: &model_jp::Message) -> Result<PathBuf, String> {
+    let t = &message.header.title;
+    let manifest = format!(
+        "taxtsueri – Einreichungs-Paket juristische Person (eCH-0276)\n\
+         ============================================================\n\
+         Steuerperiode : {} bis {}\n\
+         Gemeinde      : {} (BFS {})\n\
+         Firma         : {} (Reg.-Nr. {})\n\
+         eCH-0276-XML  : eCH-0276.xml ({} Bytes)\n\
+         SHA-256       : {}\n\
+         \n\
+         Format: eCH-0276 «E-Bilanz und E-Tax JP» V1.0.0 (offizieller eCH/SSK-\n\
+         Standard) – gegen schema/eCH-0276-1-0.xsd validiert.\n\
+         \n\
+         Einreichung (Kanton Zürich, juristische Personen, Stand 2025):\n\
+         - ZHCorporateTax (Online-Portal, seit 08/2025): digital, ohne\n\
+           Unterschrift; Anmeldung mit Zugangscode aus dem Steueramt-Brief.\n\
+           Import erfolgt aktuell über das proprietäre cTax/RIAG-ZIP.\n\
+         - Mit Steuersoftware: StA-500-Barcode-Blatt drucken und einreichen.\n\
+         Eine offene eCH-0276-Upload-API existiert (noch) nicht.\n",
+        t.tax_period_from,
+        t.tax_period_to,
+        t.assessment_municipality,
+        t.assessment_municipality_id.map(|i| i.to_string()).unwrap_or_else(|| "-".into()),
+        t.organisation_name,
+        t.register_number,
+        xml.len(),
+        sha256_hex(xml.as_bytes()),
+    );
+    write_bundle("submission-jp", "eCH-0276.xml", xml, &manifest)
+}
 
+/// Schreibt das eCH-0119-Einreichungs-Paket (NP) nach `data/submission/`.
+pub fn write_package(xml: &str, message: &Message) -> Result<PathBuf, String> {
     let h = &message.header;
     let p = &message.content.main_form.person_data_partner1.identification;
     let muni = message
@@ -59,10 +96,7 @@ pub fn write_package(xml: &str, message: &Message) -> Result<PathBuf, String> {
         xml.len(),
         sha256_hex(xml.as_bytes()),
     );
-    let manifest_path = dir.join("MANIFEST.txt");
-    fs::write(&manifest_path, manifest).map_err(|e| e.to_string())?;
-
-    Ok(dir)
+    write_bundle("submission", "eCH-0119.xml", xml, &manifest)
 }
 
 /// Minimaler, abhängigkeitsfreier SHA-256 (FIPS 180-4) für die Manifest-Prüfsumme.
