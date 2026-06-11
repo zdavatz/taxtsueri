@@ -49,6 +49,11 @@ that **validates against the official XSD**. Three modules:
 - **`src/pdf.rs`** — extracts embedded files (PDF `/Names/EmbeddedFiles` name tree) via
   `lopdf`; `extract_embedded_xml` returns XML attachments. Scans (our `pdf/` samples) have
   none — that's reported, not faked.
+- **`src/vermoegensausweis.rs`** — parser for a UBS **Vermögensausweis** (portfolio statement,
+  text PDF via `pdftotext -layout`): extracts positions (quantity, name, Valor/ISIN, currency,
+  country, market value = tax value, dividend) → `SecurityEntry`. `--from-vermoegensausweis`
+  builds the eCH-0119 securities list directly from the PDF (tax values exact; CHF gross income
+  computed, foreign gross left to eCH-0196).
 - **`src/mt940.rs`** — SWIFT MT940 bank-statement reader (`:60F`/`:62F` balances, `:61:`/`:86:`
   transactions, `booking_type` from the `:61:` narrative); amounts in Rappen (i64). `category()`
   groups transactions heuristically; `--from-mt940` prints categories + a cash-basis

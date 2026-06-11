@@ -19,6 +19,7 @@ mod model;
 mod model_jp;
 mod mt940;
 mod pdf;
+mod vermoegensausweis;
 mod settings;
 mod submit;
 
@@ -34,6 +35,7 @@ struct Args {
     package: bool,
     jp: bool,
     from_mt940: Option<String>,
+    from_vermoegensausweis: Option<String>,
 }
 
 fn parse_args() -> Result<Args, String> {
@@ -48,6 +50,9 @@ fn parse_args() -> Result<Args, String> {
             "--package" => a.package = true,
             "--jp" => a.jp = true,
             "--from-mt940" => a.from_mt940 = Some(it.next().ok_or("--from-mt940 erwartet einen Pfad")?),
+            "--from-vermoegensausweis" => {
+                a.from_vermoegensausweis = Some(it.next().ok_or("--from-vermoegensausweis erwartet einen Pfad")?)
+            }
             s if s.starts_with("--") => return Err(format!("unbekannte Option: {s}")),
             s => a.input_json = Some(s.to_string()),
         }
@@ -153,6 +158,22 @@ fn main() -> ExitCode {
         }
     }
 
+    // 2b) Optional: Wertschriftenverzeichnis direkt aus einem Vermögensausweis-PDF.
+    if let Some(path) = &args.from_vermoegensausweis {
+        match run_pdftotext(Path::new(path)) {
+            Ok(text) => {
+                let los = vermoegensausweis::list_of_securities_from_text(&text);
+                let n = los.security_entry.len();
+                doc.content.list_of_securities = Some(los);
+                println!("Vermögensausweis eingelesen: {n} Wertschriftenpositionen übernommen.");
+            }
+            Err(e) => {
+                eprintln!("{e}");
+                return ExitCode::FAILURE;
+            }
+        }
+    }
+
     // 3) eCH-0119-XML serialisieren.
     let message = doc.into_message();
     let mut xml = String::from(r#"<?xml version="1.0" encoding="UTF-8"?>"#);
@@ -205,6 +226,20 @@ fn main() -> ExitCode {
     }
 
     ExitCode::SUCCESS
+}
+
+/// Extrahiert den Text eines (Text-)PDFs via `pdftotext -layout`.
+fn run_pdftotext(path: &Path) -> Result<String, String> {
+    let out = std::process::Command::new("pdftotext")
+        .arg("-layout")
+        .arg(path)
+        .arg("-")
+        .output()
+        .map_err(|_| "pdftotext nicht gefunden (poppler-utils installieren)".to_string())?;
+    if !out.status.success() {
+        return Err(format!("pdftotext fehlgeschlagen für {}", path.display()));
+    }
+    Ok(String::from_utf8_lossy(&out.stdout).into_owned())
 }
 
 fn extract_ech0196_from_pdf(path: &Path) -> Result<Option<String>, String> {

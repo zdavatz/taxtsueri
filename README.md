@@ -44,11 +44,22 @@ cargo run -- meine-daten.json      # eigene Eingabe verwenden
 cargo run -- examples/input.sample.json                    # synthetische Vorlage
 cargo run -- --from-ech0196 examples/ech0196.sample.xml     # Wertschriften aus eSteuerauszug
 cargo run -- --from-pdf auszug.pdf                          # eCH-0196-XML aus PDF-Anhang
+cargo run -- --from-vermoegensausweis depot.pdf            # Wertschriften aus UBS-Vermögensausweis-PDF
 cargo run -- --package                                      # zusätzlich Einreichungs-Paket
 cargo run -- --jp                                           # juristische Person (ywesee GmbH) → eCH-0276
 cargo run -- --jp --package                                 # JP + Einreichungs-Paket
 cargo run -- --from-mt940 auszug.mt940                      # MT940-Kontoauszug einlesen (Salden/Buchungen)
 ```
+
+### Wertschriften aus dem Vermögensausweis-PDF (`--from-vermoegensausweis`)
+
+Erstellt **direkt aus einem UBS-Vermögensausweis** (Portfolio-Auszug, Text-PDF)
+das eCH-0119-Wertschriftenverzeichnis und damit ein **validiertes XML**: per
+`pdftotext -layout` extrahiert, dann werden Anzahl, Bezeichnung, Valor/ISIN,
+Währung, Domizilland und **Marktwert (= Steuerwert)** je Position gelesen. Für
+CHF-Titel wird der Bruttoertrag (Kolonne A) aus Anzahl × Ausschüttung berechnet;
+bei Fremdwährungstiteln bleibt der Ertrag offen (präzise via eCH-0196). Braucht
+`pdftotext` (poppler-utils).
 
 ### MT940-Kontoauszug (`--from-mt940`)
 
