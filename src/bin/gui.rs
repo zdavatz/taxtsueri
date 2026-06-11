@@ -7,7 +7,7 @@
 //! Benötigt zur Laufzeit `pdftotext` (poppler) zum Lesen des Vermögensausweises.
 
 use eframe::egui;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::mpsc::{channel, Receiver};
 use taxtsueri::{dataset, document_to_xml, settings, update, vermoegensausweis};
@@ -34,6 +34,10 @@ struct App {
     securities: usize,
     update_rx: Receiver<Option<update::UpdateInfo>>,
     update_info: Option<update::UpdateInfo>,
+    /// Vom Datei-Auswahl-Thread gelieferter Eingabe-Pfad (PDF).
+    open_rx: Option<Receiver<Option<PathBuf>>>,
+    /// Vom Speichern-Thread gelieferte Status-Meldung.
+    save_rx: Option<Receiver<String>>,
 }
 
 impl App {
@@ -49,6 +53,8 @@ impl App {
             securities: 0,
             update_rx: rx,
             update_info: None,
+            open_rx: None,
+            save_rx: None,
         }
     }
 
@@ -89,6 +95,28 @@ impl eframe::App for App {
         if let Ok(info) = self.update_rx.try_recv() {
             self.update_info = info;
         }
+        // Ergebnis des Datei-Auswahl-Threads abholen (rfd läuft NICHT auf dem
+        // UI-Thread — das vermeidet GTK-Main-Loop-Reentrancy-Crashes).
+        if let Some(rx) = &self.open_rx {
+            if let Ok(picked) = rx.try_recv() {
+                self.open_rx = None;
+                if let Some(path) = picked {
+                    self.generate(&path);
+                }
+            }
+        }
+        // Ergebnis des Speichern-Threads abholen.
+        if let Some(rx) = &self.save_rx {
+            if let Ok(msg) = rx.try_recv() {
+                self.save_rx = None;
+                self.status = msg;
+            }
+        }
+        // Solange ein Dialog-Thread läuft, weiter neu zeichnen (sonst pollt
+        // egui die Channels erst beim nächsten Eingabe-Event).
+        if self.open_rx.is_some() || self.save_rx.is_some() {
+            ctx.request_repaint();
+        }
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.heading("Steuererklärung Zürich — Wertschriften aus Vermögensausweis");
             ui.label("UBS-Vermögensausweis (PDF) → validierungsfähiges eCH-0119-XML für die Steuersoftware.");
@@ -107,13 +135,19 @@ impl eframe::App for App {
             }
 
             ui.separator();
-            if ui.button("📄  UBS-Vermögensausweis wählen … (PDF)").clicked() {
-                if let Some(path) = rfd::FileDialog::new()
-                    .add_filter("PDF", &["pdf"])
-                    .pick_file()
-                {
-                    self.generate(&path);
-                }
+            let busy = self.open_rx.is_some();
+            if ui
+                .add_enabled(!busy, egui::Button::new("📄  UBS-Vermögensausweis wählen … (PDF)"))
+                .clicked()
+            {
+                // Dialog auf eigenem Thread öffnen; Ergebnis per Channel zurück.
+                let (tx, rx) = channel();
+                self.open_rx = Some(rx);
+                self.status = "Dateiauswahl geöffnet …".into();
+                std::thread::spawn(move || {
+                    let picked = rfd::FileDialog::new().add_filter("PDF", &["pdf"]).pick_file();
+                    let _ = tx.send(picked);
+                });
             }
             ui.add_space(4.0);
             ui.label(&self.status);
@@ -121,17 +155,29 @@ impl eframe::App for App {
             if let Some(xml) = self.xml.clone() {
                 ui.separator();
                 ui.label(format!("{} Positionen · {} Bytes XML", self.securities, xml.len()));
-                if ui.button("💾  eCH-0119-XML speichern …").clicked() {
-                    if let Some(path) = rfd::FileDialog::new()
-                        .set_file_name("steuererklaerung-2025.xml")
-                        .add_filter("XML", &["xml"])
-                        .save_file()
-                    {
-                        self.status = match std::fs::write(&path, &xml) {
-                            Ok(()) => format!("Gespeichert: {}", path.display()),
-                            Err(e) => format!("Speichern fehlgeschlagen: {e}"),
+                let saving = self.save_rx.is_some();
+                if ui
+                    .add_enabled(!saving, egui::Button::new("💾  eCH-0119-XML speichern …"))
+                    .clicked()
+                {
+                    // Speichern-Dialog ebenfalls auf eigenem Thread.
+                    let (tx, rx) = channel();
+                    self.save_rx = Some(rx);
+                    let xml = xml.clone();
+                    std::thread::spawn(move || {
+                        let msg = match rfd::FileDialog::new()
+                            .set_file_name("steuererklaerung-2025.xml")
+                            .add_filter("XML", &["xml"])
+                            .save_file()
+                        {
+                            Some(path) => match std::fs::write(&path, &xml) {
+                                Ok(()) => format!("Gespeichert: {}", path.display()),
+                                Err(e) => format!("Speichern fehlgeschlagen: {e}"),
+                            },
+                            None => "Speichern abgebrochen.".into(),
                         };
-                    }
+                        let _ = tx.send(msg);
+                    });
                 }
                 ui.add_space(4.0);
                 egui::ScrollArea::vertical().max_height(280.0).show(ui, |ui| {
