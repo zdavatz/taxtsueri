@@ -64,6 +64,10 @@ that **validates against the official XSD**. Three modules:
 `model::religion` holds the verified eCH-0011 confession codes (111/121/122/211/000); the
 published catalog has **no** code for «andere/konfessionslos», so that case stays empty.
 
+`src/settings.rs` loads `settings.json` (gitignored) for identifiers that must **not** live in
+code — currently the JP `uid` and `registerNumber`, applied as overrides in `run_jp`. A
+committed `settings.example.json` documents the format.
+
 `examples/input.sample.json` (synthetic JSON input) and `examples/ech0196.sample.xml`
 (synthetic eSteuerauszug) are committed; `tests/validation.rs` validates the example dataset
 and the sample input against the XSD via xmllint.

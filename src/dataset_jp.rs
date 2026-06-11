@@ -13,8 +13,8 @@ pub fn example() -> Document {
         header: Header {
             title: Title {
                 organisation_name: "ywesee GmbH".into(),
-                register_number: 91119, // aus "J 000 091 119/9"
-                uid: Some("CHE112233959".into()), // CHE-112.233.959
+                register_number: 91119, // Default; via settings.json überschreibbar
+                uid: None,               // kommt aus settings.json (nicht im Code)
                 assessment_municipality: "Zürich".into(),
                 assessment_municipality_id: Some(261),
                 head_office: HeadOffice {

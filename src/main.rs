@@ -18,6 +18,7 @@ mod ech0196;
 mod model;
 mod model_jp;
 mod pdf;
+mod settings;
 mod submit;
 
 use model::Document;
@@ -231,7 +232,8 @@ fn to_xml<T: serde::Serialize>(message: &T) -> Result<String, String> {
 /// JP-Modus (`--jp`): Steuererklärung juristische Person (StA 500), inoffiziell.
 fn run_jp(args: &Args) -> ExitCode {
     let default_input = PathBuf::from("data/input-jp.json");
-    let doc: model_jp::Document = if let Some(path) = &args.input_json {
+    let mut from_example = false;
+    let mut doc: model_jp::Document = if let Some(path) = &args.input_json {
         match load_document(Path::new(path)) {
             Ok(d) => {
                 println!("JP-Eingabe gelesen aus: {path}");
@@ -254,8 +256,21 @@ fn run_jp(args: &Args) -> ExitCode {
             }
         }
     } else {
-        let d = dataset_jp::example();
-        if let Err(e) = write_json(&default_input, &d) {
+        from_example = true;
+        dataset_jp::example()
+    };
+
+    // settings.json (gitignored) überschreibt Identifikatoren – nicht im Code.
+    let settings = settings::load();
+    if let Some(uid) = settings.jp.uid.as_deref().filter(|s| !s.is_empty()) {
+        doc.header.title.uid = Some(uid.to_string());
+    }
+    if let Some(rn) = settings.jp.register_number {
+        doc.header.title.register_number = rn;
+    }
+
+    if from_example {
+        if let Err(e) = write_json(&default_input, &doc) {
             eprintln!("Hinweis: konnte Vorlage nicht schreiben: {e}");
         } else {
             println!(
@@ -263,8 +278,7 @@ fn run_jp(args: &Args) -> ExitCode {
                 default_input.display()
             );
         }
-        d
-    };
+    }
 
     let message = doc.into_message();
     let xml = match to_xml(&message) {

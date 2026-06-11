@@ -16,3 +16,6 @@ Cargo.lock
 # Editor / OS
 .DS_Store
 *.swp
+
+# Lokale Einstellungen (echte Identifikatoren)
+/settings.json
