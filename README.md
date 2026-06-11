@@ -1,5 +1,3 @@
-<a href="mailto:zdavatz@ywesee.com"><img src="assets/logo-256.png" align="right" width="120" height="120" alt="taxtsueri"></a>
-
 # taxtsueri
 
 Steuererklärung für die Stadt Tsüri einreichen.

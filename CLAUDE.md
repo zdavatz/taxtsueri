@@ -39,8 +39,10 @@ reentrancy vs. the winit/x11 event loop) — keep dialogs off-thread.
 
 **Logo:** `assets/logo.svg` (+ rendered `logo-{64,128,256,512,1024}.png` via `rsvg-convert`) — Zürich
 arms (diagonal blue/white) with a document + barcode strip + green validation check. `feDropShadow` is
-avoided (this librsvg drops the whole filtered group); shadows are manual offset shapes. README shows
-`logo-256.png` top-right, linked to `mailto:zdavatz@ywesee.com`.
+avoided (this librsvg drops the whole filtered group); shadows are manual offset shapes. The GUI embeds
+`logo-256.png` (`include_bytes!`, decoded with the `image` crate) and shows it **top-right** as a
+frameless `ImageButton` that opens `mailto:zdavatz@ywesee.com` (same pattern as movement_logger_desktop);
+it's also the OS window icon via `viewport.with_icon`. Not shown in the README.
 
 ```bash
 

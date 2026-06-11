@@ -13,12 +13,18 @@ use std::sync::mpsc::{channel, Receiver};
 use taxtsueri::{dataset, document_to_xml, settings, update, vermoegensausweis};
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
+/// Logo (eingebettet); oben rechts in der App + als OS-Fenster-Icon.
+const LOGO_PNG: &[u8] = include_bytes!("../../assets/logo-256.png");
 
 fn main() -> eframe::Result<()> {
+    let mut viewport = egui::ViewportBuilder::default()
+        .with_inner_size([760.0, 560.0])
+        .with_title(format!("taxtsueri – Vermögensausweis → eCH-0119  (v{VERSION})"));
+    if let Some(icon) = os_window_icon() {
+        viewport = viewport.with_icon(icon);
+    }
     let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default()
-            .with_inner_size([760.0, 560.0])
-            .with_title(format!("taxtsueri – Vermögensausweis → eCH-0119  (v{VERSION})")),
+        viewport,
         ..Default::default()
     };
     eframe::run_native(
@@ -38,6 +44,8 @@ struct App {
     open_rx: Option<Receiver<Option<PathBuf>>>,
     /// Vom Speichern-Thread gelieferte Status-Meldung.
     save_rx: Option<Receiver<String>>,
+    /// GPU-Textur fürs Logo oben rechts (lazy hochgeladen).
+    logo_tex: Option<egui::TextureHandle>,
 }
 
 impl App {
@@ -55,6 +63,7 @@ impl App {
             update_info: None,
             open_rx: None,
             save_rx: None,
+            logo_tex: None,
         }
     }
 
@@ -117,9 +126,34 @@ impl eframe::App for App {
         if self.open_rx.is_some() || self.save_rx.is_some() {
             ctx.request_repaint();
         }
+        // Logo-Textur lazy hochladen.
+        if self.logo_tex.is_none() {
+            self.logo_tex = decode_logo()
+                .map(|img| ctx.load_texture("taxtsueri-logo", img, egui::TextureOptions::LINEAR));
+        }
+
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui.heading("Steuererklärung Zürich — Wertschriften aus Vermögensausweis");
-            ui.label("UBS-Vermögensausweis (PDF) → validierungsfähiges eCH-0119-XML für die Steuersoftware.");
+            ui.horizontal(|ui| {
+                ui.vertical(|ui| {
+                    ui.heading("Steuererklärung Zürich — Wertschriften aus Vermögensausweis");
+                    ui.label("UBS-Vermögensausweis (PDF) → validierungsfähiges eCH-0119-XML für die Steuersoftware.");
+                });
+                // Logo rechts in die Ecke verankern (klickbar → mailto), wie
+                // beim MovementLogger.
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
+                    if let Some(tex) = self.logo_tex.as_ref() {
+                        let size = egui::vec2(56.0, 56.0);
+                        let resp = ui
+                            .add(egui::ImageButton::new((tex.id(), size)).frame(false))
+                            .on_hover_text("E-Mail an zdavatz@ywesee.com")
+                            .on_hover_cursor(egui::CursorIcon::PointingHand);
+                        if resp.clicked() {
+                            ui.ctx()
+                                .open_url(egui::OpenUrl::new_tab("mailto:zdavatz@ywesee.com"));
+                        }
+                    }
+                });
+            });
 
             if let Some(u) = &self.update_info {
                 ui.add_space(4.0);
@@ -186,6 +220,27 @@ impl eframe::App for App {
             }
         });
     }
+}
+
+/// Dekodiert das Logo-PNG fürs In-App-Anzeigen (egui-ColorImage).
+fn decode_logo() -> Option<egui::ColorImage> {
+    let img = image::load_from_memory(LOGO_PNG).ok()?.into_rgba8();
+    let (w, h) = img.dimensions();
+    Some(egui::ColorImage::from_rgba_unmultiplied(
+        [w as usize, h as usize],
+        img.as_raw(),
+    ))
+}
+
+/// Dekodiert das Logo fürs OS-Fenster-Icon (Dock/Taskbar).
+fn os_window_icon() -> Option<egui::IconData> {
+    let img = image::load_from_memory(LOGO_PNG).ok()?.into_rgba8();
+    let (w, h) = img.dimensions();
+    Some(egui::IconData {
+        rgba: img.into_raw(),
+        width: w,
+        height: h,
+    })
 }
 
 /// Liest den Text eines (Text-)PDFs via `pdftotext -layout`.
