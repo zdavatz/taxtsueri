@@ -163,6 +163,31 @@ pub fn to_pbm(grid: &[Vec<bool>], scale: usize) -> String {
     out
 }
 
+/// Modulraster → 8-Bit-Graustufenpuffer (schwarz=0, weiss=255) mit Ruhezone.
+/// `sx`/`sy` skalieren horizontal/vertikal (PDF417-Zeilen sind höher als breit).
+#[allow(dead_code)] // genutzt im Round-Trip-Test; künftig für Bildausgabe.
+pub fn to_luma(grid: &[Vec<bool>], sx: usize, sy: usize) -> (Vec<u8>, usize, usize) {
+    let qz = 4; // Ruhezone in Modulen
+    let mw = grid.first().map(|r| r.len()).unwrap_or(0);
+    let w = (mw + 2 * qz) * sx;
+    let h = (grid.len() + 2 * qz) * sy;
+    let mut buf = vec![255u8; w * h];
+    for (ry, row) in grid.iter().enumerate() {
+        for (rx, &m) in row.iter().enumerate() {
+            if !m {
+                continue;
+            }
+            let (x0, y0) = ((rx + qz) * sx, (ry + qz) * sy);
+            for dy in 0..sy {
+                for dx in 0..sx {
+                    buf[(y0 + dy) * w + (x0 + dx)] = 0;
+                }
+            }
+        }
+    }
+    (buf, w, h)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -207,5 +232,19 @@ mod tests {
         let grid = render(&cws, 4, 6, 1);
         let pbm = to_pbm(&grid, 1);
         assert!(pbm.starts_with("P1\n"));
+    }
+
+    // Round-Trip: unser gerendertes PDF417 wird mit rxing (zxing-Port) dekodiert.
+    // Beweist die Korrektheit von Byte-Compaction, Symbol-Assemblierung, EC und Rendering.
+    #[test]
+    fn roundtrip_decodes_with_rxing() {
+        let payload = b"Hello eCH-0196 Steuerauszug 2025 - PDF417 roundtrip test 12345";
+        let (cols, rows, level) = (10u8, 30u8, 4u8);
+        let cws = build_symbol(payload, cols, rows, level).expect("fits");
+        let grid = render(&cws, cols, rows, level);
+        let (luma, w, h) = to_luma(&grid, 3, 9);
+        let res = rxing::helpers::detect_in_luma(luma, w as u32, h as u32, Some(rxing::BarcodeFormat::PDF_417))
+            .expect("rxing decode");
+        assert_eq!(res.getText().as_bytes(), payload);
     }
 }
