@@ -57,8 +57,10 @@ that **validates against the official XSD**. Three modules:
   module grid, PBM) is own code; `tables.rs` (`HL_TO_LL` patterns) + `ecc.rs` (Reed-Solomon GF(929))
   are **vendored from the MIT crate `pdf417`** (the crate itself needs nightly via one now-stable
   `#![feature(const_mut_refs)]`; only the dep-free data/RS files are vendored). 13×35 renders to the
-  spec-exact 290×35 module geometry. **Single symbol** so far — Structured Append (multi-segment),
-  CODE128C page barcode and A4 sheet layout are next. No scan-verification yet (zbar PDF417 is incomplete).
+  spec-exact 290×35 module geometry. `build_symbols` does **Structured Append** (Macro-PDF417,
+  multi-segment) — `--barcode` renders all segments. **Round-trip verified**: `rxing` (zxing port,
+  dev-dependency) decodes the rendered single- and multi-segment symbols back to the payload in tests
+  (zbar's PDF417 is incomplete). Still open: CODE128C page barcode + A4 sheet layout.
 - **`src/vermoegensausweis.rs`** — parser for a UBS **Vermögensausweis** (portfolio statement,
   text PDF via `pdftotext -layout`): extracts positions (quantity, name, Valor/ISIN, currency,
   country, market value = tax value, dividend) → `SecurityEntry`. `--from-vermoegensausweis`

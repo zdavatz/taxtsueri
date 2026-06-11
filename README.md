@@ -58,16 +58,19 @@ Bereitet die Nutzlast für das **2D-Barcode-Blatt** nach «eCH-0196 Beilage 2 �
 Barcode Generierung» vor: der eSteuerauszug-XML wird **ZLIB-komprimiert** (Deflate,
 beste Stufe), die **Barcode-ID** (Kap. 2.1) ermittelt und die dokumentierten
 PDF417-Parameter angewandt (13 Spalten × 35 Zeilen, EC-Level 4, 6 Blöcke/Blatt).
-Passt die Nutzlast in **ein** Symbol, wird es als **PDF417 gerendert** (→
-`data/barcode.pbm`; Geometrie 290×35 Module = exakt die eCH-Spec). Encoder/
-Renderer in `src/pdf417/` (Byte-Compaction, Symbol, Rendering eigener Code;
-`HL_TO_LL`-Tabellen + Reed-Solomon aus der MIT-Crate `pdf417` vendoriert).
+Die Nutzlast wird als **PDF417 Structured Append** über ein oder mehrere Segmente
+gerendert (→ `data/barcode-1.pbm`, `…-2.pbm`, …; Geometrie je 290×35 Module = exakt
+die eCH-Spec). Encoder/Renderer in `src/pdf417/` (Byte-Compaction, Symbol-
+Assemblierung, Macro-PDF417-Kontrollblock und Rendering eigener Code; `HL_TO_LL`-
+Tabellen + Reed-Solomon aus der MIT-Crate `pdf417` vendoriert).
 
-Noch offen: **Structured Append** (mehrere Segmente für grosse Auszüge),
-CODE128C-Seitenbarcode, A4-Blattlayout. Ein definitiver Scan-Test braucht einen
-echten PDF417-Decoder (zbar decodiert PDF417 nicht vollständig). Hinweis: das
-ZH-*Steuererklärungs*-Barcode-Format ist separat und nur auf Anfrage beim
-Steueramt erhältlich (siehe oben).
+**Verifiziert per Round-Trip:** Die erzeugten Symbole (Einzel- **und** Mehrsegment)
+werden im Test mit `rxing` (zxing-Port) dekodiert und stimmen 1:1 mit der Nutzlast
+überein. (`zbar` decodiert PDF417 nicht vollständig — daher rxing.)
+
+Noch offen: **CODE128C-Seitenbarcode** und **A4-Blattlayout** (6 Segmente/Blatt,
+Querformat). Hinweis: das ZH-*Steuererklärungs*-Barcode-Format ist separat und nur
+auf Anfrage beim Steueramt erhältlich (siehe oben).
 
 ### Wertschriften aus dem Vermögensausweis-PDF (`--from-vermoegensausweis`)
 

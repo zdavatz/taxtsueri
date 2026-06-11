@@ -54,12 +54,37 @@ pub fn data_capacity(cols: u8, rows: u8, level: u8) -> usize {
     (cols as usize * rows as usize).saturating_sub(1usize << (level as usize + 1))
 }
 
-/// Baut die Codewort-Matrix eines Einzelsymbols (inkl. EC). Fehler, wenn die
-/// Nutzlast nicht in ein Symbol passt (dann ist Structured Append nötig).
-pub fn build_symbol(payload: &[u8], cols: u8, rows: u8, level: u8) -> Result<Vec<u16>, String> {
+/// Assembliert eine Symbol-Codewort-Matrix aus bereits aufbereiteten
+/// Datencodewörtern (ohne Längendeskriptor): [Länge][data…][Padding 900…][EC].
+/// Der Längendeskriptor zählt nur die echten Datencodewörter (inkl. sich selbst),
+/// **nicht** das Padding — wichtig, damit ein folgender Macro-Block korrekt endet.
+fn assemble(data: &[u16], cols: u8, rows: u8, level: u8) -> Result<Vec<u16>, String> {
     let total = cols as usize * rows as usize;
     let ec = 1usize << (level as usize + 1);
-    let cap = total - ec; // Datenregion inkl. Längendeskriptor
+    let cap = total - ec; // Datenregion (inkl. Längendeskriptor)
+    if data.len() + 1 > cap {
+        return Err(format!(
+            "zu viele Datencodewörter: {} > Kapazität {}",
+            data.len() + 1,
+            cap
+        ));
+    }
+    let mut cws = Vec::with_capacity(total);
+    cws.push((data.len() + 1) as u16); // Längendeskriptor
+    cws.extend_from_slice(data);
+    while cws.len() < cap {
+        cws.push(900); // Padding (ausserhalb des Längendeskriptors)
+    }
+    cws.resize(total, 0); // EC-Region
+    ecc::generate_ecc(&mut cws, level);
+    Ok(cws)
+}
+
+/// Baut die Codewort-Matrix eines Einzelsymbols (inkl. EC). Fehler, wenn die
+/// Nutzlast nicht in ein Symbol passt (dann ist Structured Append nötig).
+#[allow(dead_code)] // Einzelsymbol-API; CLI nutzt build_symbols (Structured Append).
+pub fn build_symbol(payload: &[u8], cols: u8, rows: u8, level: u8) -> Result<Vec<u16>, String> {
+    let cap = data_capacity(cols, rows, level);
     let data = byte_compaction(payload);
     if data.len() + 1 > cap {
         return Err(format!(
@@ -68,15 +93,48 @@ pub fn build_symbol(payload: &[u8], cols: u8, rows: u8, level: u8) -> Result<Vec
             cap - 1
         ));
     }
-    let mut cws = Vec::with_capacity(total);
-    cws.push(cap as u16); // Längendeskriptor = Anzahl Datencodewörter (inkl. sich selbst)
-    cws.extend_from_slice(&data);
-    while cws.len() < cap {
-        cws.push(900); // Padding
+    assemble(&data, cols, rows, level)
+}
+
+/// Macro-PDF417-Kontrollblock: 928 · Segmentindex(2 CW, Base-900 von "1"+idx)
+/// · File-ID-Codewörter · (922 wenn letztes Segment).
+fn macro_block(segment_index: usize, file_id: &[u16], last: bool) -> Vec<u16> {
+    let mut mb = vec![928u16];
+    let v: u64 = format!("1{segment_index}").parse().unwrap();
+    mb.push((v / 900) as u16);
+    mb.push((v % 900) as u16);
+    mb.extend_from_slice(file_id);
+    if last {
+        mb.push(922);
     }
-    cws.resize(total, 0); // EC-Region
-    ecc::generate_ecc(&mut cws, level);
-    Ok(cws)
+    mb
+}
+
+/// Teilt die Nutzlast in mehrere **Structured-Append**-Symbole (Macro-PDF417).
+/// Jedes Segment kodiert seinen Byte-Chunk eigenständig + Kontrollblock.
+pub fn build_symbols(payload: &[u8], cols: u8, rows: u8, level: u8) -> Result<Vec<Vec<u16>>, String> {
+    let cap = data_capacity(cols, rows, level);
+    let file_id: [u16; 2] = [
+        (payload.len() % 900) as u16,
+        (payload.iter().map(|&b| b as usize).sum::<usize>() % 900) as u16,
+    ];
+    let overhead = 1 + 2 + file_id.len() + 1; // 928 + segindex + fileid + Terminator
+    // Byte-Budget pro Segment (konservativ aus dem Codewort-Budget).
+    let cw_budget = cap.saturating_sub(1 + overhead);
+    let chunk_bytes = (cw_budget.saturating_sub(1) * 6 / 5).max(1);
+    let chunks: Vec<&[u8]> = if payload.is_empty() {
+        vec![&[][..]]
+    } else {
+        payload.chunks(chunk_bytes).collect()
+    };
+    let n = chunks.len();
+    let mut symbols = Vec::with_capacity(n);
+    for (i, ch) in chunks.iter().enumerate() {
+        let mut region = byte_compaction(ch);
+        region.extend(macro_block(i, &file_id, i + 1 == n));
+        symbols.push(assemble(&region, cols, rows, level)?);
+    }
+    Ok(symbols)
 }
 
 /// Rendert die Codewort-Matrix zu einem Modulraster (true = schwarz).
@@ -246,5 +304,24 @@ mod tests {
         let res = rxing::helpers::detect_in_luma(luma, w as u32, h as u32, Some(rxing::BarcodeFormat::PDF_417))
             .expect("rxing decode");
         assert_eq!(res.getText().as_bytes(), payload);
+    }
+
+    // Structured Append: grosse Nutzlast → mehrere Segmente, jedes mit Macro-Block.
+    // Jedes Segment wird dekodiert; die Chunks zusammengesetzt ergeben die Nutzlast.
+    #[test]
+    fn structured_append_roundtrips_with_rxing() {
+        let payload: Vec<u8> = (0..600u32).map(|i| b'A' + (i % 26) as u8).collect();
+        let (cols, rows, level) = (13u8, 35u8, 4u8); // eCH-0196-Layout
+        let symbols = build_symbols(&payload, cols, rows, level).expect("build");
+        assert!(symbols.len() >= 2, "mehrere Segmente erwartet, war {}", symbols.len());
+        let mut decoded = Vec::new();
+        for sym in &symbols {
+            let grid = render(sym, cols, rows, level);
+            let (luma, w, h) = to_luma(&grid, 3, 9);
+            let res = rxing::helpers::detect_in_luma(luma, w as u32, h as u32, Some(rxing::BarcodeFormat::PDF_417))
+                .expect("decode segment");
+            decoded.extend_from_slice(res.getText().as_bytes());
+        }
+        assert_eq!(decoded, payload);
     }
 }

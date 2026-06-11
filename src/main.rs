@@ -360,26 +360,29 @@ fn run_barcode(path: &str) -> ExitCode {
         Ok(()) => println!("  Nutzlast (zlib)   : {}", out.display()),
         Err(e) => eprintln!("  Hinweis: konnte {} nicht schreiben: {e}", out.display()),
     }
-    // PDF417-Einzelsymbol rendern, falls die Nutzlast in ein Symbol passt.
-    match pdf417::build_symbol(&p.compressed, barcode::COLUMNS, barcode::ROWS, barcode::EC_LEVEL) {
-        Ok(cws) => {
-            let grid = pdf417::render(&cws, barcode::COLUMNS, barcode::ROWS, barcode::EC_LEVEL);
-            let pbm = pdf417::to_pbm(&grid, 3);
-            let img = Path::new("data").join("barcode.pbm");
-            match std::fs::write(&img, &pbm) {
-                Ok(()) => println!(
-                    "  PDF417-Symbol     : gerendert → {} ({}×{} Module)",
-                    img.display(),
-                    grid.first().map(|r| r.len()).unwrap_or(0),
-                    grid.len()
-                ),
-                Err(e) => eprintln!("  Hinweis: konnte {} nicht schreiben: {e}", img.display()),
+    // PDF417 Structured Append: alle Segmente rendern.
+    let (c, r, l) = (barcode::COLUMNS, barcode::ROWS, barcode::EC_LEVEL);
+    match pdf417::build_symbols(&p.compressed, c, r, l) {
+        Ok(symbols) => {
+            let n = symbols.len();
+            let _ = std::fs::create_dir_all("data");
+            let mut ok = true;
+            for (i, sym) in symbols.iter().enumerate() {
+                let grid = pdf417::render(sym, c, r, l);
+                let pbm = pdf417::to_pbm(&grid, 3);
+                let img = Path::new("data").join(format!("barcode-{}.pbm", i + 1));
+                if let Err(e) = std::fs::write(&img, &pbm) {
+                    eprintln!("  Hinweis: konnte {} nicht schreiben: {e}", img.display());
+                    ok = false;
+                }
+            }
+            if ok {
+                println!(
+                    "  PDF417            : {n} Segment(e) gerendert → data/barcode-1.pbm … barcode-{n}.pbm (je 290×35 Module)"
+                );
             }
         }
-        Err(e) => {
-            println!("  PDF417            : {e}");
-            println!("                      → Structured Append (mehrere Segmente) ist der nächste Schritt.");
-        }
+        Err(e) => println!("  PDF417            : {e}"),
     }
     ExitCode::SUCCESS
 }
