@@ -36,7 +36,23 @@ lokal (`scripts/patch_schema_locations.py`), weil die eCH-Schemas per Namespace
 ohne `schemaLocation` importieren. eCH-0119 importiert die **Framework-Varianten**
 `eCH-0007-f`, `eCH-0011-f`, `eCH-0044-f`, `eCH-0046-f` sowie `eCH-0097`.
 
-## Build & Run
+## Desktop-GUI (eframe, Win/Mac/Linux)
+
+Ein natives Fenster: **UBS-Vermögensausweis (PDF) wählen → validierungsfähiges
+eCH-0119-XML** erstellen und speichern (importierbar in die Steuersoftware).
+Mit GitHub-Releases-Update-Check (Banner, wenn eine neuere Version vorliegt).
+
+```bash
+cargo run --features gui --bin taxtsueri-gui      # GUI starten (braucht Display + pdftotext)
+cargo build --release --features gui --bin taxtsueri-gui
+```
+
+Das GUI ist **feature-gated** (`gui`), damit die CLI schlank bleibt (kein
+eframe/reqwest im Standardbuild). Releases (`.github/workflows/release.yml`)
+bauen das GUI bei einem `vX.Y.Z`-Tag für alle drei Plattformen; der In-App-
+Updater (`src/update.rs`) findet die passenden Assets.
+
+## Build & Run (CLI)
 
 ```bash
 cargo run                          # liest data/input.json (oder schreibt Beispiel) → data/steuererklaerung-2025.xml

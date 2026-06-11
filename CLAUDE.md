@@ -19,7 +19,18 @@ cargo run -- --from-ech0196 statement.xml   # replace securities list from an eC
 cargo run -- --from-pdf bank.pdf            # extract embedded eCH-0196 XML from a PDF, then as above
 cargo run -- --package                      # also write data/submission/ (XML + SHA-256 manifest)
 cargo run -- --jp                           # legal entity (juristische Person) → eCH-0276 XML, validated
+cargo run -- --barcode statement.xml        # eCH-0196 → A4 barcode sheet PDF (data/barcode-blatt.pdf)
+cargo run --features gui --bin taxtsueri-gui  # native desktop GUI (eframe): Vermögensausweis → eCH-0119 XML
 cargo test                  # run tests (incl. xmllint validation of NP eCH-0119 + JP eCH-0276, eCH-0196 parse, PDF roundtrip, SHA-256)
+```
+
+The crate is a **library + two binaries**: `src/lib.rs` (engine, all modules) is used by the CLI
+(`src/main.rs`) and the GUI (`src/bin/gui.rs`, behind `--features gui` so eframe/reqwest stay out of
+the default build). `src/update.rs` is the GitHub-releases update check (repo `zdavatz/taxtsueri`);
+`.github/workflows/release.yml` builds the GUI for the 3 platforms on a `vX.Y.Z` tag with asset names
+matching `update::target_asset_suffix`.
+
+```bash
 
 ./scripts/fetch-schemas.sh  # (re)download the eCH-0119 XSD set into schema/ + wire it for offline use
 xmllint --nonet --noout --schema schema/eCH-0119-4-0-0.xsd <file>.xml   # validate against eCH-0119

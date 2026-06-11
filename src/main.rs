@@ -12,21 +12,12 @@
 //!
 //! `data/` (Eingabe + XML + Paket) enthält Personendaten und ist gitignored.
 
-mod barcode;
-mod code128;
-mod dataset;
-mod dataset_jp;
-mod ech0196;
-mod model;
-mod model_jp;
-mod mt940;
-mod pdf;
-mod pdf417;
-mod sheet;
-mod vermoegensausweis;
-mod settings;
-mod submit;
-
+use taxtsueri::{
+    barcode, code128, dataset, ech0196, model, mt940, pdf, pdf417, settings, sheet, submit,
+    vermoegensausweis,
+};
+// dataset_jp/model_jp werden in run_jp referenziert.
+use taxtsueri::{dataset_jp, model_jp};
 use model::Document;
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;

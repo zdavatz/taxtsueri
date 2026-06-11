@@ -3,15 +3,7 @@
 //! Fehlt eines von beidem, wird der Test übersprungen statt zu scheitern.
 
 use std::process::Command;
-
-#[path = "../src/model.rs"]
-mod model;
-#[path = "../src/dataset.rs"]
-mod dataset;
-#[path = "../src/model_jp.rs"]
-mod model_jp;
-#[path = "../src/dataset_jp.rs"]
-mod dataset_jp;
+use taxtsueri::{dataset, dataset_jp, model};
 
 fn validate(schema: &str, xml: &str, tmp_name: &str) -> bool {
     if !std::path::Path::new(schema).exists()
