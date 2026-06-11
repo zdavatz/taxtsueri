@@ -1,0 +1,140 @@
+{
+  "header": {
+    "taxPeriod": 2025,
+    "periodFrom": "2025-01-01",
+    "periodTo": "2025-12-31",
+    "canton": "ZH",
+    "source": 0
+  },
+  "content": {
+    "mainForm": {
+      "representativePerson": {
+        "addressInformation": {
+          "eCH-0046f:postalAddress": {
+            "eCH-0010f:addressInformation": {
+              "eCH-0010f:street": "Postfach",
+              "eCH-0010f:town": "Zürich",
+              "eCH-0010f:swissZipCode": 8001,
+              "eCH-0010f:country": {
+                "eCH-0010f:countryIdISO2": "CH",
+                "eCH-0010f:countryNameShort": "Schweiz"
+              }
+            }
+          }
+        },
+        "organisationName": "Muster Treuhand AG",
+        "phoneNumber": "0440000000",
+        "uid": {
+          "eCH-0097:uidOrganisationIdCategorie": "CHE",
+          "eCH-0097:uidOrganisationId": 123456789
+        }
+      },
+      "personDataPartner1": {
+        "partnerPersonIdentification": {
+          "officialName": "Muster",
+          "firstName": "Max",
+          "sex": "1",
+          "dateOfBirth": { "eCH-0044f:yearMonthDay": "1980-01-01" },
+          "vn": 7560000000001
+        },
+        "addressInformation": {
+          "eCH-0046f:postalAddress": {
+            "eCH-0010f:addressInformation": {
+              "eCH-0010f:street": "Musterstrasse",
+              "eCH-0010f:houseNumber": "1",
+              "eCH-0010f:town": "Zürich",
+              "eCH-0010f:swissZipCode": 8000,
+              "eCH-0010f:country": {
+                "eCH-0010f:countryIdISO2": "CH",
+                "eCH-0010f:countryNameShort": "Schweiz"
+              }
+            }
+          }
+        },
+        "maritalStatusTax": {
+          "eCH-0011f:maritalStatus": "1"
+        },
+        "job": "Angestellter",
+        "paymentPension": true,
+        "taxMunicipality": {
+          "eCH-0007f:municipalityId": 261,
+          "eCH-0007f:municipalityName": "Zürich",
+          "eCH-0007f:cantonAbbreviation": "ZH"
+        }
+      },
+      "childData": [
+        {
+          "personIdentification": {
+            "eCH-0044f:officialName": "Muster",
+            "eCH-0044f:firstName": "Mia",
+            "eCH-0044f:dateOfBirth": { "eCH-0044f:yearMonthDay": "2015-05-05" }
+          },
+          "homeOrExternal": false,
+          "correctTo": "2033-01-01"
+        }
+      ],
+      "revenue": {
+        "employedMainRevenue": { "partner1Amount": 90000 },
+        "securitiesRevenue": { "cantonalTax": 500, "federalTax": 500 },
+        "totalAmountRevenue": { "cantonalTax": 90500, "federalTax": 90500 }
+      },
+      "deduction": {
+        "jobExpensesPartner1": { "cantonalTax": 4000, "federalTax": 4000 },
+        "insuranceAndInterest": { "cantonalTax": 2600, "federalTax": 1700 },
+        "totalAmountDeduction": { "cantonalTax": 6600, "federalTax": 5700 }
+      },
+      "revenueCalculation": {
+        "netIncome": { "cantonalTax": 83900, "federalTax": 84800 },
+        "totalAmountFiscalRevenue": { "cantonalTax": 83900, "federalTax": 84800 },
+        "resultingFiscalRevenue": { "cantonalTax": 83900, "federalTax": 84800 }
+      },
+      "asset": {
+        "movablePropertySecuritiesAndAssets": { "fiscalValue": 50000 },
+        "totalAmountAssets": { "fiscalValue": 50000 },
+        "resultingFiscalAssets": { "fiscalValue": 50000 }
+      }
+    },
+    "listOfSecurities": {
+      "bankAccount": {
+        "ibanNumber": "CH00 0000 0000 0000 0000 0",
+        "bankName": "Musterbank",
+        "accountOwner": "Muster Max"
+      },
+      "securityEntry": [
+        {
+          "detailedDescription": "Beispiel AG, Zürich, CH",
+          "securitiesNumber": "111111",
+          "originalCurrency": "CHF",
+          "faceValueQuantity": "10",
+          "taxValueEndOfYear": { "cantonalTax": 40000, "federalTax": 40000 },
+          "grossRevenueA": { "cantonalTax": 500, "federalTax": 500 }
+        },
+        {
+          "detailedDescription": "Example Corp, New York, US",
+          "securitiesNumber": "222222",
+          "originalCurrency": "USD",
+          "faceValueQuantity": "20",
+          "countryOfDepositaryBank": "US",
+          "taxValueEndOfYear": { "cantonalTax": 10000, "federalTax": 10000 },
+          "grossRevenueB": { "cantonalTax": 300, "federalTax": 300 }
+        }
+      ],
+      "attachedFormDA1": 1,
+      "totalTaxValue": { "cantonalTax": 50000, "federalTax": 50000 },
+      "subtotalGrossRevenueA1": { "cantonalTax": 500, "federalTax": 500 },
+      "subtotalGrossRevenueB": { "cantonalTax": 300, "federalTax": 300 },
+      "totalGrossRevenue": { "cantonalTax": 800, "federalTax": 800 },
+      "withholdingTax": "175.00"
+    },
+    "listOfLiabilities": {
+      "privateLiabilities": [
+        { "identification": "Hypothek Musterbank", "liability": 200000, "liabilityInterest": 3000 }
+      ],
+      "businessLiabilities": [],
+      "totalPrivateLiabilities": 200000,
+      "totalPrivateLiabilitiesInterest": 3000,
+      "totalAmountLiabilities": 200000,
+      "totalAmountLiabilitiesInterest": 3000
+    }
+  }
+}

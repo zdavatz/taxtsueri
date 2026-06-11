@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetischer eCH-0196 «eSteuerauszug» (Ausschnitt) zum Erproben des Readers. -->
+<taxStatement xmlns="http://www.ech.ch/xmlns/eCH-0196/2" id="demo" minorVersion="2"
+              taxPeriod="2025" periodFrom="2025-01-01" periodTo="2025-12-31">
+  <listOfSecurities totalTaxValue="22447" totalGrossRevenueA="528"
+                    totalGrossRevenueB="300" totalWithHoldingTaxClaim="184.80"
+                    totalLumpSumTaxCredit="0" totalNonRecoverableTax="0"
+                    totalAdditionalWithHoldingTaxUSA="0">
+    <depot depotNumber="DEMO-1">
+      <security positionId="1" country="CH" currency="CHF" quotationType="PIECE"
+                securityCategory="SHARE" securityName="Swisscom AG, Ittigen, CH"
+                valorNumber="874251" nominalValue="24">
+        <taxValue referenceDate="2025-12-31" quotationType="PIECE" quantity="24"
+                  balanceCurrency="CHF" value="13812"/>
+        <payment paymentDate="2025-04-01" quotationType="PIECE" quantity="24"
+                 amountCurrency="CHF" grossRevenueA="528" withHoldingTaxClaim="184.80"/>
+      </security>
+      <security positionId="2" country="US" currency="USD" quotationType="PIECE"
+                securityCategory="SHARE" securityName="Coca-Cola Company (The), Atlanta, US"
+                isin="US1912161007" nominalValue="308">
+        <taxValue referenceDate="2025-12-31" quotationType="PIECE" quantity="308"
+                  balanceCurrency="CHF" value="8635"/>
+        <payment paymentDate="2025-07-01" quotationType="PIECE" quantity="308"
+                 amountCurrency="USD" grossRevenueB="300"/>
+      </security>
+    </depot>
+  </listOfSecurities>
+</taxStatement>

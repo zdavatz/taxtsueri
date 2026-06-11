@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<message xmlns="http://www.ech.ch/xmlns/eCH-0119/4" minorVersion="0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.ech.ch/xmlns/eCH-0119/4 eCH-0119-4-0_draft.xsd">
+	<header>
+		<taxPeriod>2020</taxPeriod>
+		<source>0</source>
+	</header>
+	<content>
+		<qualifiedInvestmentsPrivate>
+			<deductionPartialTaxation>
+				<cantonalTax>10000</cantonalTax>
+				<federalTax>9800</federalTax>
+			</deductionPartialTaxation>
+		</qualifiedInvestmentsPrivate>
+	</content>
+</message>

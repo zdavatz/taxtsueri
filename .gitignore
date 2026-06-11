@@ -1,0 +1,14 @@
+# Privat- und Steuerdaten — niemals committen
+*.pdf
+pdf/
+/data/
+*.xml.private
+
+# Rust
+/target/
+**/*.rs.bk
+Cargo.lock
+
+# Editor / OS
+.DS_Store
+*.swp

@@ -1,2 +1,106 @@
 # taxtsueri
+
 Steuererklärung für die Stadt Tsüri einreichen.
+
+Rust-Werkzeug, das aus den Daten einer Zürcher Steuererklärung (natürliche
+Personen) eine **eCH-0119**-konforme XML-Datei für die elektronische
+Einreichung erzeugt.
+
+## Standards
+
+- **eCH-0119** «E-Tax Filing» — Austauschformat der Steuermeldung natürlicher
+  Personen; kantonale Ergänzungen über `cantonExtensionType`.
+- **eCH-0196** «eSteuerauszug» — maschinenlesbarer Bankauszug (PDF mit
+  eingebettetem XML/Barcode).
+- **eCH-0044 / 0010 / 0011 / 0007** — Basisstandards für Personen-, Adress-
+  und Gemeindedaten, auf denen eCH-0119 aufbaut.
+
+Spezifikationen und XSD-Schemas sind frei (ohne Mitgliedschaft) von
+[www.ech.ch](https://www.ech.ch) beziehbar.
+
+## XSD-Schemas
+
+Die vollständige Import-Hülle von eCH-0119 v4.0.0 (13 XSD) liegt vendoriert in
+`schema/` und ist offline validierbar; das eCH-0196-XSD (eSteuerauszug) liegt als
+Referenz für den Reader daneben. Neu beziehen / reproduzieren:
+
+```bash
+./scripts/fetch-schemas.sh
+xmllint --nonet --noout --schema schema/eCH-0119-4-0-0.xsd <datei>.xml
+```
+
+Das Skript lädt von www.ech.ch und verdrahtet anschliessend die `schemaLocation`
+lokal (`scripts/patch_schema_locations.py`), weil die eCH-Schemas per Namespace
+ohne `schemaLocation` importieren. eCH-0119 importiert die **Framework-Varianten**
+`eCH-0007-f`, `eCH-0011-f`, `eCH-0044-f`, `eCH-0046-f` sowie `eCH-0097`.
+
+## Build & Run
+
+```bash
+cargo run                          # liest data/input.json (oder schreibt Beispiel) → data/steuererklaerung-2025.xml
+cargo run -- meine-daten.json      # eigene Eingabe verwenden
+cargo run -- examples/input.sample.json                    # synthetische Vorlage
+cargo run -- --from-ech0196 examples/ech0196.sample.xml     # Wertschriften aus eSteuerauszug
+cargo run -- --from-pdf auszug.pdf                          # eCH-0196-XML aus PDF-Anhang
+cargo run -- --package                                      # zusätzlich Einreichungs-Paket
+```
+
+### Eingabe (datengetrieben)
+
+Die Steuererklärung wird aus einer **JSON-Eingabe** (`Document`) aufgebaut.
+Reihenfolge: CLI-Argument → `data/input.json` → eingebauter Beispiel-Datensatz
+(der beim ersten Lauf nach `data/input.json` geschrieben wird, danach editierbar).
+`cargo run` serialisiert nach eCH-0119-XML und validiert direkt mit `xmllint`.
+
+- `data/` enthält Personendaten (Eingabe, XML, Einreichungs-Paket) → gitignored.
+- `examples/input.sample.json` und `examples/ech0196.sample.xml` sind
+  **synthetische** Vorlagen (committet).
+
+### eSteuerauszug (eCH-0196) aus PDF / XML
+
+`--from-ech0196 <xml>` liest einen Bank-eSteuerauszug (eCH-0196 `taxStatement`)
+und ersetzt damit das Wertschriftenverzeichnis. `--from-pdf <pdf>` extrahiert
+zuvor das **eingebettete XML** aus dem PDF (`/EmbeddedFiles`). Reine *Scan*-PDFs
+(wie die Barcode-Blätter im `pdf/`-Ordner) enthalten kein eingebettetes XML –
+ihre Daten stecken in PDF417-Bildern und bräuchten einen Barcode-Bilddecoder
+(nicht enthalten); das wird klar gemeldet.
+
+### Einreichung (`--package`)
+
+Schreibt `data/submission/` mit dem validierten `eCH-0119.xml`, SHA-256 und
+einem Manifest. Der reale ZH-Kanal (Stand 2025): **ZHprivateTax** (Online-Portal,
+AHV-Nr. + Zugangscode + starke Authentifizierung) bzw. das **2D-Barcode-Blatt**
+der Steuersoftware – es gibt keine offene Upload-API für eCH-0119-XML.
+
+## Stand
+
+Das erzeugte XML **validiert gegen das offizielle eCH-0119-v4.0.0-XSD**
+(`cargo run` ruft am Ende selbst `xmllint` auf; zusätzlich `cargo test`).
+Der Beispieldatensatz (Steuererklärung 2025, Stadt Zürich / Gemeinde 261) deckt ab:
+Kopf, Vertreter, Person 1 inkl. Postadresse + Zivilstand «getrennt», Kinder,
+Einkünfte (Ziffern 100–199), Abzüge (220–299), Einkommensberechnung (310–398),
+Vermögen (400–498), Wertschriftenverzeichnis mit Verrechnungssteueranspruch und
+**DA-1-Positionen** (US-Titel, Kolonne B, Domizil «US») sowie das
+Schuldenverzeichnis (`listOfLiabilities`).
+
+### Konfession (`religion`) — recherchiert
+
+Die publizierte **eCH-0011-Religionscodeliste** kennt nur `111`
+(evangelisch-reformiert), `121` (römisch-katholisch), `122` (christkatholisch),
+`211` (jüdisch) und `000` (Unbekannt) — **keinen** Code für «andere/
+konfessionslos». Diese verifizierten Codes stehen als Konstanten bereit
+(`model::religion`). Für Zeno («andere», kirchensteuerlich irrelevant) bleibt
+`religion` daher bewusst leer.
+
+### Offene Schritte
+
+- Die DA-1-Quellensteueranrechnung selbst (beantragter Anrechnungsbetrag,
+  zusätzlicher US-Rückbehalt) kennt eCH-0119 v4 nicht als strukturiertes Feld –
+  sie liegt dem als `attachedFormDA1` gezählten PDF-Formular bei.
+- PDF417-Barcode-**Bild**decoder für Scan-PDFs (heute: eingebettetes XML +
+  JSON `Document`).
+- Tatsächliche Übermittlung an ZHprivateTax (interaktives Portal, keine API).
+
+## Lizenz
+
+GPL-3.0-or-later.
