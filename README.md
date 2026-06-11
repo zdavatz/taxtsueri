@@ -58,9 +58,16 @@ Bereitet die Nutzlast für das **2D-Barcode-Blatt** nach «eCH-0196 Beilage 2 �
 Barcode Generierung» vor: der eSteuerauszug-XML wird **ZLIB-komprimiert** (Deflate,
 beste Stufe), die **Barcode-ID** (Kap. 2.1) ermittelt und die dokumentierten
 PDF417-Parameter angewandt (13 Spalten × 35 Zeilen, EC-Level 4, 6 Blöcke/Blatt).
-Die **PDF417-Symbolerzeugung** (Codewörter, Reed-Solomon, Structured Append, Bild)
-ist der nächste Schritt. Hinweis: das ZH-*Steuererklärungs*-Barcode-Format ist
-separat und nur auf Anfrage beim Steueramt erhältlich (siehe oben).
+Passt die Nutzlast in **ein** Symbol, wird es als **PDF417 gerendert** (→
+`data/barcode.pbm`; Geometrie 290×35 Module = exakt die eCH-Spec). Encoder/
+Renderer in `src/pdf417/` (Byte-Compaction, Symbol, Rendering eigener Code;
+`HL_TO_LL`-Tabellen + Reed-Solomon aus der MIT-Crate `pdf417` vendoriert).
+
+Noch offen: **Structured Append** (mehrere Segmente für grosse Auszüge),
+CODE128C-Seitenbarcode, A4-Blattlayout. Ein definitiver Scan-Test braucht einen
+echten PDF417-Decoder (zbar decodiert PDF417 nicht vollständig). Hinweis: das
+ZH-*Steuererklärungs*-Barcode-Format ist separat und nur auf Anfrage beim
+Steueramt erhältlich (siehe oben).
 
 ### Wertschriften aus dem Vermögensausweis-PDF (`--from-vermoegensausweis`)
 

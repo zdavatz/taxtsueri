@@ -20,6 +20,7 @@ mod model;
 mod model_jp;
 mod mt940;
 mod pdf;
+mod pdf417;
 mod vermoegensausweis;
 mod settings;
 mod submit;
@@ -354,8 +355,27 @@ fn run_barcode(path: &str) -> ExitCode {
         Ok(()) => println!("  Nutzlast (zlib)   : {}", out.display()),
         Err(e) => eprintln!("  Hinweis: konnte {} nicht schreiben: {e}", out.display()),
     }
-    println!("\nHINWEIS: Symbologie (PDF417-Codewörter, Reed-Solomon, Structured Append, Bild)");
-    println!("ist der nächste Schritt; die ZLIB-Nutzlast + Layout-Parameter stehen.");
+    // PDF417-Einzelsymbol rendern, falls die Nutzlast in ein Symbol passt.
+    match pdf417::build_symbol(&p.compressed, barcode::COLUMNS, barcode::ROWS, barcode::EC_LEVEL) {
+        Ok(cws) => {
+            let grid = pdf417::render(&cws, barcode::COLUMNS, barcode::ROWS, barcode::EC_LEVEL);
+            let pbm = pdf417::to_pbm(&grid, 3);
+            let img = Path::new("data").join("barcode.pbm");
+            match std::fs::write(&img, &pbm) {
+                Ok(()) => println!(
+                    "  PDF417-Symbol     : gerendert → {} ({}×{} Module)",
+                    img.display(),
+                    grid.first().map(|r| r.len()).unwrap_or(0),
+                    grid.len()
+                ),
+                Err(e) => eprintln!("  Hinweis: konnte {} nicht schreiben: {e}", img.display()),
+            }
+        }
+        Err(e) => {
+            println!("  PDF417            : {e}");
+            println!("                      → Structured Append (mehrere Segmente) ist der nächste Schritt.");
+        }
+    }
     ExitCode::SUCCESS
 }
 

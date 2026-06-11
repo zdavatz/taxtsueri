@@ -51,9 +51,14 @@ that **validates against the official XSD**. Three modules:
   none — that's reported, not faked.
 - **`src/barcode.rs`** — eCH-0196 **2D-barcode** payload prep (eCH-0196 Beilage 2): ZLIB/Deflate
   best-compression of the XML + barcode ID (ch. 2.1) + the documented PDF417 params (13 cols × 35
-  rows, EC level 4, 6 blocks/sheet). `--barcode` reports + writes the zlib payload. The PDF417
-  symbology layer (codewords, Reed-Solomon, Structured Append, image) is the next step. NB: the
-  `pdf417` crate needs nightly (E0554 on stable) — symbology will be self-implemented or via rxing/bwipp.
+  rows, EC level 4, 6 blocks/sheet). `--barcode` reports, writes the zlib payload, and renders the
+  PDF417 symbol when it fits one symbol.
+- **`src/pdf417/`** — PDF417 encoder/renderer: `mod.rs` (byte compaction, symbol assembly, render to
+  module grid, PBM) is own code; `tables.rs` (`HL_TO_LL` patterns) + `ecc.rs` (Reed-Solomon GF(929))
+  are **vendored from the MIT crate `pdf417`** (the crate itself needs nightly via one now-stable
+  `#![feature(const_mut_refs)]`; only the dep-free data/RS files are vendored). 13×35 renders to the
+  spec-exact 290×35 module geometry. **Single symbol** so far — Structured Append (multi-segment),
+  CODE128C page barcode and A4 sheet layout are next. No scan-verification yet (zbar PDF417 is incomplete).
 - **`src/vermoegensausweis.rs`** — parser for a UBS **Vermögensausweis** (portfolio statement,
   text PDF via `pdftotext -layout`): extracts positions (quantity, name, Valor/ISIN, currency,
   country, market value = tax value, dividend) → `SecurityEntry`. `--from-vermoegensausweis`
