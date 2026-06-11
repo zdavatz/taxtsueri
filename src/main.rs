@@ -17,6 +17,7 @@ mod dataset_jp;
 mod ech0196;
 mod model;
 mod model_jp;
+mod mt940;
 mod pdf;
 mod settings;
 mod submit;
@@ -32,6 +33,7 @@ struct Args {
     from_pdf: Option<String>,
     package: bool,
     jp: bool,
+    from_mt940: Option<String>,
 }
 
 fn parse_args() -> Result<Args, String> {
@@ -45,6 +47,7 @@ fn parse_args() -> Result<Args, String> {
             "--from-pdf" => a.from_pdf = Some(it.next().ok_or("--from-pdf erwartet einen Pfad")?),
             "--package" => a.package = true,
             "--jp" => a.jp = true,
+            "--from-mt940" => a.from_mt940 = Some(it.next().ok_or("--from-mt940 erwartet einen Pfad")?),
             s if s.starts_with("--") => return Err(format!("unbekannte Option: {s}")),
             s => a.input_json = Some(s.to_string()),
         }
@@ -60,6 +63,10 @@ fn main() -> ExitCode {
             return ExitCode::FAILURE;
         }
     };
+
+    if let Some(path) = &args.from_mt940 {
+        return run_mt940(path);
+    }
 
     if args.jp {
         return run_jp(&args);
@@ -203,6 +210,51 @@ fn main() -> ExitCode {
 fn extract_ech0196_from_pdf(path: &Path) -> Result<Option<String>, String> {
     let xmls = pdf::extract_embedded_xml(path)?;
     Ok(xmls.into_iter().map(|(_, content)| content).next())
+}
+
+/// `--from-mt940`: MT940-Kontoauszug einlesen, Zusammenfassung ausgeben +
+/// `data/mt940-summary.json` schreiben.
+fn run_mt940(path: &str) -> ExitCode {
+    // MT940 ist oft Latin-1 (Umlaute) → verlustfrei-tolerant dekodieren.
+    let bytes = match std::fs::read(path) {
+        Ok(b) => b,
+        Err(e) => {
+            eprintln!("Konnte {path} nicht lesen: {e}");
+            return ExitCode::FAILURE;
+        }
+    };
+    let text = String::from_utf8_lossy(&bytes);
+    let stmt = match mt940::parse(&text) {
+        Ok(s) => s,
+        Err(e) => {
+            eprintln!("MT940 nicht lesbar: {e}");
+            return ExitCode::FAILURE;
+        }
+    };
+
+    println!("MT940-Kontoauszug: {}", stmt.account);
+    if let Some(b) = &stmt.opening {
+        println!("  Eröffnungssaldo {} : {} {}", b.date, b.currency, mt940::format_cents(b.amount_cents));
+    }
+    if let Some(b) = &stmt.closing {
+        println!("  Schlusssaldo    {} : {} {}", b.date, b.currency, mt940::format_cents(b.amount_cents));
+    }
+    println!(
+        "  Buchungen: {} (Gutschriften CHF {}, Belastungen CHF {})",
+        stmt.transactions.len(),
+        mt940::format_cents(stmt.total_credit_cents()),
+        mt940::format_cents(stmt.total_debit_cents()),
+    );
+
+    let out = Path::new("data").join("mt940-summary.json");
+    match serde_json::to_string_pretty(&stmt)
+        .map_err(|e| e.to_string())
+        .and_then(|j| std::fs::create_dir_all("data").and_then(|_| std::fs::write(&out, j)).map_err(|e| e.to_string()))
+    {
+        Ok(()) => println!("Zusammenfassung geschrieben nach: {}", out.display()),
+        Err(e) => eprintln!("Hinweis: konnte {} nicht schreiben: {e}", out.display()),
+    }
+    ExitCode::SUCCESS
 }
 
 fn load_document<T: serde::de::DeserializeOwned>(path: &Path) -> Result<T, String> {

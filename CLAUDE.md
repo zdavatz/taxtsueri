@@ -49,6 +49,9 @@ that **validates against the official XSD**. Three modules:
 - **`src/pdf.rs`** — extracts embedded files (PDF `/Names/EmbeddedFiles` name tree) via
   `lopdf`; `extract_embedded_xml` returns XML attachments. Scans (our `pdf/` samples) have
   none — that's reported, not faked.
+- **`src/mt940.rs`** — SWIFT MT940 bank-statement reader (`:60F`/`:62F` balances, `:61:`/`:86:`
+  transactions); amounts in Rappen (i64). `--from-mt940` prints a summary + writes
+  `data/mt940-summary.json`. Payment data only — not tax-categorised (that's eCH-0196).
 - **`src/model_jp.rs` / `src/dataset_jp.rs`** — **juristische Personen** per **eCH-0276**
   «E-Bilanz und E-Tax JP» (built from `schema/eCH-0276-1-0.xsd` + `eCH-0276-beispiel.xml`):
   root `eBalanceSheetETaxLegalEntity` → `header`(title) + `content` (assets, equityAndLiabilities,

@@ -2,9 +2,12 @@
 *.pdf
 pdf/
 xls/
+mt940/
 *.xls
 *.xlsx
 *.csv
+*.mt940
+*.sta
 /data/
 *.xml.private
 

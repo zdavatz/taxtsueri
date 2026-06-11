@@ -47,7 +47,17 @@ cargo run -- --from-pdf auszug.pdf                          # eCH-0196-XML aus P
 cargo run -- --package                                      # zusätzlich Einreichungs-Paket
 cargo run -- --jp                                           # juristische Person (ywesee GmbH) → eCH-0276
 cargo run -- --jp --package                                 # JP + Einreichungs-Paket
+cargo run -- --from-mt940 auszug.mt940                      # MT940-Kontoauszug einlesen (Salden/Buchungen)
 ```
+
+### MT940-Kontoauszug (`--from-mt940`)
+
+Liest einen SWIFT-Kontoauszug (`:60F`/`:62F`-Salden, `:61:`/`:86:`-Buchungen),
+gibt eine Zusammenfassung aus und schreibt `data/mt940-summary.json`. Beträge in
+Rappen (kein Float). MT940 liefert **Salden und Transaktionen**, aber keine
+steuerlich kategorisierten Wertschriftendaten (dafür eCH-0196) — nützlich für den
+Jahresend-Kontostand (Bilanz/Guthaben) oder als Gegenprobe (Eröffnung + Gutschriften
+− Belastungen = Schluss).
 
 ### Juristische Personen (eCH-0276)
 
