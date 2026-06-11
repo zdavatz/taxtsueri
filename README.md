@@ -64,13 +64,17 @@ die eCH-Spec). Encoder/Renderer in `src/pdf417/` (Byte-Compaction, Symbol-
 Assemblierung, Macro-PDF417-Kontrollblock und Rendering eigener Code; `HL_TO_LL`-
 Tabellen + Reed-Solomon aus der MIT-Crate `pdf417` vendoriert).
 
-**Verifiziert per Round-Trip:** Die erzeugten Symbole (Einzel- **und** Mehrsegment)
-werden im Test mit `rxing` (zxing-Port) dekodiert und stimmen 1:1 mit der Nutzlast
+Das Ganze wird zu einem **A4-Barcode-Blatt-PDF** zusammengesetzt (`data/barcode-blatt.pdf`,
+Querformat): die PDF417-Segmente (max. 6/Blatt) + der **CODE128C-Seitenbarcode**
+(16-stellig, `src/code128.rs`), via `lopdf` als 1-Bit-ImageMask-XObjects (`src/sheet.rs`).
+
+**Verifiziert per Round-Trip:** PDF417 (Einzel- **und** Mehrsegment) und CODE128C
+werden im Test mit `rxing` (zxing-Port) dekodiert und stimmen 1:1 mit der Eingabe
 überein. (`zbar` decodiert PDF417 nicht vollständig — daher rxing.)
 
-Noch offen: **CODE128C-Seitenbarcode** und **A4-Blattlayout** (6 Segmente/Blatt,
-Querformat). Hinweis: das ZH-*Steuererklärungs*-Barcode-Format ist separat und nur
-auf Anfrage beim Steueramt erhältlich (siehe oben).
+Hinweis: Dies ist der **eCH-0196**-eSteuerauszug-Barcode (öffentlich spezifiziert).
+Das ZH-*Steuererklärungs*-Barcode-Format ist separat und nur auf Anfrage beim
+Steueramt erhältlich (siehe oben).
 
 ### Wertschriften aus dem Vermögensausweis-PDF (`--from-vermoegensausweis`)
 

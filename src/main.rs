@@ -13,6 +13,7 @@
 //! `data/` (Eingabe + XML + Paket) enthält Personendaten und ist gitignored.
 
 mod barcode;
+mod code128;
 mod dataset;
 mod dataset_jp;
 mod ech0196;
@@ -21,6 +22,7 @@ mod model_jp;
 mod mt940;
 mod pdf;
 mod pdf417;
+mod sheet;
 mod vermoegensausweis;
 mod settings;
 mod submit;
@@ -360,26 +362,33 @@ fn run_barcode(path: &str) -> ExitCode {
         Ok(()) => println!("  Nutzlast (zlib)   : {}", out.display()),
         Err(e) => eprintln!("  Hinweis: konnte {} nicht schreiben: {e}", out.display()),
     }
-    // PDF417 Structured Append: alle Segmente rendern.
+    // PDF417 Structured Append → A4-Barcode-Blatt (PDF) mit CODE128C-Seitenbarcode.
     let (c, r, l) = (barcode::COLUMNS, barcode::ROWS, barcode::EC_LEVEL);
     match pdf417::build_symbols(&p.compressed, c, r, l) {
         Ok(symbols) => {
             let n = symbols.len();
-            let _ = std::fs::create_dir_all("data");
-            let mut ok = true;
-            for (i, sym) in symbols.iter().enumerate() {
-                let grid = pdf417::render(sym, c, r, l);
-                let pbm = pdf417::to_pbm(&grid, 3);
-                let img = Path::new("data").join(format!("barcode-{}.pbm", i + 1));
-                if let Err(e) = std::fs::write(&img, &pbm) {
-                    eprintln!("  Hinweis: konnte {} nicht schreiben: {e}", img.display());
-                    ok = false;
+            let grids: Vec<Vec<Vec<bool>>> =
+                symbols.iter().map(|s| pdf417::render(s, c, r, l)).collect();
+            // 16-stelliger Seitencode (Organisations-Nr. hier Platzhalter 0).
+            let page_code = code128::build_page_code(196, 22, 0, 1, true, 0, 1);
+            match code128::encode(&page_code) {
+                Ok(bits) => {
+                    let pdf = sheet::build_sheet_pdf(&grids, &bits);
+                    let out = Path::new("data").join("barcode-blatt.pdf");
+                    match std::fs::create_dir_all("data").and_then(|_| std::fs::write(&out, &pdf)) {
+                        Ok(()) => {
+                            let sheets = n.div_ceil(6);
+                            println!("  PDF417            : {n} Segment(e), CODE128C {page_code}");
+                            println!(
+                                "  Barcode-Blatt     : {} ({sheets} Blatt A4, {} Bytes)",
+                                out.display(),
+                                pdf.len()
+                            );
+                        }
+                        Err(e) => eprintln!("  Hinweis: konnte {} nicht schreiben: {e}", out.display()),
+                    }
                 }
-            }
-            if ok {
-                println!(
-                    "  PDF417            : {n} Segment(e) gerendert → data/barcode-1.pbm … barcode-{n}.pbm (je 290×35 Module)"
-                );
+                Err(e) => eprintln!("  CODE128: {e}"),
             }
         }
         Err(e) => println!("  PDF417            : {e}"),

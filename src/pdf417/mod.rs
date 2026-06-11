@@ -184,6 +184,7 @@ fn push_bits(out: &mut Vec<bool>, pattern: u32, len: u8) {
 }
 
 /// Modulraster → PBM (P1, ASCII), mit Skalierung und 2-Modul-Ruhezone.
+#[allow(dead_code)] // Debug-/Bildausgabe; CLI nutzt das PDF-Blatt.
 pub fn to_pbm(grid: &[Vec<bool>], scale: usize) -> String {
     let qz = 2; // Ruhezone in Modulen
     let modules_w = grid.first().map(|r| r.len()).unwrap_or(0);
@@ -223,7 +224,8 @@ pub fn to_pbm(grid: &[Vec<bool>], scale: usize) -> String {
 
 /// Modulraster → 8-Bit-Graustufenpuffer (schwarz=0, weiss=255) mit Ruhezone.
 /// `sx`/`sy` skalieren horizontal/vertikal (PDF417-Zeilen sind höher als breit).
-#[allow(dead_code)] // genutzt im Round-Trip-Test; künftig für Bildausgabe.
+/// Nur für den rxing-Round-Trip-Test (Decoder erwartet ein Luma-Bild).
+#[cfg(test)]
 pub fn to_luma(grid: &[Vec<bool>], sx: usize, sy: usize) -> (Vec<u8>, usize, usize) {
     let qz = 4; // Ruhezone in Modulen
     let mw = grid.first().map(|r| r.len()).unwrap_or(0);

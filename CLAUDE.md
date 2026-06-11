@@ -60,7 +60,12 @@ that **validates against the official XSD**. Three modules:
   spec-exact 290×35 module geometry. `build_symbols` does **Structured Append** (Macro-PDF417,
   multi-segment) — `--barcode` renders all segments. **Round-trip verified**: `rxing` (zxing port,
   dev-dependency) decodes the rendered single- and multi-segment symbols back to the payload in tests
-  (zbar's PDF417 is incomplete). Still open: CODE128C page barcode + A4 sheet layout.
+  (zbar's PDF417 is incomplete).
+- **`src/code128.rs`** — CODE128C page barcode (16-digit eCH page code) via the `barcoders` crate;
+  rxing-verified round-trip.
+- **`src/sheet.rs`** — composes the A4 **barcode sheet PDF** (`data/barcode-blatt.pdf`, landscape) via
+  `lopdf`: PDF417 segments (≤6/sheet) + CODE128C as 1-bit ImageMask XObjects. `--barcode` produces it.
+  This completes the eCH-0196 barcode sheet; the ZH *tax-declaration* barcode format is separate (gated).
 - **`src/vermoegensausweis.rs`** — parser for a UBS **Vermögensausweis** (portfolio statement,
   text PDF via `pdftotext -layout`): extracts positions (quantity, name, Valor/ISIN, currency,
   country, market value = tax value, dividend) → `SecurityEntry`. `--from-vermoegensausweis`
