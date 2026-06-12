@@ -23,6 +23,7 @@ cargo run -- --barcode statement.xml        # eCH-0196 → A4 barcode sheet PDF 
 cargo run -- --zh-barcode                   # ZH-Steuererklärungs-Barcode: eCH-0119 v3 + zh:cantonExtension → data/zh-barcode-blatt.pdf
 cargo run --features gui --bin taxtsueri-gui  # native desktop GUI (eframe): MT940 (Basis) + Vermögensausweis → eCH-0119 XML
 cargo run -- --from-mt940 konto.mt940 --from-vermoegensausweis depot.pdf  # kombiniert → eCH-0119 (Konto = Basis)
+cargo run -- --from-mt940 konto.mt940 --wertschriften 38628  # → data/Cash-Flow-Rechnung.pdf (Bilanz + ER, Entwurf)
 cargo test                  # run tests (incl. xmllint validation of NP eCH-0119 + JP eCH-0276, eCH-0196 parse, PDF roundtrip, SHA-256)
 ```
 
@@ -111,6 +112,18 @@ that **validates against the official XSD**. Three modules:
   **base** of the declaration (account first) and the Vermögensausweis securities are appended into one
   `listOfSecurities` (totals via `vermoegensausweis::build_list_of_securities`). The GUI offers both
   pickers and produces the combined eCH-0119 XML.
+  `category()` also maps debits content-first to the real ER accounts (Lohnaufwand, Sozialversicherungs-
+  aufwand, Raumaufwand, Steuern/MWST (ESTV) vs. Steuern (Kanton/Gemeinde), Reisespesen) before the
+  payment-method fallbacks. **`pseudo_statements()`** builds a **Cash-Flow-Rechnung** (draft for the
+  Vermögensverwalter): a cash-basis Erfolgsrechnung (Ertrag/Aufwand per category, with per-Ertrag review
+  notes) + the derivable Bilanz part (bank line + Wertschriften from the Vermögensausweis). MWST is **not**
+  netted from revenue — the bank shows both sides, so it is already captured as the ESTV payment on the
+  expense side (netting would double-count); the gap to the accrual Jahresgewinn is accruals, not MWST.
+- **`src/pdf_report.rs`** — renders the Cash-Flow-Rechnung as a two-page PDF (`data/Cash-Flow-Rechnung.pdf`:
+  S.1 Bilanz, S.2 Erfolgsrechnung) — Helvetica/WinAnsi via `lopdf`, right-aligned amounts. Also written as
+  `data/Cash-Flow-Rechnung.md`. The GUI saves it via the "Cash-Flow-Rechnung (PDF)" button.
+  `--from-mt940 [--wertschriften <CHF>]` produces it; `--wertschriften` supplies the securities value for the
+  Bilanz when no Vermögensausweis is given (e.g. from the Jahresrechnung).
 - **`src/model_jp.rs` / `src/dataset_jp.rs`** — **juristische Personen** per **eCH-0276**
   «E-Bilanz und E-Tax JP» (built from `schema/eCH-0276-1-0.xsd` + `eCH-0276-beispiel.xml`):
   root `eBalanceSheetETaxLegalEntity` → `header`(title) + `content` (assets, equityAndLiabilities,

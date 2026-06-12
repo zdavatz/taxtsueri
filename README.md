@@ -74,6 +74,7 @@ cargo run -- --jp                                           # juristische Person
 cargo run -- --jp --package                                 # JP + Einreichungs-Paket
 cargo run -- --from-mt940 auszug.mt940                      # MT940-Kontoauszug einlesen (Salden/Buchungen)
 cargo run -- --from-mt940 konto.mt940 --from-vermoegensausweis depot.pdf  # kombiniert → eCH-0119 (MT940-Konto = Basis + Wertschriften)
+cargo run -- --from-mt940 konto.mt940 --wertschriften 38628 # → data/Cash-Flow-Rechnung.pdf (Bilanz + ER, Entwurf z. Hd. Vermögensverwalter)
 ```
 
 ### eCH-0196-Barcode (`--barcode`) — Fundament
