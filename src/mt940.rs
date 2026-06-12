@@ -91,15 +91,29 @@ pub fn category(tx: &Transaction) -> &'static str {
         }
         return "Übrige Erträge";
     }
-    if has("steuerverwaltung") || has("steueramt") || has("steuern") {
-        return "Steuern";
+    // Belastungen: INHALT (Erfolgsrechnungs-Konto) zuerst, Zahlungsart nur als Fallback.
+    if has("lohn") || has("salär") || has("salaer") || has("gehalt") {
+        return "Lohnaufwand";
     }
     if has("ausgleichskasse") || has("sva") || has("ahv") || has("pensionskasse")
         || has("bvg") || has("vorsorge") || has("suva") || has("sozialvers")
     {
-        return "Sozialversicherungen";
+        return "Sozialversicherungsaufwand";
     }
-    if has("depot") || has("dl-preisabschluss") || has("geb") {
+    if has("miete") || has("mietzins") || has("raumaufwand") {
+        return "Raumaufwand";
+    }
+    // Eidg. Steuerverwaltung = MWST/direkte Bundessteuer; separat von kantonalen Steuern.
+    if has("mwst") || has("mehrwertsteuer") || has("eidgen") || has("steuerverwaltung") {
+        return "Steuern/MWST (ESTV)";
+    }
+    if has("steueramt") || has("steuern") {
+        return "Steuern (Kanton/Gemeinde)";
+    }
+    if has("reisespesen") || has("flug") || has("sbb") || has("hotel") || has("bahn") {
+        return "Reisespesen";
+    }
+    if has("depot") || has("dl-preisabschluss") || has("geb") || has("kontoführung") {
         return "Bankspesen/Depotgebühren";
     }
     if has("bancomat") || has("barbezug") {
@@ -109,7 +123,7 @@ pub fn category(tx: &Transaction) -> &'static str {
         return "Spesen Debitkarte (Reise/Verpflegung)";
     }
     if has("dauerauftrag") {
-        return "Daueraufträge (Miete/Versicherung)";
+        return "Daueraufträge (übrige)";
     }
     if has("lastschrift") || has("paynet") {
         return "Lastschrift/PayNet (Betriebsaufwand)";
@@ -300,7 +314,8 @@ fn ertrag_note(cat: &str) -> Option<String> {
         "Lohn/Erwerbseinkommen (Lohnausweis)" => Some("über Lohnausweis deklariert".into()),
         "Rückerstattung (kein Ertrag)" => Some("kein Ertrag — Rückerstattung".into()),
         "Eigenübertrag (kein Ertrag)" => Some("kein Ertrag — Eigenübertrag".into()),
-        "Erlös (Gutschriften)" | "Übrige Erträge" => Some("prüfen: betrieblicher Ertrag?".into()),
+        "Erlös (Gutschriften)" => Some("brutto inkl. MWST — Netto durch Verwalter".into()),
+        "Übrige Erträge" => Some("prüfen: betrieblicher Ertrag?".into()),
         _ => None,
     }
 }
