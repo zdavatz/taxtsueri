@@ -3,7 +3,7 @@
 //! Fehlt eines von beidem, wird der Test übersprungen statt zu scheitern.
 
 use std::process::Command;
-use taxtsueri::{dataset, dataset_jp, model};
+use taxtsueri::{dataset, dataset_jp, model, model_zh};
 
 fn validate(schema: &str, xml: &str, tmp_name: &str) -> bool {
     if !std::path::Path::new(schema).exists()
@@ -33,6 +33,21 @@ fn jp_example_validates_against_ech0276() {
         "schema/eCH-0276-1-0.xsd",
         &xml,
         "taxtsueri-jp-validation.xml"
+    ));
+}
+
+#[test]
+fn zh_v3_core_validates_against_ech0119_v3() {
+    // Kern des ZH-Steuererklärungs-Barcodes: eCH-0119 v3 (ssk-prefixed). Die
+    // zh:-cantonExtension (strict wildcard) kommt in Phase 2 hinzu und ist nur
+    // strukturell gegen das Sample prüfbar, nicht gegen diese Kern-XSD.
+    let doc = dataset::example();
+    let msg = model_zh::ZhMessage::from_document(&doc, 2025);
+    let xml = model_zh::zh_message_to_xml(&msg).expect("serialize v3");
+    assert!(validate(
+        "schema/eCH-0119-2015-3-0.xsd",
+        &xml,
+        "taxtsueri-zh-v3-validation.xml"
     ));
 }
 

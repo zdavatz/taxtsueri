@@ -340,7 +340,7 @@ pub struct DateYearMonthDay {
 }
 
 /// `eCH-0007f:swissMunicipalityType` — Kinder im eCH-0007-f-Namespace.
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 #[serde(default)]
 pub struct SwissMunicipality {
     #[serde(rename = "eCH-0007f:municipalityId")]

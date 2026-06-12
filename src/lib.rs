@@ -11,6 +11,7 @@ pub mod dataset_jp;
 pub mod ech0196;
 pub mod model;
 pub mod model_jp;
+pub mod model_zh;
 pub mod mt940;
 pub mod pdf;
 pub mod pdf417;
