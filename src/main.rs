@@ -33,6 +33,9 @@ struct Args {
     from_vermoegensausweis: Option<String>,
     barcode: Option<String>,
     zh_barcode: bool,
+    /// Wertschriften-Steuerwert in CHF für die Pseudo-Bilanz (wenn kein Vermögensausweis
+    /// vorliegt, z. B. aus der Jahresrechnung).
+    wertschriften: Option<i64>,
 }
 
 fn parse_args() -> Result<Args, String> {
@@ -52,6 +55,14 @@ fn parse_args() -> Result<Args, String> {
             }
             "--barcode" => a.barcode = Some(it.next().ok_or("--barcode erwartet einen Pfad (eCH-0196-XML)")?),
             "--zh-barcode" => a.zh_barcode = true,
+            "--wertschriften" => {
+                a.wertschriften = Some(
+                    it.next()
+                        .ok_or("--wertschriften erwartet einen CHF-Betrag")?
+                        .parse()
+                        .map_err(|_| "--wertschriften: ungültige Zahl")?,
+                )
+            }
             s if s.starts_with("--") => return Err(format!("unbekannte Option: {s}")),
             s => a.input_json = Some(s.to_string()),
         }
@@ -75,7 +86,7 @@ fn main() -> ExitCode {
         && args.from_ech0196.is_none()
         && args.from_pdf.is_none()
     {
-        return run_mt940(args.from_mt940.as_ref().unwrap());
+        return run_mt940(args.from_mt940.as_ref().unwrap(), args.wertschriften);
     }
 
     if let Some(path) = &args.barcode {
@@ -324,7 +335,7 @@ fn extract_ech0196_from_pdf(path: &Path) -> Result<Option<String>, String> {
 
 /// `--from-mt940`: MT940-Kontoauszug einlesen, Zusammenfassung ausgeben +
 /// `data/mt940-summary.json` schreiben.
-fn run_mt940(path: &str) -> ExitCode {
+fn run_mt940(path: &str, wertschriften_chf: Option<i64>) -> ExitCode {
     // MT940 ist oft Latin-1 (Umlaute) → verlustfrei-tolerant dekodieren.
     let bytes = match std::fs::read(path) {
         Ok(b) => b,
@@ -376,9 +387,10 @@ fn run_mt940(path: &str) -> ExitCode {
         println!("  Flüssige Mittel (Bank) per {} : {} {}", b.date, b.currency, mt940::format_cents(b.amount_cents));
     }
 
-    // Pseudo-Jahresrechnung (Entwurf für den Vermögensverwalter). Hier (MT940 allein)
-    // ohne Wertschriften — die kommen im kombinierten Flow aus dem Vermögensausweis.
-    let ps = mt940::pseudo_statements(&stmt, None);
+    // Pseudo-Jahresrechnung (Entwurf für den Vermögensverwalter). Wertschriften via
+    // --wertschriften (z. B. aus der Jahresrechnung) oder im kombinierten Flow aus dem
+    // Vermögensausweis.
+    let ps = mt940::pseudo_statements(&stmt, wertschriften_chf.map(|c| c * 100));
     let report = serde_json::json!({
         "account": stmt.account,
         "opening": stmt.opening,

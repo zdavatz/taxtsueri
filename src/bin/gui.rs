@@ -20,6 +20,7 @@ enum Pending {
     OpenMt940,
     OpenVermoegen,
     Save,
+    SavePseudo,
 }
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -47,6 +48,8 @@ fn main() -> eframe::Result<()> {
 struct App {
     status: String,
     xml: Option<String>,
+    /// Pseudo-Jahresrechnung als PDF (Bilanz + ER) — sofern ein MT940 geladen ist.
+    pseudo_pdf: Option<Vec<u8>>,
     securities: usize,
     update_rx: Receiver<Option<update::UpdateInfo>>,
     update_info: Option<update::UpdateInfo>,
@@ -75,6 +78,7 @@ impl App {
         Self {
             status: "Bereit. Wähle einen UBS-Vermögensausweis (PDF).".into(),
             xml: None,
+            pseudo_pdf: None,
             securities: 0,
             update_rx: rx,
             update_info: None,
@@ -114,6 +118,9 @@ impl App {
     fn do_generate(&mut self) {
         let mut entries: Vec<taxtsueri::model::SecurityEntry> = Vec::new();
         let mut parts: Vec<String> = Vec::new();
+        let mut mt940_stmt: Option<mt940::Statement> = None;
+        let mut wertschriften_cents: Option<i64> = None;
+        self.pseudo_pdf = None;
 
         // MT940-Konto als Basis (Schlusssaldo = Vermögen, Zinsen = Ertrag).
         if let Some(p) = self.mt940_path.clone() {
@@ -122,6 +129,7 @@ impl App {
                     Ok(stmt) => {
                         entries.push(mt940::account_security_entry(&stmt));
                         parts.push(format!("MT940-Konto {}", stmt.account));
+                        mt940_stmt = Some(stmt);
                     }
                     Err(e) => {
                         self.status = format!("MT940 nicht lesbar: {e}");
@@ -140,6 +148,8 @@ impl App {
             match run_pdftotext(&p) {
                 Ok(text) => {
                     let secs = vermoegensausweis::to_securities(&vermoegensausweis::parse_text(&text));
+                    let chf: i64 = secs.iter().filter_map(|s| s.tax_value.map(|t| t.cantonal)).sum();
+                    wertschriften_cents = Some(chf * 100);
                     parts.push(format!("{} Wertschriften", secs.len()));
                     entries.extend(secs);
                 }
@@ -148,6 +158,12 @@ impl App {
                     return;
                 }
             }
+        }
+
+        // Pseudo-Jahresrechnung (Bilanz + ER) als PDF, sobald ein MT940 vorliegt.
+        if let Some(stmt) = &mt940_stmt {
+            let ps = mt940::pseudo_statements(stmt, wertschriften_cents);
+            self.pseudo_pdf = Some(taxtsueri::pdf_report::pseudo_statements_pdf(&ps));
         }
 
         if entries.is_empty() {
@@ -185,6 +201,14 @@ impl eframe::App for App {
             match self.pending {
                 Pending::OpenMt940 => self.mt940_path = Some(path),
                 Pending::OpenVermoegen => self.vermoegen_path = Some(path),
+                Pending::SavePseudo => {
+                    if let Some(pdf) = &self.pseudo_pdf {
+                        self.status = match std::fs::write(&path, pdf) {
+                            Ok(()) => format!("Pseudo-Jahresrechnung gespeichert: {}", path.display()),
+                            Err(e) => format!("Speichern fehlgeschlagen: {e}"),
+                        };
+                    }
+                }
                 Pending::Save => {
                     if let Some(xml) = &self.xml {
                         self.status = match std::fs::write(&path, xml) {
@@ -272,6 +296,17 @@ impl eframe::App for App {
             }
             ui.add_space(4.0);
             ui.label(&self.status);
+
+            // Pseudo-Jahresrechnung (Bilanz + ER) als PDF — sobald ein MT940 geladen ist.
+            if self.pseudo_pdf.is_some()
+                && ui
+                    .button("📊  Pseudo-Jahresrechnung (PDF) speichern …  (Entwurf)")
+                    .on_hover_text("Cash-Basis-Entwurf: S.1 Bilanz (inkl. Wertschriften), S.2 Erfolgsrechnung — zur Prüfung durch den Vermögensverwalter")
+                    .clicked()
+            {
+                self.pending = Pending::SavePseudo;
+                self.file_dialog.save_file();
+            }
 
             if let Some(xml) = self.xml.clone() {
                 ui.separator();
