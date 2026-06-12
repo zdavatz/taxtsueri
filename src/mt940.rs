@@ -9,6 +9,7 @@
 //! (dafür eCH-0196). Nützlich z. B. für den Jahresend-Kontostand (Bilanz/Guthaben)
 //! oder als Beleg-Gegenprobe.
 
+use crate::model::{SecurityEntry, TaxAmount};
 use serde::Serialize;
 
 #[derive(Debug, Default, Serialize)]
@@ -97,6 +98,44 @@ pub fn category(tx: &Transaction) -> &'static str {
         return "Überweisungen (e-banking)";
     }
     "Übrige Aufwände"
+}
+
+/// Ertrag (Gutschrift) vs. Aufwand (Belastung) — die buchhalterische Grundunter-
+/// scheidung. Gutschriften sind Erträge, Belastungen Aufwände.
+pub fn is_income(tx: &Transaction) -> bool {
+    tx.credit
+}
+
+/// Rappen → ganze CHF (kaufmännisch gerundet).
+fn round_chf(cents: i64) -> i64 {
+    (cents as f64 / 100.0).round() as i64
+}
+
+/// Wandelt den Kontoauszug in eine **Konto-Position** fürs eCH-0119-Wertschriften-
+/// verzeichnis und bildet damit die **Basis** der Erklärung: Schlusssaldo (`:62F:`) =
+/// `taxValueEndOfYear`, der als **Finanzertrag (Zinsen)** erkannte Gutschriftsteil =
+/// steuerbarer `grossRevenueA`. Übrige Erträge/Aufwände fliessen NICHT ins
+/// Wertschriftenverzeichnis (sie sind im Saldo bereits enthalten bzw. privat).
+pub fn account_security_entry(stmt: &Statement) -> SecurityEntry {
+    let bal = stmt.closing.as_ref().or(stmt.opening.as_ref());
+    let tax_chf = bal.map(|b| round_chf(b.amount_cents)).unwrap_or(0);
+    let interest_cents: i64 = stmt
+        .transactions
+        .iter()
+        .filter(|t| is_income(t) && category(t) == "Finanzertrag (Dividenden/Zinsen)")
+        .map(|t| t.amount_cents)
+        .sum();
+    let interest_chf = round_chf(interest_cents);
+    SecurityEntry {
+        currency: bal.map(|b| b.currency.clone()),
+        quantity: None,
+        securities_number: None,
+        description: format!("Kontokorrent {}", stmt.account),
+        country: None, // CH
+        tax_value: Some(TaxAmount::new(tax_chf, tax_chf)),
+        gross_revenue_a: (interest_chf != 0).then(|| TaxAmount::new(interest_chf, interest_chf)),
+        gross_revenue_b: None,
+    }
 }
 
 /// Summen je Kategorie.
@@ -314,6 +353,24 @@ mod tests {
         assert!(cats
             .iter()
             .any(|c| c.category.contains("Debitkarte") && c.debit_cents == 14_690));
+    }
+
+    #[test]
+    fn account_becomes_security_entry_with_interest() {
+        let mt = ":25:CH9300762011623852957\n\
+            :60F:C250101CHF100000,00\n\
+            :61:2503150315C500,00NTRFNONREF//Zins\n\
+            :86:Zinsgutschrift Sparkonto\n\
+            :61:2509100910C8000,00NTRFNONREF//Lohn\n\
+            :86:E-Banking-Gutschrift Lohn\n\
+            :62F:C251231CHF108500,00\n";
+        let s = parse(mt).expect("parse");
+        let e = account_security_entry(&s);
+        assert!(e.description.contains("CH9300762011623852957"));
+        // Schlusssaldo → Vermögen.
+        assert_eq!(e.tax_value.unwrap().cantonal, 108_500);
+        // Nur der Zinsertrag ist steuerbarer Ertrag — NICHT der Lohn (kein Finanzertrag).
+        assert_eq!(e.gross_revenue_a.unwrap().cantonal, 500);
     }
 
     #[test]

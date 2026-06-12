@@ -68,8 +68,14 @@ fn main() -> ExitCode {
         }
     };
 
-    if let Some(path) = &args.from_mt940 {
-        return run_mt940(path);
+    // MT940 **allein** → Kontoauszugs-Report. Zusammen mit einem Erklärungs-Input
+    // (Vermögensausweis/eCH-0196) bildet es stattdessen die Basis der Erklärung (unten).
+    if args.from_mt940.is_some()
+        && args.from_vermoegensausweis.is_none()
+        && args.from_ech0196.is_none()
+        && args.from_pdf.is_none()
+    {
+        return run_mt940(args.from_mt940.as_ref().unwrap());
     }
 
     if let Some(path) = &args.barcode {
@@ -166,19 +172,64 @@ fn main() -> ExitCode {
     }
 
     // 2b) Optional: Wertschriftenverzeichnis direkt aus einem Vermögensausweis-PDF.
-    if let Some(path) = &args.from_vermoegensausweis {
-        match run_pdftotext(Path::new(path)) {
-            Ok(text) => {
-                let los = vermoegensausweis::list_of_securities_from_text(&text);
-                let n = los.security_entry.len();
-                doc.content.list_of_securities = Some(los);
-                println!("Vermögensausweis eingelesen: {n} Wertschriftenpositionen übernommen.");
-            }
-            Err(e) => {
-                eprintln!("{e}");
-                return ExitCode::FAILURE;
+    // Kombinierter Flow: MT940-Konto (Basis) + Vermögensausweis (Wertschriften) →
+    // ein eCH-0119-Wertschriftenverzeichnis. Das Konto steht zuoberst.
+    if args.from_mt940.is_some() || args.from_vermoegensausweis.is_some() {
+        let mut entries: Vec<model::SecurityEntry> = Vec::new();
+
+        if let Some(path) = &args.from_mt940 {
+            let bytes = match std::fs::read(path) {
+                Ok(b) => b,
+                Err(e) => {
+                    eprintln!("Konnte {path} nicht lesen: {e}");
+                    return ExitCode::FAILURE;
+                }
+            };
+            match mt940::parse(&String::from_utf8_lossy(&bytes)) {
+                Ok(stmt) => {
+                    let acc = mt940::account_security_entry(&stmt);
+                    let saldo = acc.tax_value.map(|t| t.cantonal).unwrap_or(0);
+                    let zins = acc.gross_revenue_a.map(|t| t.cantonal).unwrap_or(0);
+                    let (credit, debit) = (stmt.total_credit_cents(), stmt.total_debit_cents());
+                    println!("MT940 (Basis): Konto {}", stmt.account);
+                    println!("  Schlusssaldo → Vermögen   : CHF {saldo}");
+                    println!("  Zinsertrag   → grossRevenueA: CHF {zins}");
+                    println!(
+                        "  Ertrag/Aufwand (Geldfluss) : +{} / -{} (Buchungen: {})",
+                        mt940::format_cents(credit),
+                        mt940::format_cents(debit),
+                        stmt.transactions.len()
+                    );
+                    entries.push(acc);
+                }
+                Err(e) => {
+                    eprintln!("MT940 nicht lesbar: {e}");
+                    return ExitCode::FAILURE;
+                }
             }
         }
+
+        if let Some(path) = &args.from_vermoegensausweis {
+            match run_pdftotext(Path::new(path)) {
+                Ok(text) => {
+                    let secs = vermoegensausweis::to_securities(&vermoegensausweis::parse_text(&text));
+                    println!("Vermögensausweis: {} Wertschriftenpositionen übernommen.", secs.len());
+                    entries.extend(secs);
+                }
+                Err(e) => {
+                    eprintln!("{e}");
+                    return ExitCode::FAILURE;
+                }
+            }
+        }
+
+        let los = vermoegensausweis::build_list_of_securities(entries);
+        let total = los.total_tax_value.map(|t| t.cantonal).unwrap_or(0);
+        println!(
+            "→ Wertschriftenverzeichnis: {} Positionen, Steuerwert total CHF {total}",
+            los.security_entry.len()
+        );
+        doc.content.list_of_securities = Some(los);
     }
 
     // 2c) settings.json (gitignored) setzt die AHVN13 – nicht im Code.

@@ -171,9 +171,10 @@ pub fn to_securities(positions: &[Position]) -> Vec<SecurityEntry> {
         .collect()
 }
 
-/// Baut aus dem Vermögensausweis-Text direkt ein eCH-0119-Wertschriftenverzeichnis.
-pub fn list_of_securities_from_text(text: &str) -> ListOfSecurities {
-    let security = to_securities(&parse_text(text));
+/// Baut aus beliebigen [`SecurityEntry`]s ein eCH-0119-Wertschriftenverzeichnis und
+/// berechnet die Summen (Steuerwert, Bruttoertrag A, 35 % Verrechnungssteuer).
+/// Gemeinsame Basis für Vermögensausweis und MT940-Konto.
+pub fn build_list_of_securities(security: Vec<SecurityEntry>) -> ListOfSecurities {
     let total_tax: i64 = security.iter().filter_map(|s| s.tax_value.map(|t| t.cantonal)).sum();
     let gross_a: i64 = security.iter().filter_map(|s| s.gross_revenue_a.map(|t| t.cantonal)).sum();
     ListOfSecurities {
@@ -186,6 +187,11 @@ pub fn list_of_securities_from_text(text: &str) -> ListOfSecurities {
         total_gross_revenue: None,
         withholding_tax: (gross_a != 0).then(|| format!("{:.2}", gross_a as f64 * 0.35)),
     }
+}
+
+/// Baut aus dem Vermögensausweis-Text direkt ein eCH-0119-Wertschriftenverzeichnis.
+pub fn list_of_securities_from_text(text: &str) -> ListOfSecurities {
+    build_list_of_securities(to_securities(&parse_text(text)))
 }
 
 #[cfg(test)]
