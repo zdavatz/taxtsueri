@@ -27,6 +27,10 @@ B0119="$IMCE/0091-0120/eCH-0119/4.0.0/Beilagen"
 dl "$B0119/eCH-0119-4-0-0.xsd"                 eCH-0119-4-0-0.xsd
 dl "$B0119/test.eCH-0119.v4.0.0.major.xml"     test.eCH-0119.v4.0.0.major.xml
 
+echo "eCH-0119 v3.0 (Basis des ZH-Steuererklärungs-Barcodes, ssk-prefixed):"
+dl "$IMCE/0091-0120/eCH-0119/3.0/Beilagen/eCH-0119-2015-3-0.xsd"  eCH-0119-2015-3-0.xsd
+dl "$IMCE/0031-0060/eCH-0046/3.0/Beilagen/eCH-0046-3-0f.xsd"      eCH-0046-3-0f.xsd
+
 echo "eCH-0196 (eSteuerauszug) – Referenz für den Reader (src/ech0196.rs):"
 dl "$IMCE/0181-0210/eCH-0196/2.2.0/Beilagen/eCH-0196-2-2.xsd"  eCH-0196-2-2.xsd
 
