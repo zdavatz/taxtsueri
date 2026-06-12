@@ -314,7 +314,7 @@ fn ertrag_note(cat: &str) -> Option<String> {
         "Lohn/Erwerbseinkommen (Lohnausweis)" => Some("über Lohnausweis deklariert".into()),
         "Rückerstattung (kein Ertrag)" => Some("kein Ertrag — Rückerstattung".into()),
         "Eigenübertrag (kein Ertrag)" => Some("kein Ertrag — Eigenübertrag".into()),
-        "Erlös (Gutschriften)" => Some("brutto inkl. MWST — Netto durch Verwalter".into()),
+        "Erlös (Gutschriften)" => Some("brutto inkl. MWST (MWST als ESTV-Zahlung im Aufwand)".into()),
         "Übrige Erträge" => Some("prüfen: betrieblicher Ertrag?".into()),
         _ => None,
     }
