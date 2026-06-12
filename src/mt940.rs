@@ -63,8 +63,28 @@ pub fn category(tx: &Transaction) -> &'static str {
     let hay = format!("{} {}", tx.booking_type, tx.description).to_lowercase();
     let has = |k: &str| hay.contains(k);
     if tx.credit {
-        if has("dividende") || has("zins") {
+        // Dividenden sind IMMER steuerbarer Ertrag (wie Zinsen, mit 35 % VST) —
+        // breit erkennen, da der Beleg sie unterschiedlich benennt.
+        if has("dividend") || has("zins") || has("ausschüttung") || has("ausschuettung")
+            || has("coupon") || has("kupon") || has("ertragsaussch")
+        {
             return "Finanzertrag (Dividenden/Zinsen)";
+        }
+        // Lohn → über den Lohnausweis deklariert, nicht im Wertschriftenverzeichnis.
+        if has("lohn") || has("salär") || has("salaer") || has("gehalt") || has("salary") {
+            return "Lohn/Erwerbseinkommen (Lohnausweis)";
+        }
+        // Steuer-/Spesenrückerstattung → kein steuerbarer Ertrag.
+        if has("rückerstattung") || has("rueckerstattung") || has("steuerrück")
+            || has("rückzahlung") || has("rueckzahlung") || has("refund")
+        {
+            return "Rückerstattung (kein Ertrag)";
+        }
+        // Eigenübertrag zwischen eigenen Konten → kein Einkommen (Doppelzählung vermeiden).
+        if has("übertrag") || has("uebertrag") || has("umbuchung") || has("eigenkonto")
+            || has("e-banking eigen")
+        {
+            return "Eigenübertrag (kein Ertrag)";
         }
         if has("e-banking-gutschrift") || has("gutschrift") || has("verg") {
             return "Erlös (Gutschriften)";
@@ -113,19 +133,20 @@ fn round_chf(cents: i64) -> i64 {
 
 /// Wandelt den Kontoauszug in eine **Konto-Position** fürs eCH-0119-Wertschriften-
 /// verzeichnis und bildet damit die **Basis** der Erklärung: Schlusssaldo (`:62F:`) =
-/// `taxValueEndOfYear`, der als **Finanzertrag (Zinsen)** erkannte Gutschriftsteil =
-/// steuerbarer `grossRevenueA`. Übrige Erträge/Aufwände fliessen NICHT ins
-/// Wertschriftenverzeichnis (sie sind im Saldo bereits enthalten bzw. privat).
+/// `taxValueEndOfYear`, der als **Finanzertrag (Zinsen/Dividenden)** erkannte
+/// Gutschriftsteil = steuerbarer `grossRevenueA` (Dividenden sind immer Ertrag).
+/// Übrige Erträge/Aufwände fliessen NICHT ins Wertschriftenverzeichnis (sie sind im
+/// Saldo bereits enthalten bzw. privat).
 pub fn account_security_entry(stmt: &Statement) -> SecurityEntry {
     let bal = stmt.closing.as_ref().or(stmt.opening.as_ref());
     let tax_chf = bal.map(|b| round_chf(b.amount_cents)).unwrap_or(0);
-    let interest_cents: i64 = stmt
+    let revenue_cents: i64 = stmt
         .transactions
         .iter()
         .filter(|t| is_income(t) && category(t) == "Finanzertrag (Dividenden/Zinsen)")
         .map(|t| t.amount_cents)
         .sum();
-    let interest_chf = round_chf(interest_cents);
+    let interest_chf = round_chf(revenue_cents);
     SecurityEntry {
         currency: bal.map(|b| b.currency.clone()),
         quantity: None,
@@ -148,23 +169,35 @@ pub struct Flag {
     pub reason: String,
 }
 
-/// Buchungen, die das Steueramt prüft und die **nicht** automatisch als Zinsertrag
-/// verbucht werden: grössere Gutschriften (≥ CHF 1'000), die steuerbares Einkommen
-/// (Lohn/Honorar/ausländischer Ertrag) **oder** ein nicht-steuerbarer Eigenübertrag
-/// sein können — der Nutzer muss entscheiden. Schwelle bewusst tief, lieber einmal
-/// zu viel fragen.
+/// Kategorien, die **automatisch** korrekt behandelt werden und daher NICHT
+/// nachgefragt werden müssen: Finanzertrag (→ als Ertrag verbucht), Lohn (Lohnausweis),
+/// Rückerstattung/Eigenübertrag (kein Ertrag).
+fn is_auto_classified(cat: &str) -> bool {
+    matches!(
+        cat,
+        "Finanzertrag (Dividenden/Zinsen)"
+            | "Lohn/Erwerbseinkommen (Lohnausweis)"
+            | "Rückerstattung (kein Ertrag)"
+            | "Eigenübertrag (kein Ertrag)"
+    )
+}
+
+/// Nur die **wirklich unklaren** Gutschriften (≥ CHF 1'000), die sich nicht automatisch
+/// einordnen liessen — typische Aufgriffe des Steueramts (möglicherweise unversteuertes
+/// Einkommen). Alles automatisch Erkannte (Zins/Dividende, Lohn, Rückerstattung,
+/// Eigenübertrag) erscheint hier NICHT mehr.
 pub fn flagged_credits(stmt: &Statement) -> Vec<Flag> {
     stmt.transactions
         .iter()
         .filter(|t| is_income(t))
-        .filter(|t| category(t) != "Finanzertrag (Dividenden/Zinsen)")
+        .filter(|t| !is_auto_classified(category(t)))
         .filter(|t| t.amount_cents >= 100_000)
         .map(|t| Flag {
             date: t.value_date.clone(),
             amount_cents: t.amount_cents,
             description: t.description.trim().to_string(),
             category: category(t).to_string(),
-            reason: "Grössere Gutschrift, nicht als Zins erkannt — steuerbares Einkommen oder Eigenübertrag?"
+            reason: "Grössere Gutschrift, nicht automatisch einordenbar — steuerbares Einkommen oder Eigenübertrag?"
                 .to_string(),
         })
         .collect()
@@ -385,6 +418,27 @@ mod tests {
         assert!(cats
             .iter()
             .any(|c| c.category.contains("Debitkarte") && c.debit_cents == 14_690));
+    }
+
+    #[test]
+    fn dividends_are_always_revenue_and_not_flagged() {
+        let mt = ":25:CH9300762011623852957\n\
+            :60F:C250101CHF100000,00\n\
+            :61:2504010401C300,00NTRFNONREF//Div\n\
+            :86:Ausschüttung Fonds Anteil\n\
+            :61:2505010501C2500,00NTRFNONREF//Lohn\n\
+            :86:Lohn April Musterfirma\n\
+            :61:2506010601C5000,00NTRFNONREF//X\n\
+            :86:Unbekannte Gutschrift Drittperson\n\
+            :62F:C251231CHF107800,00\n";
+        let s = parse(mt).expect("parse");
+        // Dividende/Ausschüttung → Finanzertrag → als Ertrag verbucht.
+        let e = account_security_entry(&s);
+        assert_eq!(e.gross_revenue_a.unwrap().cantonal, 300);
+        // Nur die unbekannte Gutschrift wird markiert — Dividende und Lohn nicht.
+        let flags = flagged_credits(&s);
+        assert_eq!(flags.len(), 1);
+        assert!(flags[0].description.contains("Unbekannte"));
     }
 
     #[test]
