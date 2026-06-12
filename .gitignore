@@ -9,6 +9,7 @@ mt940/
 *.mt940
 *.sta
 /data/
+/xml/
 *.xml.private
 
 # Rust

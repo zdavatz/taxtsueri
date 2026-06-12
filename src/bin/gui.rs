@@ -7,10 +7,19 @@
 //! Benötigt zur Laufzeit `pdftotext` (poppler) zum Lesen des Vermögensausweises.
 
 use eframe::egui;
-use std::path::{Path, PathBuf};
+use egui_file_dialog::FileDialog;
+use std::path::Path;
 use std::process::Command;
 use std::sync::mpsc::{channel, Receiver};
 use taxtsueri::{dataset, document_to_xml, settings, update, vermoegensausweis};
+
+/// Was der gerade offene Dateidialog bezweckt.
+#[derive(PartialEq)]
+enum Pending {
+    None,
+    Open,
+    Save,
+}
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 /// Logo (eingebettet); oben rechts in der App + als OS-Fenster-Icon.
@@ -40,10 +49,10 @@ struct App {
     securities: usize,
     update_rx: Receiver<Option<update::UpdateInfo>>,
     update_info: Option<update::UpdateInfo>,
-    /// Vom Datei-Auswahl-Thread gelieferter Eingabe-Pfad (PDF).
-    open_rx: Option<Receiver<Option<PathBuf>>>,
-    /// Vom Speichern-Thread gelieferte Status-Meldung.
-    save_rx: Option<Receiver<String>>,
+    /// Rein in egui gezeichneter Dateidialog (kein GTK/Portal/Thread).
+    file_dialog: FileDialog,
+    /// Wozu der offene Dialog dient (Öffnen vs. Speichern).
+    pending: Pending,
     /// GPU-Textur fürs Logo oben rechts (lazy hochgeladen).
     logo_tex: Option<egui::TextureHandle>,
 }
@@ -61,8 +70,13 @@ impl App {
             securities: 0,
             update_rx: rx,
             update_info: None,
-            open_rx: None,
-            save_rx: None,
+            file_dialog: FileDialog::new()
+                .add_file_filter(
+                    "PDF",
+                    std::sync::Arc::new(|p| p.extension().is_some_and(|e| e == "pdf")),
+                )
+                .default_file_name("steuererklaerung-2025.xml"),
+            pending: Pending::None,
             logo_tex: None,
         }
     }
@@ -104,27 +118,22 @@ impl eframe::App for App {
         if let Ok(info) = self.update_rx.try_recv() {
             self.update_info = info;
         }
-        // Ergebnis des Datei-Auswahl-Threads abholen (rfd läuft NICHT auf dem
-        // UI-Thread — das vermeidet GTK-Main-Loop-Reentrancy-Crashes).
-        if let Some(rx) = &self.open_rx {
-            if let Ok(picked) = rx.try_recv() {
-                self.open_rx = None;
-                if let Some(path) = picked {
-                    self.generate(&path);
+        // Dateidialog (in-app) zeichnen und ein eben gewähltes Resultat abholen.
+        self.file_dialog.update(ctx);
+        if let Some(path) = self.file_dialog.take_selected() {
+            match self.pending {
+                Pending::Open => self.generate(&path),
+                Pending::Save => {
+                    if let Some(xml) = &self.xml {
+                        self.status = match std::fs::write(&path, xml) {
+                            Ok(()) => format!("Gespeichert: {}", path.display()),
+                            Err(e) => format!("Speichern fehlgeschlagen: {e}"),
+                        };
+                    }
                 }
+                Pending::None => {}
             }
-        }
-        // Ergebnis des Speichern-Threads abholen.
-        if let Some(rx) = &self.save_rx {
-            if let Ok(msg) = rx.try_recv() {
-                self.save_rx = None;
-                self.status = msg;
-            }
-        }
-        // Solange ein Dialog-Thread läuft, weiter neu zeichnen (sonst pollt
-        // egui die Channels erst beim nächsten Eingabe-Event).
-        if self.open_rx.is_some() || self.save_rx.is_some() {
-            ctx.request_repaint();
+            self.pending = Pending::None;
         }
         // Logo-Textur lazy hochladen.
         if self.logo_tex.is_none() {
@@ -169,19 +178,9 @@ impl eframe::App for App {
             }
 
             ui.separator();
-            let busy = self.open_rx.is_some();
-            if ui
-                .add_enabled(!busy, egui::Button::new("📄  UBS-Vermögensausweis wählen … (PDF)"))
-                .clicked()
-            {
-                // Dialog auf eigenem Thread öffnen; Ergebnis per Channel zurück.
-                let (tx, rx) = channel();
-                self.open_rx = Some(rx);
-                self.status = "Dateiauswahl geöffnet …".into();
-                std::thread::spawn(move || {
-                    let picked = rfd::FileDialog::new().add_filter("PDF", &["pdf"]).pick_file();
-                    let _ = tx.send(picked);
-                });
+            if ui.button("📄  UBS-Vermögensausweis wählen … (PDF)").clicked() {
+                self.pending = Pending::Open;
+                self.file_dialog.select_file();
             }
             ui.add_space(4.0);
             ui.label(&self.status);
@@ -189,29 +188,9 @@ impl eframe::App for App {
             if let Some(xml) = self.xml.clone() {
                 ui.separator();
                 ui.label(format!("{} Positionen · {} Bytes XML", self.securities, xml.len()));
-                let saving = self.save_rx.is_some();
-                if ui
-                    .add_enabled(!saving, egui::Button::new("💾  eCH-0119-XML speichern …"))
-                    .clicked()
-                {
-                    // Speichern-Dialog ebenfalls auf eigenem Thread.
-                    let (tx, rx) = channel();
-                    self.save_rx = Some(rx);
-                    let xml = xml.clone();
-                    std::thread::spawn(move || {
-                        let msg = match rfd::FileDialog::new()
-                            .set_file_name("steuererklaerung-2025.xml")
-                            .add_filter("XML", &["xml"])
-                            .save_file()
-                        {
-                            Some(path) => match std::fs::write(&path, &xml) {
-                                Ok(()) => format!("Gespeichert: {}", path.display()),
-                                Err(e) => format!("Speichern fehlgeschlagen: {e}"),
-                            },
-                            None => "Speichern abgebrochen.".into(),
-                        };
-                        let _ = tx.send(msg);
-                    });
+                if ui.button("💾  eCH-0119-XML speichern …").clicked() {
+                    self.pending = Pending::Save;
+                    self.file_dialog.save_file();
                 }
                 ui.add_space(4.0);
                 // Textfarbe ans Theme anpassen: hell auf dunkel, dunkel auf

@@ -30,12 +30,14 @@ the default build). `src/update.rs` is the GitHub-releases update check (repo `z
 `.github/workflows/release.yml` builds the GUI for the 3 platforms on a `vX.Y.Z` tag with asset names
 matching `update::target_asset_suffix`.
 
-**GUI file dialogs:** `rfd` is configured with `default-features = false, features = ["gtk3"]` — the
-GTK3 backend, not the default XDG-portal one, so the picker opens even when `xdg-desktop-portal` is not
-running (Linux build then needs `libgtk-3-dev`; CI installs it). Both the open and save dialogs run on
-their **own thread** and return via an `mpsc` channel (`App::open_rx`/`save_rx`); the UI `request_repaint`s
-while one is pending. Running `rfd` synchronously on the UI thread crashed on selection (GTK main-loop
-reentrancy vs. the winit/x11 event loop) — keep dialogs off-thread.
+**GUI file dialogs:** a **pure-egui** in-app picker (`egui-file-dialog`, optional, behind `gui`) — no
+GTK, no XDG-portal, no helper thread. One `FileDialog` lives on `App`; the open/save buttons call
+`select_file()`/`save_file()`, a `Pending` enum (`Open`/`Save`/`None`) records intent, and each frame
+`file_dialog.update(ctx)` + `take_selected()` picks up the result. This deliberately replaced `rfd`: the
+native GTK3 backend crashed on selection — run synchronously on the UI thread it hit GTK main-loop
+reentrancy vs. the winit/x11 event loop; run off-thread it hit GTK thread-unsafety. The egui dialog
+removes that whole crash class **and** the `libgtk-3-dev` Linux build/CI dependency, and looks identical
+on all platforms.
 
 **Logo:** `assets/logo.svg` (+ rendered `logo-{64,128,256,512,1024}.png` via `rsvg-convert`) — Zürich
 arms (diagonal blue/white) with a document + barcode strip + green validation check. `feDropShadow` is
