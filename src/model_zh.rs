@@ -343,6 +343,42 @@ mod tests {
     }
 
     #[test]
+    fn barcode_payload_roundtrips_with_rxing() {
+        use std::io::Read;
+        let doc = crate::dataset::example();
+        let msg = ZhMessage::from_document_with_data(&doc, 2025, &sample_data());
+        let xml = zh_message_to_xml(&msg).unwrap();
+
+        // XML → ZLIB → PDF417 (Structured Append) → rendern → rxing → ZLIB-inflate.
+        let compressed = crate::barcode::compress(xml.as_bytes());
+        let (c, r, l) = (13u8, 35u8, 4u8);
+        let symbols = crate::pdf417::build_symbols(&compressed, c, r, l).expect("build");
+        let mut decoded = Vec::new();
+        for sym in &symbols {
+            let grid = crate::pdf417::render(sym, c, r, l);
+            let (luma, w, h) = crate::pdf417::to_luma(&grid, 3, 9);
+            let res = rxing::helpers::detect_in_luma(
+                luma,
+                w as u32,
+                h as u32,
+                Some(rxing::BarcodeFormat::PDF_417),
+            )
+            .expect("decode segment");
+            // PDF417-Byte-Modus: rxing dekodiert binäre Bytes via ISO-8859-1 zu Chars
+            // (Byte b → U+00b). `c as u8` gewinnt die Rohbytes zurück (nicht .as_bytes(),
+            // das die >127-Bytes wieder als UTF-8 kodieren würde).
+            decoded.extend(res.getText().chars().map(|c| c as u8));
+        }
+        assert_eq!(decoded, compressed, "PDF417 muss exakt die ZLIB-Nutzlast liefern");
+
+        let mut inflated = String::new();
+        flate2::read::ZlibDecoder::new(&decoded[..])
+            .read_to_string(&mut inflated)
+            .expect("inflate");
+        assert_eq!(inflated, xml, "Round-Trip muss das v3-XML exakt wiederherstellen");
+    }
+
+    #[test]
     fn builds_barcode_variant_with_zh_extension() {
         let doc = crate::dataset::example();
         let msg = ZhMessage::from_document_with_data(&doc, 2025, &sample_data());

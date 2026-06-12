@@ -13,8 +13,8 @@
 //! `data/` (Eingabe + XML + Paket) enthält Personendaten und ist gitignored.
 
 use taxtsueri::{
-    barcode, code128, dataset, ech0196, model, mt940, pdf, pdf417, settings, sheet, submit,
-    vermoegensausweis,
+    barcode, code128, dataset, ech0196, model, model_zh, mt940, pdf, pdf417, settings, sheet,
+    submit, vermoegensausweis,
 };
 // dataset_jp/model_jp werden in run_jp referenziert.
 use taxtsueri::{dataset_jp, model_jp};
@@ -32,6 +32,7 @@ struct Args {
     from_mt940: Option<String>,
     from_vermoegensausweis: Option<String>,
     barcode: Option<String>,
+    zh_barcode: bool,
 }
 
 fn parse_args() -> Result<Args, String> {
@@ -50,6 +51,7 @@ fn parse_args() -> Result<Args, String> {
                 a.from_vermoegensausweis = Some(it.next().ok_or("--from-vermoegensausweis erwartet einen Pfad")?)
             }
             "--barcode" => a.barcode = Some(it.next().ok_or("--barcode erwartet einen Pfad (eCH-0196-XML)")?),
+            "--zh-barcode" => a.zh_barcode = true,
             s if s.starts_with("--") => return Err(format!("unbekannte Option: {s}")),
             s => a.input_json = Some(s.to_string()),
         }
@@ -72,6 +74,10 @@ fn main() -> ExitCode {
 
     if let Some(path) = &args.barcode {
         return run_barcode(path);
+    }
+
+    if args.zh_barcode {
+        return run_zh_barcode(&args);
     }
 
     if args.jp {
@@ -373,6 +379,95 @@ fn run_barcode(path: &str) -> ExitCode {
                             println!(
                                 "  Barcode-Blatt     : {} ({sheets} Blatt A4, {} Bytes)",
                                 out.display(),
+                                pdf.len()
+                            );
+                        }
+                        Err(e) => eprintln!("  Hinweis: konnte {} nicht schreiben: {e}", out.display()),
+                    }
+                }
+                Err(e) => eprintln!("  CODE128: {e}"),
+            }
+        }
+        Err(e) => println!("  PDF417            : {e}"),
+    }
+    ExitCode::SUCCESS
+}
+
+/// `--zh-barcode`: ZH-Steuererklärungs-Barcode (eCH-0119 v3 + ZH-cantonExtension)
+/// als A4-PDF417-Blatt. Basis-Document aus `input.json`/Beispiel; AHVN13 aus
+/// settings.json. Die `approvalReceipt`-Steuerwerte sind hier Platzhalter (0) — sie
+/// stammen real aus der ZHprivateTax-Berechnung (s. `ZhBarcodeData`).
+fn run_zh_barcode(args: &Args) -> ExitCode {
+    let mut doc = match &args.input_json {
+        Some(p) => match load_document(Path::new(p)) {
+            Ok(d) => d,
+            Err(e) => {
+                eprintln!("Konnte {p} nicht lesen: {e}");
+                return ExitCode::FAILURE;
+            }
+        },
+        None => dataset::example(),
+    };
+    if let Some(vn) = settings::load().np.vn {
+        doc.content.main_form.person_data_partner1.identification.vn = vn;
+    }
+
+    let period: u16 = 2025;
+    let data = model_zh::ZhBarcodeData {
+        canton: "ZH".into(),
+        date: format!("{period}-12-31"),
+        // Platzhalter — reale Werte aus der ZHprivateTax-Berechnung übernehmen.
+        taxable_income: model_zh::ZhTaxAmount { cantonal: 0, federal: 0 },
+        ratedetermining_income: model_zh::ZhTaxAmount { cantonal: 0, federal: 0 },
+        taxable_qualified_investments: 0,
+        taxable_asset: 0,
+        ratedetermining_asset: 0,
+        documents: Vec::new(),
+    };
+    let msg = model_zh::ZhMessage::from_document_with_data(&doc, period, &data);
+    let xml = match model_zh::zh_message_to_xml(&msg) {
+        Ok(x) => x,
+        Err(e) => {
+            eprintln!("Serialisierung fehlgeschlagen: {e}");
+            return ExitCode::FAILURE;
+        }
+    };
+
+    println!("ZH-Steuererklärungs-Barcode (eCH-0119 v3 + zh:cantonExtension):");
+    let p = barcode::prepare(&xml);
+    println!("  XML               : {} Bytes", xml.len());
+    println!(
+        "  ZLIB-komprimiert  : {} Bytes ({:.0}%)",
+        p.compressed.len(),
+        p.compressed.len() as f64 / xml.len() as f64 * 100.0
+    );
+
+    if let Err(e) = std::fs::create_dir_all("data") {
+        eprintln!("Konnte data/ nicht anlegen: {e}");
+        return ExitCode::FAILURE;
+    }
+    let xml_out = Path::new("data").join("steuererklaerung-zh-v3.xml");
+    let _ = std::fs::write(&xml_out, &xml);
+    println!("  v3-XML            : {}", xml_out.display());
+
+    let (c, r, l) = (barcode::COLUMNS, barcode::ROWS, barcode::EC_LEVEL);
+    match pdf417::build_symbols(&p.compressed, c, r, l) {
+        Ok(symbols) => {
+            let n = symbols.len();
+            let grids: Vec<Vec<Vec<bool>>> =
+                symbols.iter().map(|s| pdf417::render(s, c, r, l)).collect();
+            let page_code = code128::build_page_code(119, 0, 261, 1, true, 0, 1);
+            match code128::encode(&page_code) {
+                Ok(bits) => {
+                    let pdf = sheet::build_sheet_pdf(&grids, &bits);
+                    let out = Path::new("data").join("zh-barcode-blatt.pdf");
+                    match std::fs::write(&out, &pdf) {
+                        Ok(()) => {
+                            println!("  PDF417            : {n} Segment(e), CODE128C {page_code}");
+                            println!(
+                                "  Barcode-Blatt     : {} ({} Blatt A4, {} Bytes)",
+                                out.display(),
+                                n.div_ceil(6),
                                 pdf.len()
                             );
                         }
