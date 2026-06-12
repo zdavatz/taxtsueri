@@ -364,6 +364,8 @@ fn run_mt940(path: &str) -> ExitCode {
         println!("  Flüssige Mittel (Bank) per {} : {} {}", b.date, b.currency, mt940::format_cents(b.amount_cents));
     }
 
+    // Pseudo-Jahresrechnung (Entwurf für den Vermögensverwalter).
+    let ps = mt940::pseudo_statements(&stmt);
     let report = serde_json::json!({
         "account": stmt.account,
         "opening": stmt.opening,
@@ -372,6 +374,7 @@ fn run_mt940(path: &str) -> ExitCode {
         "totalCreditCents": credit,
         "totalDebitCents": debit,
         "categories": categories,
+        "pseudoStatements": ps,
         "transactions": stmt.transactions,
     });
     let out = Path::new("data").join("mt940-summary.json");
@@ -381,6 +384,13 @@ fn run_mt940(path: &str) -> ExitCode {
     {
         Ok(()) => println!("\nReport (inkl. Kategorien + Buchungen) geschrieben nach: {}", out.display()),
         Err(e) => eprintln!("Hinweis: konnte {} nicht schreiben: {e}", out.display()),
+    }
+    // Pseudo-Jahresrechnung als Markdown — der Vermögensverwalter geht darüber.
+    let md_out = Path::new("data").join("mt940-pseudo-jahresrechnung.md");
+    let md = mt940::pseudo_statements_markdown(&ps);
+    match std::fs::create_dir_all("data").and_then(|_| std::fs::write(&md_out, md)) {
+        Ok(()) => println!("Pseudo-Jahresrechnung (Entwurf z. Hd. Vermögensverwalter): {}", md_out.display()),
+        Err(e) => eprintln!("Hinweis: konnte {} nicht schreiben: {e}", md_out.display()),
     }
     ExitCode::SUCCESS
 }

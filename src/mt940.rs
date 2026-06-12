@@ -235,6 +235,163 @@ pub fn categorize(stmt: &Statement) -> Vec<CategoryTotal> {
     v
 }
 
+// ---------------------------------------------------------------------------
+// Pseudo-Jahresrechnung (Entwurf zur Prüfung durch den Vermögensverwalter)
+// ---------------------------------------------------------------------------
+
+/// Eine Zeile der Pseudo-Erfolgsrechnung (eine Kategorie).
+#[derive(Debug, Serialize)]
+pub struct ErLine {
+    pub category: String,
+    pub count: usize,
+    pub amount_cents: i64,
+    /// Prüf-Hinweis (z. B. „kein Ertrag — Eigenübertrag").
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub note: Option<String>,
+}
+
+/// Cash-Basis-Erfolgsrechnung aus dem MT940 — **Näherung**, keine periodengerechte ER.
+#[derive(Debug, Serialize)]
+pub struct PseudoErfolgsrechnung {
+    pub ertrag: Vec<ErLine>,
+    pub aufwand: Vec<ErLine>,
+    pub total_ertrag_cents: i64,
+    pub total_aufwand_cents: i64,
+    /// Geldfluss-Saldo (Ertrag − Aufwand) — **nicht** der buchhalterische Gewinn.
+    pub saldo_cents: i64,
+}
+
+/// Bilanz-Ausschnitt, der sich aus einem Kontoauszug ableiten lässt: die Bankzeile.
+#[derive(Debug, Serialize)]
+pub struct PseudoBilanz {
+    pub konto: String,
+    pub fluessige_mittel_cents: i64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub eroeffnung_cents: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub stichtag: Option<String>,
+}
+
+/// Pseudo-Jahresrechnung: Cash-Basis-ER + Bank-Bilanzzeile. **Entwurf** — der
+/// Vermögensverwalter ergänzt Abgrenzungen, Anlagevermögen, offene Posten, Eigenkapital.
+#[derive(Debug, Serialize)]
+pub struct PseudoStatements {
+    pub account: String,
+    pub erfolgsrechnung: PseudoErfolgsrechnung,
+    pub bilanz: PseudoBilanz,
+    pub hinweis: String,
+}
+
+/// Prüf-Hinweis je Ertrags-Kategorie (was der Vermögensverwalter beachten muss).
+fn ertrag_note(cat: &str) -> Option<String> {
+    match cat {
+        "Finanzertrag (Dividenden/Zinsen)" => Some("steuerbarer Finanzertrag (VST 35 %)".into()),
+        "Lohn/Erwerbseinkommen (Lohnausweis)" => Some("über Lohnausweis deklariert".into()),
+        "Rückerstattung (kein Ertrag)" => Some("kein Ertrag — Rückerstattung".into()),
+        "Eigenübertrag (kein Ertrag)" => Some("kein Ertrag — Eigenübertrag".into()),
+        "Erlös (Gutschriften)" | "Übrige Erträge" => Some("prüfen: betrieblicher Ertrag?".into()),
+        _ => None,
+    }
+}
+
+/// Baut die Pseudo-Jahresrechnung aus dem Kontoauszug.
+pub fn pseudo_statements(stmt: &Statement) -> PseudoStatements {
+    let cats = categorize(stmt);
+    let mut ertrag: Vec<ErLine> = Vec::new();
+    let mut aufwand: Vec<ErLine> = Vec::new();
+    for c in &cats {
+        if c.credit_cents > 0 {
+            ertrag.push(ErLine {
+                category: c.category.clone(),
+                count: c.count,
+                amount_cents: c.credit_cents,
+                note: ertrag_note(&c.category),
+            });
+        }
+        if c.debit_cents > 0 {
+            aufwand.push(ErLine {
+                category: c.category.clone(),
+                count: c.count,
+                amount_cents: c.debit_cents,
+                note: None,
+            });
+        }
+    }
+    let total_ertrag_cents: i64 = ertrag.iter().map(|l| l.amount_cents).sum();
+    let total_aufwand_cents: i64 = aufwand.iter().map(|l| l.amount_cents).sum();
+    let bal = stmt.closing.as_ref().or(stmt.opening.as_ref());
+    PseudoStatements {
+        account: stmt.account.clone(),
+        erfolgsrechnung: PseudoErfolgsrechnung {
+            ertrag,
+            aufwand,
+            total_ertrag_cents,
+            total_aufwand_cents,
+            saldo_cents: total_ertrag_cents - total_aufwand_cents,
+        },
+        bilanz: PseudoBilanz {
+            konto: stmt.account.clone(),
+            fluessige_mittel_cents: bal.map(|b| b.amount_cents).unwrap_or(0),
+            eroeffnung_cents: stmt.opening.as_ref().map(|b| b.amount_cents),
+            stichtag: stmt.closing.as_ref().map(|b| b.date.clone()),
+        },
+        hinweis: "Cash-Basis-Entwurf aus MT940 — NICHT periodengerecht. Abgrenzungen, \
+                  Anlagevermögen, offene Posten und Eigenkapital ergänzt der Vermögensverwalter."
+            .to_string(),
+    }
+}
+
+/// Rendert die Pseudo-Jahresrechnung als Markdown (für den Vermögensverwalter).
+pub fn pseudo_statements_markdown(ps: &PseudoStatements) -> String {
+    let mut m = String::new();
+    m.push_str(&format!("# Pseudo-Jahresrechnung (Entwurf)\n\nKonto: {}\n\n", ps.account));
+    m.push_str("> ⚠ Cash-Basis aus MT940 — Näherung, keine periodengerechte Jahresrechnung.\n");
+    m.push_str("> Bitte durch den Vermögensverwalter prüfen und ergänzen.\n\n");
+
+    m.push_str("## Pseudo-Erfolgsrechnung (Cash-Basis)\n\n");
+    m.push_str("### Erträge (Gutschriften)\n\n| Kategorie | Anz. | CHF | Hinweis |\n|---|--:|--:|---|\n");
+    for l in &ps.erfolgsrechnung.ertrag {
+        m.push_str(&format!(
+            "| {} | {} | {} | {} |\n",
+            l.category, l.count, format_cents(l.amount_cents), l.note.as_deref().unwrap_or("")
+        ));
+    }
+    m.push_str(&format!(
+        "| **Total Ertrag** | | **{}** | |\n\n",
+        format_cents(ps.erfolgsrechnung.total_ertrag_cents)
+    ));
+    m.push_str("### Aufwände (Belastungen)\n\n| Kategorie | Anz. | CHF |\n|---|--:|--:|\n");
+    for l in &ps.erfolgsrechnung.aufwand {
+        m.push_str(&format!(
+            "| {} | {} | {} |\n",
+            l.category, l.count, format_cents(l.amount_cents)
+        ));
+    }
+    m.push_str(&format!(
+        "| **Total Aufwand** | | **{}** |\n\n",
+        format_cents(ps.erfolgsrechnung.total_aufwand_cents)
+    ));
+    m.push_str(&format!(
+        "**Geldfluss-Saldo (≠ Jahresgewinn): CHF {}**\n\n",
+        format_cents(ps.erfolgsrechnung.saldo_cents)
+    ));
+
+    m.push_str("## Pseudo-Bilanz (ableitbarer Teil)\n\n| Position | CHF |\n|---|--:|\n");
+    m.push_str(&format!(
+        "| Flüssige Mittel — {} | {} |\n",
+        ps.bilanz.konto,
+        format_cents(ps.bilanz.fluessige_mittel_cents)
+    ));
+    if let Some(o) = ps.bilanz.eroeffnung_cents {
+        m.push_str(&format!("| (Eröffnungssaldo) | {} |\n", format_cents(o)));
+    }
+    m.push_str(
+        "\n_Nicht aus MT940 ableitbar (ergänzen): Kasse, Wertschriften, Anlagevermögen, \
+         Kreditoren, Darlehen, Rechnungsabgrenzungen, Eigenkapital._\n",
+    );
+    m
+}
+
 /// MT940-Betrag mit Komma ("105232,94", "34,1", "21,") → Rappen.
 fn parse_amount_cents(s: &str) -> Option<i64> {
     let s = s.trim();
@@ -439,6 +596,27 @@ mod tests {
         let flags = flagged_credits(&s);
         assert_eq!(flags.len(), 1);
         assert!(flags[0].description.contains("Unbekannte"));
+    }
+
+    #[test]
+    fn pseudo_statements_split_income_and_expense() {
+        let mt = ":25:CH9300762011623852957\n\
+            :60F:C250101CHF100000,00\n\
+            :61:2503150315C500,00NTRFNONREF//Zins\n\
+            :86:Zinsgutschrift Sparkonto\n\
+            :61:2506200620D1200,50NTRFNONREF//Miete\n\
+            :86:Dauerauftrag Miete\n\
+            :62F:C251231CHF99299,50\n";
+        let s = parse(mt).expect("parse");
+        let ps = pseudo_statements(&s);
+        assert_eq!(ps.erfolgsrechnung.total_ertrag_cents, 50_000); // 500.00
+        assert_eq!(ps.erfolgsrechnung.total_aufwand_cents, 120_050); // 1200.50
+        assert_eq!(ps.erfolgsrechnung.saldo_cents, 50_000 - 120_050);
+        assert_eq!(ps.bilanz.fluessige_mittel_cents, 9_929_950); // 99'299.50
+        // Markdown rendert ohne Panik und enthält die Kernüberschriften.
+        let md = pseudo_statements_markdown(&ps);
+        assert!(md.contains("Pseudo-Erfolgsrechnung"));
+        assert!(md.contains("Pseudo-Bilanz"));
     }
 
     #[test]
