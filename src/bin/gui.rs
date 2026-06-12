@@ -300,7 +300,7 @@ impl eframe::App for App {
             // Pseudo-Jahresrechnung (Bilanz + ER) als PDF — sobald ein MT940 geladen ist.
             if self.pseudo_pdf.is_some()
                 && ui
-                    .button("📊  Pseudo-Jahresrechnung (PDF) speichern …  (Entwurf)")
+                    .button("📊  Cash-Flow-Rechnung (PDF) speichern …  (Entwurf)")
                     .on_hover_text("Cash-Basis-Entwurf: S.1 Bilanz (inkl. Wertschriften), S.2 Erfolgsrechnung — zur Prüfung durch den Vermögensverwalter")
                     .clicked()
             {

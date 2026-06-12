@@ -372,7 +372,7 @@ pub fn pseudo_statements(stmt: &Statement, wertschriften_cents: Option<i64>) -> 
 /// Rendert die Pseudo-Jahresrechnung als Markdown (für den Vermögensverwalter).
 pub fn pseudo_statements_markdown(ps: &PseudoStatements) -> String {
     let mut m = String::new();
-    m.push_str(&format!("# Pseudo-Jahresrechnung (Entwurf)\n\nKonto: {}\n\n", ps.account));
+    m.push_str(&format!("# Cash-Flow-Rechnung (Entwurf)\n\nKonto: {}\n\n", ps.account));
     m.push_str("> ⚠ Cash-Basis aus MT940 — Näherung, keine periodengerechte Jahresrechnung.\n");
     m.push_str("> Bitte durch den Vermögensverwalter prüfen und ergänzen.\n\n");
 

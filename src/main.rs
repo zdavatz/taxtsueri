@@ -419,14 +419,14 @@ fn run_mt940(path: &str, wertschriften_chf: Option<i64>) -> ExitCode {
 /// Bilanz, Seite 2 Erfolgsrechnung) nach `data/`.
 fn write_pseudo_jahresrechnung(ps: &mt940::PseudoStatements) {
     let _ = std::fs::create_dir_all("data");
-    let md_out = Path::new("data").join("mt940-pseudo-jahresrechnung.md");
+    let md_out = Path::new("data").join("Cash-Flow-Rechnung.md");
     match std::fs::write(&md_out, mt940::pseudo_statements_markdown(ps)) {
-        Ok(()) => println!("Pseudo-Jahresrechnung (Markdown): {}", md_out.display()),
+        Ok(()) => println!("Cash-Flow-Rechnung (Markdown): {}", md_out.display()),
         Err(e) => eprintln!("Hinweis: konnte {} nicht schreiben: {e}", md_out.display()),
     }
-    let pdf_out = Path::new("data").join("pseudo-jahresrechnung.pdf");
+    let pdf_out = Path::new("data").join("Cash-Flow-Rechnung.pdf");
     match std::fs::write(&pdf_out, pdf_report::pseudo_statements_pdf(ps)) {
-        Ok(()) => println!("Pseudo-Jahresrechnung (PDF, S.1 Bilanz / S.2 ER): {}", pdf_out.display()),
+        Ok(()) => println!("Cash-Flow-Rechnung (PDF, S.1 Bilanz / S.2 ER): {}", pdf_out.display()),
         Err(e) => eprintln!("Hinweis: konnte {} nicht schreiben: {e}", pdf_out.display()),
     }
 }

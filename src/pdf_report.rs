@@ -188,8 +188,8 @@ pub fn pseudo_statements_pdf(ps: &PseudoStatements) -> Vec<u8> {
 
     let mut kids: Vec<Object> = Vec::new();
     for (title, sub, lines) in [
-        ("Pseudo-Bilanz (Entwurf)", warn, bilanz_lines(ps)),
-        ("Pseudo-Erfolgsrechnung (Cash-Basis, Entwurf)", warn, er_lines(ps)),
+        ("Cash-Flow-Rechnung — Bilanz (Entwurf)", warn, bilanz_lines(ps)),
+        ("Cash-Flow-Rechnung — Erfolgsrechnung (Entwurf)", warn, er_lines(ps)),
     ] {
         let content = page_content(title, sub, &lines);
         let stream_id = doc.add_object(Stream::new(dictionary! {}, content.encode().unwrap()));
