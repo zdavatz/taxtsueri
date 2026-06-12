@@ -73,6 +73,7 @@ cargo run -- --package                                      # zusätzlich Einrei
 cargo run -- --jp                                           # juristische Person (ywesee GmbH) → eCH-0276
 cargo run -- --jp --package                                 # JP + Einreichungs-Paket
 cargo run -- --from-mt940 auszug.mt940                      # MT940-Kontoauszug einlesen (Salden/Buchungen)
+cargo run -- --from-mt940 konto.mt940 --from-vermoegensausweis depot.pdf  # kombiniert → eCH-0119 (MT940-Konto = Basis + Wertschriften)
 ```
 
 ### eCH-0196-Barcode (`--barcode`) — Fundament

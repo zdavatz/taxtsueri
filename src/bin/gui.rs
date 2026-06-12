@@ -8,16 +8,17 @@
 
 use eframe::egui;
 use egui_file_dialog::FileDialog;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::mpsc::{channel, Receiver};
-use taxtsueri::{dataset, document_to_xml, settings, update, vermoegensausweis};
+use taxtsueri::{dataset, document_to_xml, mt940, settings, update, vermoegensausweis};
 
 /// Was der gerade offene Dateidialog bezweckt.
 #[derive(PartialEq)]
 enum Pending {
     None,
-    Open,
+    OpenMt940,
+    OpenVermoegen,
     Save,
 }
 
@@ -51,8 +52,12 @@ struct App {
     update_info: Option<update::UpdateInfo>,
     /// Rein in egui gezeichneter Dateidialog (kein GTK/Portal/Thread).
     file_dialog: FileDialog,
-    /// Wozu der offene Dialog dient (Öffnen vs. Speichern).
+    /// Wozu der offene Dialog dient (MT940/Vermögensausweis öffnen vs. Speichern).
     pending: Pending,
+    /// Gewähltes MT940-File (Basis der Erklärung).
+    mt940_path: Option<PathBuf>,
+    /// Gewählter Vermögensausweis (PDF, Wertschriften).
+    vermoegen_path: Option<PathBuf>,
     /// GPU-Textur fürs Logo oben rechts (lazy hochgeladen).
     logo_tex: Option<egui::TextureHandle>,
 }
@@ -77,25 +82,60 @@ impl App {
                 )
                 .default_file_name("steuererklaerung-2025.xml"),
             pending: Pending::None,
+            mt940_path: None,
+            vermoegen_path: None,
             logo_tex: None,
         }
     }
 
-    fn generate(&mut self, path: &Path) {
-        let text = match run_pdftotext(path) {
-            Ok(t) => t,
-            Err(e) => {
-                self.status = format!("PDF konnte nicht gelesen werden: {e}");
-                return;
+    /// Kombiniert MT940-Konto (Basis) + Vermögensausweis (Wertschriften) zu einem
+    /// eCH-0119-Wertschriftenverzeichnis und erzeugt das XML.
+    fn generate(&mut self) {
+        let mut entries: Vec<taxtsueri::model::SecurityEntry> = Vec::new();
+        let mut parts: Vec<String> = Vec::new();
+
+        // MT940-Konto als Basis (Schlusssaldo = Vermögen, Zinsen = Ertrag).
+        if let Some(p) = self.mt940_path.clone() {
+            match std::fs::read(&p) {
+                Ok(b) => match mt940::parse(&String::from_utf8_lossy(&b)) {
+                    Ok(stmt) => {
+                        entries.push(mt940::account_security_entry(&stmt));
+                        parts.push(format!("MT940-Konto {}", stmt.account));
+                    }
+                    Err(e) => {
+                        self.status = format!("MT940 nicht lesbar: {e}");
+                        return;
+                    }
+                },
+                Err(e) => {
+                    self.status = format!("MT940 nicht lesbar: {e}");
+                    return;
+                }
             }
-        };
-        let los = vermoegensausweis::list_of_securities_from_text(&text);
-        let n = los.security_entry.len();
-        if n == 0 {
-            self.status =
-                "Keine Wertschriftenpositionen erkannt — ist das ein UBS-Vermögensausweis (Text-PDF)?".into();
+        }
+
+        // Vermögensausweis (PDF) → Wertschriften.
+        if let Some(p) = self.vermoegen_path.clone() {
+            match run_pdftotext(&p) {
+                Ok(text) => {
+                    let secs = vermoegensausweis::to_securities(&vermoegensausweis::parse_text(&text));
+                    parts.push(format!("{} Wertschriften", secs.len()));
+                    entries.extend(secs);
+                }
+                Err(e) => {
+                    self.status = format!("PDF konnte nicht gelesen werden: {e}");
+                    return;
+                }
+            }
+        }
+
+        if entries.is_empty() {
+            self.status = "Bitte mindestens ein MT940-File oder einen Vermögensausweis wählen.".into();
             return;
         }
+
+        let los = vermoegensausweis::build_list_of_securities(entries);
+        let n = los.security_entry.len();
         // Beispiel-Basis (Person/Kopf) + AHVN13 aus settings.json; Wertschriften ersetzen.
         let mut doc = dataset::example();
         if let Some(vn) = settings::load().np.vn {
@@ -105,7 +145,7 @@ impl App {
         match document_to_xml(doc) {
             Ok(xml) => {
                 self.securities = n;
-                self.status = format!("{n} Wertschriftenpositionen → eCH-0119-XML erstellt.");
+                self.status = format!("{} → eCH-0119-XML erstellt ({n} Positionen).", parts.join(" + "));
                 self.xml = Some(xml);
             }
             Err(e) => self.status = format!("Fehler beim Serialisieren: {e}"),
@@ -122,7 +162,14 @@ impl eframe::App for App {
         self.file_dialog.update(ctx);
         if let Some(path) = self.file_dialog.take_selected() {
             match self.pending {
-                Pending::Open => self.generate(&path),
+                Pending::OpenMt940 => {
+                    self.mt940_path = Some(path);
+                    self.generate();
+                }
+                Pending::OpenVermoegen => {
+                    self.vermoegen_path = Some(path);
+                    self.generate();
+                }
                 Pending::Save => {
                     if let Some(xml) = &self.xml {
                         self.status = match std::fs::write(&path, xml) {
@@ -144,8 +191,8 @@ impl eframe::App for App {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.horizontal(|ui| {
                 ui.vertical(|ui| {
-                    ui.heading("Steuererklärung Zürich — Wertschriften aus Vermögensausweis");
-                    ui.label("UBS-Vermögensausweis (PDF) → validierungsfähiges eCH-0119-XML für die Steuersoftware.");
+                    ui.heading("Steuererklärung Zürich — MT940-Konto + Vermögensausweis");
+                    ui.label("MT940 (Kontoauszug, Basis) + UBS-Vermögensausweis (PDF) → validierungsfähiges eCH-0119-XML.");
                 });
                 // Logo rechts in die Ecke verankern (klickbar → mailto), wie
                 // beim MovementLogger.
@@ -178,10 +225,25 @@ impl eframe::App for App {
             }
 
             ui.separator();
-            if ui.button("📄  UBS-Vermögensausweis wählen … (PDF)").clicked() {
-                self.pending = Pending::Open;
-                self.file_dialog.select_file();
-            }
+            ui.horizontal(|ui| {
+                if ui.button("🏦  MT940-Kontoauszug wählen … (Basis)").clicked() {
+                    self.pending = Pending::OpenMt940;
+                    self.file_dialog.select_file();
+                }
+                if ui.button("📄  UBS-Vermögensausweis wählen … (PDF)").clicked() {
+                    self.pending = Pending::OpenVermoegen;
+                    self.file_dialog.select_file();
+                }
+            });
+            // Gewählte Dateien anzeigen.
+            let name = |p: &Option<PathBuf>| {
+                p.as_ref()
+                    .and_then(|p| p.file_name())
+                    .map(|n| n.to_string_lossy().into_owned())
+                    .unwrap_or_else(|| "—".into())
+            };
+            ui.label(format!("MT940: {}", name(&self.mt940_path)));
+            ui.label(format!("Vermögensausweis: {}", name(&self.vermoegen_path)));
             ui.add_space(4.0);
             ui.label(&self.status);
 

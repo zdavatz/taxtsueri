@@ -21,7 +21,8 @@ cargo run -- --package                      # also write data/submission/ (XML +
 cargo run -- --jp                           # legal entity (juristische Person) → eCH-0276 XML, validated
 cargo run -- --barcode statement.xml        # eCH-0196 → A4 barcode sheet PDF (data/barcode-blatt.pdf)
 cargo run -- --zh-barcode                   # ZH-Steuererklärungs-Barcode: eCH-0119 v3 + zh:cantonExtension → data/zh-barcode-blatt.pdf
-cargo run --features gui --bin taxtsueri-gui  # native desktop GUI (eframe): Vermögensausweis → eCH-0119 XML
+cargo run --features gui --bin taxtsueri-gui  # native desktop GUI (eframe): MT940 (Basis) + Vermögensausweis → eCH-0119 XML
+cargo run -- --from-mt940 konto.mt940 --from-vermoegensausweis depot.pdf  # kombiniert → eCH-0119 (Konto = Basis)
 cargo test                  # run tests (incl. xmllint validation of NP eCH-0119 + JP eCH-0276, eCH-0196 parse, PDF roundtrip, SHA-256)
 ```
 
@@ -101,9 +102,15 @@ that **validates against the official XSD**. Three modules:
   computed, foreign gross left to eCH-0196).
 - **`src/mt940.rs`** — SWIFT MT940 bank-statement reader (`:60F`/`:62F` balances, `:61:`/`:86:`
   transactions, `booking_type` from the `:61:` narrative); amounts in Rappen (i64). `category()`
-  groups transactions heuristically; `--from-mt940` prints categories + a cash-basis
-  Erfolgsrechnung + the Bilanz cash position, and writes `data/mt940-summary.json`. Payment data
-  only / cash-basis — not tax-categorised securities data (that's eCH-0196).
+  groups transactions heuristically and `is_income()` splits Ertrag (credits) from Aufwand (debits);
+  `--from-mt940` **alone** prints categories + a cash-basis Erfolgsrechnung + the Bilanz cash position
+  and writes `data/mt940-summary.json`. **`account_security_entry()`** turns the statement into a *Konto*
+  `SecurityEntry` — closing balance (`:62F:`) → `taxValueEndOfYear`, the **interest** credits recognised
+  via `category()` → `grossRevenueA` (the only taxable Ertrag; salary/other credits and all expenses stay
+  out, being already in the balance / private). Combined with `--from-vermoegensausweis`, MT940 is the
+  **base** of the declaration (account first) and the Vermögensausweis securities are appended into one
+  `listOfSecurities` (totals via `vermoegensausweis::build_list_of_securities`). The GUI offers both
+  pickers and produces the combined eCH-0119 XML.
 - **`src/model_jp.rs` / `src/dataset_jp.rs`** — **juristische Personen** per **eCH-0276**
   «E-Bilanz und E-Tax JP» (built from `schema/eCH-0276-1-0.xsd` + `eCH-0276-beispiel.xml`):
   root `eBalanceSheetETaxLegalEntity` → `header`(title) + `content` (assets, equityAndLiabilities,
