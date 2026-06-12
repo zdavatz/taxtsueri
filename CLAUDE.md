@@ -20,6 +20,7 @@ cargo run -- --from-pdf bank.pdf            # extract embedded eCH-0196 XML from
 cargo run -- --package                      # also write data/submission/ (XML + SHA-256 manifest)
 cargo run -- --jp                           # legal entity (juristische Person) → eCH-0276 XML, validated
 cargo run -- --barcode statement.xml        # eCH-0196 → A4 barcode sheet PDF (data/barcode-blatt.pdf)
+cargo run -- --zh-barcode                   # ZH-Steuererklärungs-Barcode: eCH-0119 v3 + zh:cantonExtension → data/zh-barcode-blatt.pdf
 cargo run --features gui --bin taxtsueri-gui  # native desktop GUI (eframe): Vermögensausweis → eCH-0119 XML
 cargo test                  # run tests (incl. xmllint validation of NP eCH-0119 + JP eCH-0276, eCH-0196 parse, PDF roundtrip, SHA-256)
 ```
@@ -109,6 +110,20 @@ that **validates against the official XSD**. Three modules:
   incomeStatement, fiscalCorrections, profitAppropriation, taxableEquityAfterProfitAppropriation).
   Every element is prefixed `eCH-0276:`; amounts are `xs:long` (whole CHF). `dataset_jp::example()`
   is ywesee GmbH from the StA-500 + Jahresrechnung PDFs. `--jp` validates against the eCH-0276 XSD.
+- **`src/model_zh.rs`** — the **ZH tax-declaration barcode** (the `.ptax20` 2D-barcode the official
+  «Private Tax» software prints). It is **eCH-0119 v3** — `ssk:`-prefixed (NOT the default-namespace v4
+  of `model.rs`), `minorVersion="3"` — plus a **ZH `cantonExtension`** in namespace
+  `http://www.zh.ch/xmlns/zh-taxdeclaration-it/ech3-0/6`, ZLIB-deflated into PDF417. Reverse-engineered
+  from the decoded real sample `tests/fixtures/zh-barcode-sample.xml` (no public ZH XSD exists). The
+  `header.cantonExtension` is **optional**: `cantonExtension` is `processContents="strict"`, so only the
+  extension-free **core** validates against `schema/eCH-0119-2015-3-0.xsd` (test
+  `zh_v3_core_validates_against_ech0119_v3`); the `zh:` part (`headerExtension` → `hiddenData`,
+  `approvalReceipt`, `sourceSystem`, `documentList`) is only checked structurally vs. the sample.
+  `ZhMessage::from_document` builds the core from our v4 `Document`; `from_document_with_data` adds the
+  extension with the computed tax values supplied as `ZhBarcodeData` (approach "b" — values taken from the
+  ZHprivateTax calculation, not computed by us). `--zh-barcode` renders the PDF417 sheet; an rxing
+  round-trip test proves the rendered symbols deflate-decode back to the exact v3 XML. **No other open
+  project does this** (centjes/others stop at eCH-0119 v4 core or eCH-0196 securities).
 - **`src/submit.rs`** — `write_package`/`write_package_jp` emit `data/submission[-jp]/` (XML + MANIFEST
   with a dependency-free SHA-256 and the real ZH channel guidance: ZHprivateTax / ZHCorporateTax / barcode).
 - **`src/main.rs`** — CLI: resolves input (arg → `data/input.json` → built-in example),
@@ -152,7 +167,10 @@ DA-1 (foreign withholding) has no dedicated form in eCH-0119 v4 — foreign hold
   they must stay in schema order.
 - Watch simple-type **facets**: e.g. `phoneNumber` is `\d{10,20}` (digits only, no
   spaces); `bankName`/`accountOwner` ≤ 24 chars; `vn` ∈ 7560000000001..7569999999999.
-- `cantonExtension` is omitted everywhere (it uses `xs:any processContents="strict"`).
+- `cantonExtension` is omitted in the **v4** model (`model.rs`); it uses `xs:any
+  processContents="strict"`. The **v3** ZH-barcode model (`model_zh.rs`) is the one place that *fills* it
+  (the `zh:` extension) — and only there, because doing so makes the doc non-validatable against the core
+  XSD (see that module).
 - After any change: `cargo run` (self-validates) and `cargo test` (the
   `tests/validation.rs` integration test re-runs xmllint).
 

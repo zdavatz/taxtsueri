@@ -68,6 +68,7 @@ cargo run -- --from-ech0196 examples/ech0196.sample.xml     # Wertschriften aus 
 cargo run -- --from-pdf auszug.pdf                          # eCH-0196-XML aus PDF-Anhang
 cargo run -- --from-vermoegensausweis depot.pdf            # Wertschriften aus UBS-Vermögensausweis-PDF
 cargo run -- --barcode statement.xml                       # eCH-0196 → Barcode-Nutzlast (ZLIB) vorbereiten
+cargo run -- --zh-barcode                                  # ZH-Steuererklärungs-Barcode (eCH-0119 v3 + zh:cantonExtension) → PDF417-Blatt
 cargo run -- --package                                      # zusätzlich Einreichungs-Paket
 cargo run -- --jp                                           # juristische Person (ywesee GmbH) → eCH-0276
 cargo run -- --jp --package                                 # JP + Einreichungs-Paket
