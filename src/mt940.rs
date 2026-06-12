@@ -138,6 +138,38 @@ pub fn account_security_entry(stmt: &Statement) -> SecurityEntry {
     }
 }
 
+/// Eine vom Steueramt typischerweise hinterfragte Buchung (verdächtige Gutschrift).
+#[derive(Debug, Clone)]
+pub struct Flag {
+    pub date: String,
+    pub amount_cents: i64,
+    pub description: String,
+    pub category: String,
+    pub reason: String,
+}
+
+/// Buchungen, die das Steueramt prüft und die **nicht** automatisch als Zinsertrag
+/// verbucht werden: grössere Gutschriften (≥ CHF 1'000), die steuerbares Einkommen
+/// (Lohn/Honorar/ausländischer Ertrag) **oder** ein nicht-steuerbarer Eigenübertrag
+/// sein können — der Nutzer muss entscheiden. Schwelle bewusst tief, lieber einmal
+/// zu viel fragen.
+pub fn flagged_credits(stmt: &Statement) -> Vec<Flag> {
+    stmt.transactions
+        .iter()
+        .filter(|t| is_income(t))
+        .filter(|t| category(t) != "Finanzertrag (Dividenden/Zinsen)")
+        .filter(|t| t.amount_cents >= 100_000)
+        .map(|t| Flag {
+            date: t.value_date.clone(),
+            amount_cents: t.amount_cents,
+            description: t.description.trim().to_string(),
+            category: category(t).to_string(),
+            reason: "Grössere Gutschrift, nicht als Zins erkannt — steuerbares Einkommen oder Eigenübertrag?"
+                .to_string(),
+        })
+        .collect()
+}
+
 /// Summen je Kategorie.
 #[derive(Debug, Serialize)]
 pub struct CategoryTotal {

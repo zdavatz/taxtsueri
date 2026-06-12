@@ -58,6 +58,9 @@ struct App {
     mt940_path: Option<PathBuf>,
     /// Gewählter Vermögensausweis (PDF, Wertschriften).
     vermoegen_path: Option<PathBuf>,
+    /// Verdächtige Buchungen, die im Prüf-Pop-Up bestätigt werden müssen
+    /// (Some = Fenster offen).
+    review: Option<Vec<mt940::Flag>>,
     /// GPU-Textur fürs Logo oben rechts (lazy hochgeladen).
     logo_tex: Option<egui::TextureHandle>,
 }
@@ -84,13 +87,31 @@ impl App {
             pending: Pending::None,
             mt940_path: None,
             vermoegen_path: None,
+            review: None,
             logo_tex: None,
         }
     }
 
+    /// Schritt 3: prüft verdächtige MT940-Buchungen. Gibt es welche, öffnet sich das
+    /// Prüf-Pop-Up (`review`); sonst wird direkt generiert.
+    fn start_generate(&mut self) {
+        if let Some(p) = self.mt940_path.clone() {
+            if let Ok(b) = std::fs::read(&p) {
+                if let Ok(stmt) = mt940::parse(&String::from_utf8_lossy(&b)) {
+                    let flags = mt940::flagged_credits(&stmt);
+                    if !flags.is_empty() {
+                        self.review = Some(flags);
+                        return;
+                    }
+                }
+            }
+        }
+        self.do_generate();
+    }
+
     /// Kombiniert MT940-Konto (Basis) + Vermögensausweis (Wertschriften) zu einem
     /// eCH-0119-Wertschriftenverzeichnis und erzeugt das XML.
-    fn generate(&mut self) {
+    fn do_generate(&mut self) {
         let mut entries: Vec<taxtsueri::model::SecurityEntry> = Vec::new();
         let mut parts: Vec<String> = Vec::new();
 
@@ -162,14 +183,8 @@ impl eframe::App for App {
         self.file_dialog.update(ctx);
         if let Some(path) = self.file_dialog.take_selected() {
             match self.pending {
-                Pending::OpenMt940 => {
-                    self.mt940_path = Some(path);
-                    self.generate();
-                }
-                Pending::OpenVermoegen => {
-                    self.vermoegen_path = Some(path);
-                    self.generate();
-                }
+                Pending::OpenMt940 => self.mt940_path = Some(path),
+                Pending::OpenVermoegen => self.vermoegen_path = Some(path),
                 Pending::Save => {
                     if let Some(xml) = &self.xml {
                         self.status = match std::fs::write(&path, xml) {
@@ -225,25 +240,36 @@ impl eframe::App for App {
             }
 
             ui.separator();
-            ui.horizontal(|ui| {
-                if ui.button("🏦  MT940-Kontoauszug wählen … (Basis)").clicked() {
-                    self.pending = Pending::OpenMt940;
-                    self.file_dialog.select_file();
-                }
-                if ui.button("📄  UBS-Vermögensausweis wählen … (PDF)").clicked() {
-                    self.pending = Pending::OpenVermoegen;
-                    self.file_dialog.select_file();
-                }
-            });
-            // Gewählte Dateien anzeigen.
             let name = |p: &Option<PathBuf>| {
                 p.as_ref()
                     .and_then(|p| p.file_name())
                     .map(|n| n.to_string_lossy().into_owned())
                     .unwrap_or_else(|| "—".into())
             };
-            ui.label(format!("MT940: {}", name(&self.mt940_path)));
-            ui.label(format!("Vermögensausweis: {}", name(&self.vermoegen_path)));
+            // Klarer 3-Schritt-Ablauf, untereinander.
+            ui.horizontal(|ui| {
+                if ui.button("1.  🏦  MT940-Kontoauszug wählen …").clicked() {
+                    self.pending = Pending::OpenMt940;
+                    self.file_dialog.select_file();
+                }
+                ui.label(format!("→ {}", name(&self.mt940_path)));
+            });
+            ui.add_space(2.0);
+            ui.horizontal(|ui| {
+                if ui.button("2.  📄  Vermögensausweis wählen … (PDF)").clicked() {
+                    self.pending = Pending::OpenVermoegen;
+                    self.file_dialog.select_file();
+                }
+                ui.label(format!("→ {}", name(&self.vermoegen_path)));
+            });
+            ui.add_space(6.0);
+            let ready = self.mt940_path.is_some() || self.vermoegen_path.is_some();
+            if ui
+                .add_enabled(ready, egui::Button::new("3.  ⚙  Steuererklärung generieren"))
+                .clicked()
+            {
+                self.start_generate();
+            }
             ui.add_space(4.0);
             ui.label(&self.status);
 
@@ -269,6 +295,65 @@ impl eframe::App for App {
                     });
             }
         });
+
+        // Prüf-Pop-Up: verdächtige Buchungen vor dem Generieren bestätigen.
+        if self.review.is_some() {
+            let flags = self.review.clone().unwrap();
+            let (mut proceed, mut cancel) = (false, false);
+            egui::Window::new("⚠  Verdächtige Buchungen prüfen")
+                .collapsible(false)
+                .resizable(true)
+                .anchor(egui::Align2::CENTER_CENTER, [0.0, 0.0])
+                .show(ctx, |ui| {
+                    ui.label(
+                        "Das Steueramt prüft grössere Gutschriften, die nicht als Zins erkannt \
+                         wurden. Ist das steuerbares Einkommen (Lohn/Honorar/ausländischer Ertrag) \
+                         oder ein nicht-steuerbarer Eigenübertrag? Die Software bucht diese NICHT \
+                         automatisch als Ertrag.",
+                    );
+                    ui.add_space(6.0);
+                    egui::ScrollArea::vertical().max_height(220.0).show(ui, |ui| {
+                        for f in &flags {
+                            ui.group(|ui| {
+                                ui.label(
+                                    egui::RichText::new(format!(
+                                        "{}   CHF {}",
+                                        f.date,
+                                        mt940::format_cents(f.amount_cents)
+                                    ))
+                                    .strong(),
+                                );
+                                if !f.description.is_empty() {
+                                    ui.label(&f.description);
+                                }
+                                ui.label(
+                                    egui::RichText::new(format!("Kategorie: {}", f.category))
+                                        .weak(),
+                                );
+                            });
+                        }
+                    });
+                    ui.add_space(8.0);
+                    ui.horizontal(|ui| {
+                        if ui
+                            .button("Geprüft – generieren (nur Zins als Ertrag)")
+                            .clicked()
+                        {
+                            proceed = true;
+                        }
+                        if ui.button("Abbrechen").clicked() {
+                            cancel = true;
+                        }
+                    });
+                });
+            if proceed {
+                self.review = None;
+                self.do_generate();
+            } else if cancel {
+                self.review = None;
+                self.status = "Abgebrochen — bitte verdächtige Buchungen prüfen.".into();
+            }
+        }
     }
 }
 
