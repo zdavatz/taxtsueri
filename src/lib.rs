@@ -5,6 +5,7 @@
 //! Vermögensausweis), Barcode-Erzeugung und das Einreichungs-Paket leben hier.
 
 pub mod barcode;
+pub mod camt053;
 pub mod code128;
 pub mod dataset;
 pub mod dataset_jp;

@@ -13,8 +13,8 @@
 //! `data/` (Eingabe + XML + Paket) enthält Personendaten und ist gitignored.
 
 use taxtsueri::{
-    barcode, code128, dataset, ech0196, model, model_zh, mt940, pdf, pdf417, pdf_report, settings,
-    sheet, submit, vermoegensausweis,
+    barcode, camt053, code128, dataset, ech0196, model, model_zh, mt940, pdf, pdf417, pdf_report,
+    settings, sheet, submit, vermoegensausweis,
 };
 // dataset_jp/model_jp werden in run_jp referenziert.
 use taxtsueri::{dataset_jp, model_jp};
@@ -30,6 +30,7 @@ struct Args {
     package: bool,
     jp: bool,
     from_mt940: Option<String>,
+    from_camt: Option<String>,
     from_vermoegensausweis: Option<String>,
     barcode: Option<String>,
     zh_barcode: bool,
@@ -50,6 +51,7 @@ fn parse_args() -> Result<Args, String> {
             "--package" => a.package = true,
             "--jp" => a.jp = true,
             "--from-mt940" => a.from_mt940 = Some(it.next().ok_or("--from-mt940 erwartet einen Pfad")?),
+            "--from-camt" => a.from_camt = Some(it.next().ok_or("--from-camt erwartet einen Pfad (Datei oder Verzeichnis)")?),
             "--from-vermoegensausweis" => {
                 a.from_vermoegensausweis = Some(it.next().ok_or("--from-vermoegensausweis erwartet einen Pfad")?)
             }
@@ -87,6 +89,10 @@ fn main() -> ExitCode {
         && args.from_pdf.is_none()
     {
         return run_mt940(args.from_mt940.as_ref().unwrap(), args.wertschriften);
+    }
+
+    if let Some(path) = &args.from_camt {
+        return run_camt(path, args.wertschriften);
     }
 
     if let Some(path) = &args.barcode {
@@ -352,9 +358,57 @@ fn run_mt940(path: &str, wertschriften_chf: Option<i64>) -> ExitCode {
             return ExitCode::FAILURE;
         }
     };
+    report_statement(&stmt, wertschriften_chf)
+}
 
+/// `--from-camt`: camt.053 (ISO 20022) einlesen — eine Datei **oder** ein Verzeichnis
+/// mit Tagesdateien (`*.xml`), die zu einem Auszug aggregiert werden.
+fn run_camt(path: &str, wertschriften_chf: Option<i64>) -> ExitCode {
+    let p = Path::new(path);
+    let mut xmls: Vec<String> = Vec::new();
+    if p.is_dir() {
+        let mut files: Vec<PathBuf> = match std::fs::read_dir(p) {
+            Ok(rd) => rd
+                .filter_map(|e| e.ok().map(|e| e.path()))
+                .filter(|p| p.extension().is_some_and(|e| e == "xml"))
+                .collect(),
+            Err(e) => {
+                eprintln!("Konnte {path} nicht lesen: {e}");
+                return ExitCode::FAILURE;
+            }
+        };
+        files.sort();
+        for f in files {
+            match std::fs::read(&f) {
+                Ok(b) => xmls.push(String::from_utf8_lossy(&b).into_owned()),
+                Err(e) => eprintln!("Hinweis: {} übersprungen: {e}", f.display()),
+            }
+        }
+    } else {
+        match std::fs::read(p) {
+            Ok(b) => xmls.push(String::from_utf8_lossy(&b).into_owned()),
+            Err(e) => {
+                eprintln!("Konnte {path} nicht lesen: {e}");
+                return ExitCode::FAILURE;
+            }
+        }
+    }
+    println!("camt.053: {} Tagesdatei(en) eingelesen.", xmls.len());
+    let stmt = match camt053::parse_many(&xmls) {
+        Ok(s) => s,
+        Err(e) => {
+            eprintln!("camt.053 nicht lesbar: {e}");
+            return ExitCode::FAILURE;
+        }
+    };
+    report_statement(&stmt, wertschriften_chf)
+}
+
+/// Gemeinsamer Report für MT940 und camt.053: Kategorien, Cash-Basis-ER, Bilanz-Position,
+/// Cash-Flow-Rechnung (PDF/MD) + JSON-Zusammenfassung.
+fn report_statement(stmt: &mt940::Statement, wertschriften_chf: Option<i64>) -> ExitCode {
     let cur = stmt.closing.as_ref().or(stmt.opening.as_ref()).map(|b| b.currency.clone()).unwrap_or_else(|| "CHF".into());
-    println!("MT940-Kontoauszug: {}", stmt.account);
+    println!("Kontoauszug: {}", stmt.account);
     if let Some(b) = &stmt.opening {
         println!("  Eröffnungssaldo {} : {} {}", b.date, b.currency, mt940::format_cents(b.amount_cents));
     }
@@ -364,7 +418,7 @@ fn run_mt940(path: &str, wertschriften_chf: Option<i64>) -> ExitCode {
     let (credit, debit) = (stmt.total_credit_cents(), stmt.total_debit_cents());
     println!("  Buchungen: {}", stmt.transactions.len());
 
-    let categories = mt940::categorize(&stmt);
+    let categories = mt940::categorize(stmt);
     println!("\nKategorien (Geldfluss, heuristisch) — Gutschrift / Belastung:");
     for c in &categories {
         println!(
@@ -390,7 +444,7 @@ fn run_mt940(path: &str, wertschriften_chf: Option<i64>) -> ExitCode {
     // Pseudo-Jahresrechnung (Entwurf für den Vermögensverwalter). Wertschriften via
     // --wertschriften (z. B. aus der Jahresrechnung) oder im kombinierten Flow aus dem
     // Vermögensausweis.
-    let ps = mt940::pseudo_statements(&stmt, wertschriften_chf.map(|c| c * 100));
+    let ps = mt940::pseudo_statements(stmt, wertschriften_chf.map(|c| c * 100));
     let report = serde_json::json!({
         "account": stmt.account,
         "opening": stmt.opening,
