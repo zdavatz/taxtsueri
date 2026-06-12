@@ -58,10 +58,45 @@ impl ZhMessage {
         }
     }
 
-    /// Baut eine v3-Nachricht aus den Kern-Personendaten unseres v4-[`Document`].
+    /// Baut den **extension-freien Kern** aus den Personendaten unseres v4-[`Document`]
+    /// — validiert gegen die eCH-0119-v3-XSD.
     pub fn from_document(doc: &Document, tax_period: u16) -> Self {
+        Self::build(doc, tax_period, None)
+    }
+
+    /// Baut die **barcode-fertige** v3-Nachricht: Kern + ZH-`cantonExtension` mit den
+    /// berechneten Steuerwerten ([`ZhBarcodeData`]). Nicht gegen die Kern-XSD
+    /// validierbar (strict wildcard ohne ZH-XSD) — strukturell gegen das Sample.
+    pub fn from_document_with_data(doc: &Document, tax_period: u16, data: &ZhBarcodeData) -> Self {
+        let ext = ZhHeaderCantonExtension {
+            header_extension: ZhHeaderExtension {
+                hidden_data: ZhHiddenData::default(),
+                approval_receipt: ZhApprovalReceipt {
+                    rounded_taxable_income: data.taxable_income.clone(),
+                    rounded_ratedetermining_income: data.ratedetermining_income.clone(),
+                    rounded_taxable_qualified_investments: data.taxable_qualified_investments,
+                    rounded_taxable_asset: data.taxable_asset,
+                    rounded_ratedetermining_asset: data.ratedetermining_asset,
+                },
+                source_system: ZhSourceSystem {
+                    system: "taxtsueri".into(),
+                    version: env!("CARGO_PKG_VERSION").into(),
+                    operating_system: std::env::consts::OS.into(),
+                    date: data.date.clone(),
+                },
+                document_list: data.documents.clone(),
+                version_fk: None,
+                client_password_protection: false,
+            },
+            canton: data.canton.clone(),
+        };
+        Self::build(doc, tax_period, Some(ext))
+    }
+
+    fn build(doc: &Document, tax_period: u16, ext: Option<ZhHeaderCantonExtension>) -> Self {
         let p1 = &doc.content.main_form.person_data_partner1;
         let header = ZhHeader {
+            canton_extension: ext,
             tax_period: tax_period.to_string(),
             source: 1, // 1 = 2D-Barcode
             source_description: Some("taxtsueri".into()),
@@ -84,16 +119,147 @@ impl ZhMessage {
     }
 }
 
-/// `headerType` (Ausschnitt). Reihenfolge laut XSD: …, `taxPeriod`, …, `source`,
-/// `sourceDescription`. `source`: 0 = Software, 1 = 2D-Barcode, 2 = OCR.
+/// Eingabe für die ZH-`cantonExtension`: die in der ZHprivateTax-Berechnung
+/// ermittelten gerundeten Steuerwerte plus Belegliste. (Weg „b" des Plans —
+/// Werte werden übernommen, nicht selbst berechnet.)
+#[derive(Debug, Clone)]
+pub struct ZhBarcodeData {
+    pub canton: String,
+    /// `zh:date` / Stichtag der Erzeugung (YYYY-MM-DD) — als Eingabe, da im Skript
+    /// keine Systemzeit verfügbar ist.
+    pub date: String,
+    pub taxable_income: ZhTaxAmount,
+    pub ratedetermining_income: ZhTaxAmount,
+    pub taxable_qualified_investments: i64,
+    pub taxable_asset: i64,
+    pub ratedetermining_asset: i64,
+    pub documents: Vec<ZhDocument>,
+}
+
+/// `headerType` (Ausschnitt). Reihenfolge laut XSD: …, `cantonExtension`, …,
+/// `taxPeriod`, …, `source`, `sourceDescription`. `source`: 0 = Software,
+/// 1 = 2D-Barcode, 2 = OCR.
 #[derive(Debug, Serialize)]
 pub struct ZhHeader {
+    /// ZH-`cantonExtension` (`zh:headerExtension` + `ssk:canton`). Optional, weil
+    /// `cantonExtension` ein `processContents="strict"`-Wildcard ist: ohne die
+    /// (nicht-öffentliche) ZH-XSD validiert nur der **extension-freie** Kern gegen
+    /// die eCH-0119-v3-XSD. Für den Barcode wird sie gesetzt.
+    #[serde(rename = "ssk:cantonExtension", skip_serializing_if = "Option::is_none")]
+    pub canton_extension: Option<ZhHeaderCantonExtension>,
     #[serde(rename = "ssk:taxPeriod")]
     pub tax_period: String,
     #[serde(rename = "ssk:source")]
     pub source: u8,
     #[serde(rename = "ssk:sourceDescription", skip_serializing_if = "Option::is_none")]
     pub source_description: Option<String>,
+}
+
+// ---------------------------------------------------------------------------
+// ZH-cantonExtension (zh-taxdeclaration-it/ech3-0/6) — nur strukturell gegen
+// das Real-Sample geprüft (keine öffentliche XSD).
+// ---------------------------------------------------------------------------
+
+/// `cantonExtensionType` im Header: `xs:any` (= `zh:headerExtension`) + `ssk:canton`.
+#[derive(Debug, Serialize)]
+pub struct ZhHeaderCantonExtension {
+    #[serde(rename = "zh:headerExtension")]
+    pub header_extension: ZhHeaderExtension,
+    #[serde(rename = "ssk:canton")]
+    pub canton: String,
+}
+
+/// `zh:headerExtension` — Reihenfolge laut Real-Sample.
+#[derive(Debug, Serialize)]
+pub struct ZhHeaderExtension {
+    #[serde(rename = "zh:hiddenData")]
+    pub hidden_data: ZhHiddenData,
+    #[serde(rename = "zh:approvalReceipt")]
+    pub approval_receipt: ZhApprovalReceipt,
+    #[serde(rename = "zh:sourceSystem")]
+    pub source_system: ZhSourceSystem,
+    #[serde(rename = "zh:documentList", skip_serializing_if = "Vec::is_empty")]
+    pub document_list: Vec<ZhDocument>,
+    #[serde(rename = "zh:versionFK", skip_serializing_if = "Option::is_none")]
+    pub version_fk: Option<String>,
+    #[serde(rename = "zh:clientPasswordProtection")]
+    pub client_password_protection: bool,
+}
+
+/// `zh:hiddenData` — Selbständigkeits-Flags (Default: keine Selbständigkeit).
+#[derive(Debug, Serialize)]
+pub struct ZhHiddenData {
+    #[serde(rename = "zh:selfEmploymentP1")]
+    pub self_employment_p1: bool,
+    #[serde(rename = "zh:noSelfEmploymentP1")]
+    pub no_self_employment_p1: bool,
+    #[serde(rename = "zh:selfEmploymentP2")]
+    pub self_employment_p2: bool,
+    #[serde(rename = "zh:noSelfEmploymentP2")]
+    pub no_self_employment_p2: bool,
+    #[serde(rename = "zh:relevantCooperation")]
+    pub relevant_cooperation: bool,
+}
+
+impl Default for ZhHiddenData {
+    fn default() -> Self {
+        Self {
+            self_employment_p1: false,
+            no_self_employment_p1: true,
+            self_employment_p2: false,
+            no_self_employment_p2: true,
+            relevant_cooperation: false,
+        }
+    }
+}
+
+/// `zh:approvalReceipt` — die **berechneten** Steuerwerte (gerundet, kantonal+Bund).
+/// Werte kommen als Eingabe (aus der ZHprivateTax-Berechnung), s. [`ZhBarcodeData`].
+#[derive(Debug, Serialize)]
+pub struct ZhApprovalReceipt {
+    #[serde(rename = "zh:roundedTaxableIncome")]
+    pub rounded_taxable_income: ZhTaxAmount,
+    #[serde(rename = "zh:roundedRatedeterminingIncome")]
+    pub rounded_ratedetermining_income: ZhTaxAmount,
+    #[serde(rename = "zh:roundedTaxableQualifiedInvestments")]
+    pub rounded_taxable_qualified_investments: i64,
+    #[serde(rename = "zh:roundedTaxableAsset")]
+    pub rounded_taxable_asset: i64,
+    #[serde(rename = "zh:roundedRatedeterminingAsset")]
+    pub rounded_ratedetermining_asset: i64,
+}
+
+/// `ssk:cantonalTax`/`ssk:federalTax` (eCH-0119-Namespace, daher `ssk:`).
+#[derive(Debug, Clone, Serialize)]
+pub struct ZhTaxAmount {
+    #[serde(rename = "ssk:cantonalTax")]
+    pub cantonal: i64,
+    #[serde(rename = "ssk:federalTax")]
+    pub federal: i64,
+}
+
+/// `zh:sourceSystem` — erzeugendes System (hier taxtsueri).
+#[derive(Debug, Serialize)]
+pub struct ZhSourceSystem {
+    #[serde(rename = "zh:system")]
+    pub system: String,
+    #[serde(rename = "zh:version")]
+    pub version: String,
+    #[serde(rename = "zh:operatingSystem")]
+    pub operating_system: String,
+    #[serde(rename = "zh:date")]
+    pub date: String,
+}
+
+/// `zh:documentList` — beigelegter Beleg (Typ/Übermittlungsart/Beschreibung).
+#[derive(Debug, Clone, Serialize)]
+pub struct ZhDocument {
+    #[serde(rename = "zh:documentType")]
+    pub document_type: String,
+    #[serde(rename = "zh:documentDeliveryMethod")]
+    pub document_delivery_method: String,
+    #[serde(rename = "zh:documentDescription")]
+    pub document_description: String,
 }
 
 /// `contentType` (Ausschnitt) — vorerst nur `mainForm`.
@@ -145,6 +311,23 @@ pub fn zh_message_to_xml(message: &ZhMessage) -> Result<String, String> {
 mod tests {
     use super::*;
 
+    fn sample_data() -> ZhBarcodeData {
+        ZhBarcodeData {
+            canton: "ZH".into(),
+            date: "2025-12-31".into(),
+            taxable_income: ZhTaxAmount { cantonal: 104300, federal: 100500 },
+            ratedetermining_income: ZhTaxAmount { cantonal: 104300, federal: 100500 },
+            taxable_qualified_investments: 0,
+            taxable_asset: 0,
+            ratedetermining_asset: 0,
+            documents: vec![ZhDocument {
+                document_type: "01".into(),
+                document_delivery_method: "01".into(),
+                document_description: "Lohnausweis(e) pro Arbeitgeber".into(),
+            }],
+        }
+    }
+
     #[test]
     fn builds_minimal_valid_v3() {
         let doc = crate::dataset::example();
@@ -155,5 +338,26 @@ mod tests {
         assert!(xml.contains("xmlns:ssk=\"http://www.ech.ch/xmlns/eCH-0119/3\""));
         assert!(xml.contains("<ssk:taxPeriod>2025</ssk:taxPeriod>"));
         assert!(xml.contains("<ssk:partnerPersonIdentification>"));
+        // Kern trägt KEINE zh:-Extension (sonst nicht XSD-validierbar).
+        assert!(!xml.contains("zh:headerExtension"));
+    }
+
+    #[test]
+    fn builds_barcode_variant_with_zh_extension() {
+        let doc = crate::dataset::example();
+        let msg = ZhMessage::from_document_with_data(&doc, 2025, &sample_data());
+        let xml = zh_message_to_xml(&msg).unwrap();
+        // cantonExtension-Struktur wie im Real-Sample.
+        assert!(xml.contains("<ssk:cantonExtension>"));
+        assert!(xml.contains("<zh:headerExtension>"));
+        assert!(xml.contains("<zh:approvalReceipt>"));
+        assert!(xml.contains("<zh:roundedTaxableIncome>"));
+        assert!(xml.contains("<ssk:cantonalTax>104300</ssk:cantonalTax>"));
+        assert!(xml.contains("<zh:system>taxtsueri</zh:system>"));
+        assert!(xml.contains("<zh:documentDescription>Lohnausweis(e) pro Arbeitgeber</zh:documentDescription>"));
+        // canton steht NACH der Extension (XSD-Sequenz).
+        let ext = xml.find("zh:headerExtension").unwrap();
+        let canton = xml.find("<ssk:canton>").unwrap();
+        assert!(ext < canton);
     }
 }
