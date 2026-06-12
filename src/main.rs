@@ -13,8 +13,8 @@
 //! `data/` (Eingabe + XML + Paket) enthält Personendaten und ist gitignored.
 
 use taxtsueri::{
-    barcode, code128, dataset, ech0196, model, model_zh, mt940, pdf, pdf417, settings, sheet,
-    submit, vermoegensausweis,
+    barcode, code128, dataset, ech0196, model, model_zh, mt940, pdf, pdf417, pdf_report, settings,
+    sheet, submit, vermoegensausweis,
 };
 // dataset_jp/model_jp werden in run_jp referenziert.
 use taxtsueri::{dataset_jp, model_jp};
@@ -176,6 +176,8 @@ fn main() -> ExitCode {
     // ein eCH-0119-Wertschriftenverzeichnis. Das Konto steht zuoberst.
     if args.from_mt940.is_some() || args.from_vermoegensausweis.is_some() {
         let mut entries: Vec<model::SecurityEntry> = Vec::new();
+        let mut mt940_stmt: Option<mt940::Statement> = None;
+        let mut wertschriften_cents: Option<i64> = None;
 
         if let Some(path) = &args.from_mt940 {
             let bytes = match std::fs::read(path) {
@@ -201,6 +203,7 @@ fn main() -> ExitCode {
                         stmt.transactions.len()
                     );
                     entries.push(acc);
+                    mt940_stmt = Some(stmt);
                 }
                 Err(e) => {
                     eprintln!("MT940 nicht lesbar: {e}");
@@ -213,6 +216,9 @@ fn main() -> ExitCode {
             match run_pdftotext(Path::new(path)) {
                 Ok(text) => {
                     let secs = vermoegensausweis::to_securities(&vermoegensausweis::parse_text(&text));
+                    // Wertschriften-Steuerwert (in Rappen) für die Pseudo-Bilanz.
+                    let chf: i64 = secs.iter().filter_map(|s| s.tax_value.map(|t| t.cantonal)).sum();
+                    wertschriften_cents = Some(chf * 100);
                     println!("Vermögensausweis: {} Wertschriftenpositionen übernommen.", secs.len());
                     entries.extend(secs);
                 }
@@ -230,6 +236,12 @@ fn main() -> ExitCode {
             los.security_entry.len()
         );
         doc.content.list_of_securities = Some(los);
+
+        // Pseudo-Jahresrechnung (Bilanz inkl. Wertschriften + ER) als PDF/MD.
+        if let Some(stmt) = &mt940_stmt {
+            let ps = mt940::pseudo_statements(stmt, wertschriften_cents);
+            write_pseudo_jahresrechnung(&ps);
+        }
     }
 
     // 2c) settings.json (gitignored) setzt die AHVN13 – nicht im Code.
@@ -364,8 +376,9 @@ fn run_mt940(path: &str) -> ExitCode {
         println!("  Flüssige Mittel (Bank) per {} : {} {}", b.date, b.currency, mt940::format_cents(b.amount_cents));
     }
 
-    // Pseudo-Jahresrechnung (Entwurf für den Vermögensverwalter).
-    let ps = mt940::pseudo_statements(&stmt);
+    // Pseudo-Jahresrechnung (Entwurf für den Vermögensverwalter). Hier (MT940 allein)
+    // ohne Wertschriften — die kommen im kombinierten Flow aus dem Vermögensausweis.
+    let ps = mt940::pseudo_statements(&stmt, None);
     let report = serde_json::json!({
         "account": stmt.account,
         "opening": stmt.opening,
@@ -385,14 +398,25 @@ fn run_mt940(path: &str) -> ExitCode {
         Ok(()) => println!("\nReport (inkl. Kategorien + Buchungen) geschrieben nach: {}", out.display()),
         Err(e) => eprintln!("Hinweis: konnte {} nicht schreiben: {e}", out.display()),
     }
-    // Pseudo-Jahresrechnung als Markdown — der Vermögensverwalter geht darüber.
+    // Pseudo-Jahresrechnung als Markdown + PDF — der Vermögensverwalter geht darüber.
+    write_pseudo_jahresrechnung(&ps);
+    ExitCode::SUCCESS
+}
+
+/// Schreibt die Pseudo-Jahresrechnung als Markdown und als zweiseitiges PDF (Seite 1
+/// Bilanz, Seite 2 Erfolgsrechnung) nach `data/`.
+fn write_pseudo_jahresrechnung(ps: &mt940::PseudoStatements) {
+    let _ = std::fs::create_dir_all("data");
     let md_out = Path::new("data").join("mt940-pseudo-jahresrechnung.md");
-    let md = mt940::pseudo_statements_markdown(&ps);
-    match std::fs::create_dir_all("data").and_then(|_| std::fs::write(&md_out, md)) {
-        Ok(()) => println!("Pseudo-Jahresrechnung (Entwurf z. Hd. Vermögensverwalter): {}", md_out.display()),
+    match std::fs::write(&md_out, mt940::pseudo_statements_markdown(ps)) {
+        Ok(()) => println!("Pseudo-Jahresrechnung (Markdown): {}", md_out.display()),
         Err(e) => eprintln!("Hinweis: konnte {} nicht schreiben: {e}", md_out.display()),
     }
-    ExitCode::SUCCESS
+    let pdf_out = Path::new("data").join("pseudo-jahresrechnung.pdf");
+    match std::fs::write(&pdf_out, pdf_report::pseudo_statements_pdf(ps)) {
+        Ok(()) => println!("Pseudo-Jahresrechnung (PDF, S.1 Bilanz / S.2 ER): {}", pdf_out.display()),
+        Err(e) => eprintln!("Hinweis: konnte {} nicht schreiben: {e}", pdf_out.display()),
+    }
 }
 
 /// `--barcode`: eCH-0196-XML → komprimierte Barcode-Nutzlast vorbereiten (Fundament).

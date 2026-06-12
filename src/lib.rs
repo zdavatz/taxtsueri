@@ -15,6 +15,7 @@ pub mod model_zh;
 pub mod mt940;
 pub mod pdf;
 pub mod pdf417;
+pub mod pdf_report;
 pub mod settings;
 pub mod sheet;
 pub mod submit;

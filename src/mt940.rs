@@ -261,15 +261,26 @@ pub struct PseudoErfolgsrechnung {
     pub saldo_cents: i64,
 }
 
-/// Bilanz-Ausschnitt, der sich aus einem Kontoauszug ableiten lässt: die Bankzeile.
+/// Bilanz-Ausschnitt, der sich aus den vorliegenden Daten ableiten lässt: die Bankzeile
+/// (MT940) und — falls vorhanden — die Wertschriften (Vermögensausweis).
 #[derive(Debug, Serialize)]
 pub struct PseudoBilanz {
     pub konto: String,
     pub fluessige_mittel_cents: i64,
+    /// Wertschriften aus dem Vermögensausweis (Steuerwert), falls vorhanden.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub wertschriften_cents: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub eroeffnung_cents: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub stichtag: Option<String>,
+}
+
+impl PseudoBilanz {
+    /// Summe der ableitbaren Aktiven (flüssige Mittel + Wertschriften).
+    pub fn total_aktiven_cents(&self) -> i64 {
+        self.fluessige_mittel_cents + self.wertschriften_cents.unwrap_or(0)
+    }
 }
 
 /// Pseudo-Jahresrechnung: Cash-Basis-ER + Bank-Bilanzzeile. **Entwurf** — der
@@ -294,8 +305,9 @@ fn ertrag_note(cat: &str) -> Option<String> {
     }
 }
 
-/// Baut die Pseudo-Jahresrechnung aus dem Kontoauszug.
-pub fn pseudo_statements(stmt: &Statement) -> PseudoStatements {
+/// Baut die Pseudo-Jahresrechnung aus dem Kontoauszug; `wertschriften_cents` (aus dem
+/// Vermögensausweis, Steuerwert) fliesst in die Bilanz-Aktiven ein, falls vorhanden.
+pub fn pseudo_statements(stmt: &Statement, wertschriften_cents: Option<i64>) -> PseudoStatements {
     let cats = categorize(stmt);
     let mut ertrag: Vec<ErLine> = Vec::new();
     let mut aufwand: Vec<ErLine> = Vec::new();
@@ -332,6 +344,7 @@ pub fn pseudo_statements(stmt: &Statement) -> PseudoStatements {
         bilanz: PseudoBilanz {
             konto: stmt.account.clone(),
             fluessige_mittel_cents: bal.map(|b| b.amount_cents).unwrap_or(0),
+            wertschriften_cents,
             eroeffnung_cents: stmt.opening.as_ref().map(|b| b.amount_cents),
             stichtag: stmt.closing.as_ref().map(|b| b.date.clone()),
         },
@@ -376,18 +389,25 @@ pub fn pseudo_statements_markdown(ps: &PseudoStatements) -> String {
         format_cents(ps.erfolgsrechnung.saldo_cents)
     ));
 
-    m.push_str("## Pseudo-Bilanz (ableitbarer Teil)\n\n| Position | CHF |\n|---|--:|\n");
+    m.push_str("## Pseudo-Bilanz (ableitbarer Teil)\n\n### Aktiven\n\n| Position | CHF |\n|---|--:|\n");
     m.push_str(&format!(
-        "| Flüssige Mittel — {} | {} |\n",
+        "| Flüssige Mittel (Bank) — {} | {} |\n",
         ps.bilanz.konto,
         format_cents(ps.bilanz.fluessige_mittel_cents)
     ));
+    if let Some(w) = ps.bilanz.wertschriften_cents {
+        m.push_str(&format!("| Wertschriften (Vermögensausweis) | {} |\n", format_cents(w)));
+    }
+    m.push_str(&format!(
+        "| **Total Aktiven (ableitbar)** | **{}** |\n",
+        format_cents(ps.bilanz.total_aktiven_cents())
+    ));
     if let Some(o) = ps.bilanz.eroeffnung_cents {
-        m.push_str(&format!("| (Eröffnungssaldo) | {} |\n", format_cents(o)));
+        m.push_str(&format!("| (Bank-Eröffnungssaldo) | {} |\n", format_cents(o)));
     }
     m.push_str(
-        "\n_Nicht aus MT940 ableitbar (ergänzen): Kasse, Wertschriften, Anlagevermögen, \
-         Kreditoren, Darlehen, Rechnungsabgrenzungen, Eigenkapital._\n",
+        "\n_Nicht aus den Daten ableitbar (ergänzen): Kasse, Anlagevermögen, Kreditoren, \
+         Darlehen, Rechnungsabgrenzungen, Eigenkapital._\n",
     );
     m
 }
@@ -608,7 +628,9 @@ mod tests {
             :86:Dauerauftrag Miete\n\
             :62F:C251231CHF99299,50\n";
         let s = parse(mt).expect("parse");
-        let ps = pseudo_statements(&s);
+        let ps = pseudo_statements(&s, Some(3_862_753)); // Wertschriften 38'627.53
+        assert_eq!(ps.bilanz.wertschriften_cents, Some(3_862_753));
+        assert_eq!(ps.bilanz.total_aktiven_cents(), 9_929_950 + 3_862_753);
         assert_eq!(ps.erfolgsrechnung.total_ertrag_cents, 50_000); // 500.00
         assert_eq!(ps.erfolgsrechnung.total_aufwand_cents, 120_050); // 1200.50
         assert_eq!(ps.erfolgsrechnung.saldo_cents, 50_000 - 120_050);
