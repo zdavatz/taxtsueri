@@ -2,9 +2,12 @@
 
 Steuererklärung für die Stadt Tsüri einreichen.
 
-Rust-Werkzeug, das aus den Daten einer Zürcher Steuererklärung (natürliche
-Personen) eine **eCH-0119**-konforme XML-Datei für die elektronische
-Einreichung erzeugt.
+Rust-Werkzeug, das aus den Daten einer Zürcher Steuererklärung eine
+validierungsfähige XML-Datei für die elektronische Einreichung erzeugt — für
+**beide** Personenkategorien:
+
+- **Natürliche Personen (NP)** → **eCH-0119** «E-Tax Filing»
+- **Juristische Personen (JP)** → **eCH-0276** «E-Bilanz und E-Tax JP»
 
 ## Standards
 
