@@ -76,6 +76,8 @@ cargo run -- --package                                      # zusätzlich Einrei
 cargo run -- --jp                                           # juristische Person (ywesee GmbH) → eCH-0276
 cargo run -- --jp --package                                 # JP + Einreichungs-Paket
 cargo run -- --from-mt940 auszug.mt940                      # MT940-Kontoauszug einlesen (Salden/Buchungen)
+cargo run -- --from-camt kontoauszug.xml                    # camt.053-Kontoauszug (ISO 20022) einlesen — Nachfolger von MT940
+cargo run -- --from-camt camt/                              # Verzeichnis mit camt.053-Dateien (täglich/monatlich) → aggregiert
 cargo run -- --from-mt940 konto.mt940 --from-vermoegensausweis depot.pdf  # kombiniert → eCH-0119 (MT940-Konto = Basis + Wertschriften)
 cargo run -- --from-mt940 konto.mt940 --wertschriften 38628 # → data/Cash-Flow-Rechnung.pdf (Bilanz + ER, Entwurf z. Hd. Vermögensverwalter)
 ```
@@ -128,6 +130,21 @@ Wichtig: Das ist **cash-basiert** — keine buchhalterisch exakte Erfolgsrechnun
 (Abgrenzungen/RAG, Abschreibungen fehlen; MwSt./Timing in den Cash-Flüssen). Als
 Gegenprobe: Eröffnung + Gutschriften − Belastungen = Schluss. Für steuerlich
 kategorisierte Wertschriftendaten dient eCH-0196, nicht MT940.
+
+### camt.053-Kontoauszug (`--from-camt`)
+
+Liest einen **camt.053**-Kontoauszug (ISO 20022, XML) — den **modernen Nachfolger
+von MT940** und das XML-Export-Format der UBS für Kontoauszüge. Unterstützt wird
+**`camt.053.001.08`** nach den **Swiss Payment Standards** (Namespace
+`urn:iso:std:iso:20022:tech:xsd:camt.053.001.08`). Gegenüber dem MT940-`:86:`-Freitext
+liefert camt.053 **strukturierte Felder** (Gegenpartei `RltdPties`, Zahlungszweck
+`RmtInf`, Buchungscode `BkTxCd`), was die automatische Kategorisierung (Dividenden,
+Lohn, MWST/ESTV, Reisespesen) deutlich zuverlässiger macht.
+
+`--from-camt <datei.xml>` liest eine Datei, `--from-camt <verzeichnis>` aggregiert
+**beliebig viele** camt.053-Dateien (tägliche oder monatliche Auszüge) zu einem
+Statement (Eröffnung aus der frühesten, Schluss aus der spätesten Datei). Ausgabe wie
+bei `--from-mt940`: Kategorien, Cash-Basis-Erfolgsrechnung und Bilanz-Position.
 
 ### Juristische Personen (eCH-0276)
 
