@@ -24,6 +24,7 @@ cargo run -- --zh-barcode                   # ZH-Steuererklärungs-Barcode: eCH-
 cargo run --features gui --bin taxtsueri-gui  # native desktop GUI (eframe): MT940 (Basis) + Vermögensausweis → eCH-0119 XML
 cargo run -- --from-mt940 konto.mt940 --from-vermoegensausweis depot.pdf  # kombiniert → eCH-0119 (Konto = Basis)
 cargo run -- --from-mt940 konto.mt940 --wertschriften 38628  # → data/Cash-Flow-Rechnung.pdf (Bilanz + ER, Entwurf)
+cargo run --example idg_brief  # IDG-Zugangsgesuch (Öffentlichkeitsprinzip) → ~/idg-zugangsgesuch.pdf (klickbare Gesetzeslinks)
 cargo test                  # run tests (incl. xmllint validation of NP eCH-0119 + JP eCH-0276, eCH-0196 parse, PDF roundtrip, SHA-256)
 ```
 
@@ -160,6 +161,18 @@ code — the NP `vn` (AHVN13, applied in the NP flow) and the JP `uid`/`register
 `examples/input.sample.json` (synthetic JSON input) and `examples/ech0196.sample.xml`
 (synthetic eSteuerauszug) are committed; `tests/validation.rs` validates the example dataset
 and the sample input against the XSD via xmllint.
+
+`examples/idg_brief.rs` is a **standalone `lopdf` example** (no new deps, not part of the
+lib/CLI): it renders a formal **IDG access request** — *Gesuch um Zugang zu amtlichen Dokumenten*
+(Öffentlichkeitsprinzip, Art. 17 KV ZH; §§ 20 ff. IDG) — as a two-page PDF with **clickable
+`/Link` URI annotations** on the legal sources. Own line-breaker + Helvetica/Helvetica-Bold AFM
+width tables + WinAnsi encoding (Umlaute, §, •, –). Background: the tax authority's API description
+for NP/JP is not publicly published and access to the interface doc is coupled to an onboarding
+review; the e-filing legal basis is §§ 109c/109d/133 StG + Verordnung LS 631.121, which knows
+**neither** a Zulassungsverfahren for third-party software **nor** the demanded business-plan/
+timeline/structure — for commercial representatives § 12 Abs. 2 even states «keine weiteren
+Abklärungen» are made. The letter body is **placeholder-only** (no personal/company names), so it
+is safe to commit; `cargo run --example idg_brief [-- out.pdf]` writes `~/idg-zugangsgesuch.pdf`.
 
 ### Namespaces — the rule that makes it validate
 

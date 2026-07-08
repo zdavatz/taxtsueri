@@ -182,6 +182,31 @@ einem Manifest. Der reale ZH-Kanal (Stand 2025): **ZHprivateTax** (Online-Portal
 AHV-Nr. + Zugangscode + starke Authentifizierung) bzw. das **2D-Barcode-Blatt**
 der Steuersoftware – es gibt keine offene Upload-API für eCH-0119-XML.
 
+### IDG-Zugangsgesuch als PDF (`examples/idg_brief.rs`)
+
+Der **API-Beschrieb der Steuerbehörde** für NP/JP ist nicht öffentlich publiziert,
+und der Zugang zur Schnittstellendokumentation wird an ein Onboarding gekoppelt
+(Business-Plan, Timeline, B2B/B2C-Konzept, Firmenstruktur, Entscheidgremium). Für
+diese Anforderungen ist **keine gesetzliche Grundlage** ersichtlich: Die elektronische
+Einreichung stützt sich auf **§§ 109c/109d/133 StG** i. V. m. der **Verordnung
+LS 631.121**, die weder ein Zulassungsverfahren für Drittsoftware noch die verlangten
+Angaben kennt — für gewerbsmässige Vertreter hält **§ 12 Abs. 2** sogar ausdrücklich
+fest, dass «keine weiteren Abklärungen» vorgenommen werden. Zugang zu amtlichen
+Dokumenten steht ohnehin nach dem **Öffentlichkeitsprinzip** zu (Art. 17 KV ZH; §§ 20 ff. IDG).
+
+Dieses eigenständige Beispiel erzeugt daraus ein **formelles Gesuch um Zugang zu
+amtlichen Dokumenten** als zweiseitiges **PDF mit klickbaren Gesetzeslinks**:
+
+```bash
+cargo run --example idg_brief                 # → ~/idg-zugangsgesuch.pdf
+cargo run --example idg_brief -- /pfad/x.pdf  # eigener Ausgabepfad
+```
+
+Rein mit `lopdf` gebaut (wie `src/pdf_report.rs`), zusätzlich mit **`/Link`-URI-
+Annotationen**, eigenem Zeilenumbruch, Helvetica/Helvetica-Bold-Breitentabellen und
+WinAnsi-Encoding (Umlaute, §, •, –). Der Brieftext enthält **nur Platzhalter** (keine
+Personen-/Firmennamen).
+
 ## Stand
 
 Das erzeugte XML **validiert gegen das offizielle eCH-0119-v4.0.0-XSD**
