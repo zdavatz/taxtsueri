@@ -3,7 +3,7 @@
 //! Fehlt eines von beidem, wird der Test übersprungen statt zu scheitern.
 
 use std::process::Command;
-use taxtsueri::{dataset, dataset_jp, model, model_zh};
+use taxtsueri::{dataset, dataset_jp, model, model_mwst, model_zh, mwst};
 
 fn validate(schema: &str, xml: &str, tmp_name: &str) -> bool {
     if !std::path::Path::new(schema).exists()
@@ -33,6 +33,61 @@ fn jp_example_validates_against_ech0276() {
         "schema/eCH-0276-1-0.xsd",
         &xml,
         "taxtsueri-jp-validation.xml"
+    ));
+}
+
+/// Die MWST-Abrechnung (eCH-0217 V2.0.0) muss gegen das offizielle XSD validieren —
+/// beide modellierten Zweige des `xs:choice`, weil nur einer davon je Datei auftritt.
+#[test]
+fn mwst_declaration_validates_against_ech0217() {
+    let base = mwst::Params {
+        uid: "CHE-123.456.789 MWST".into(),
+        organisation_name: "Beispiel GmbH".into(),
+        period_from: "2026-01-01".into(),
+        period_till: "2026-06-30".into(),
+        generation_time: mwst::now_utc_iso(),
+        donations: Some(model_mwst::Amount(89_975)),
+        ..Default::default()
+    };
+
+    // Saldosteuersatz (simpleTaxRateMethod, Perioden ab 01.01.2025).
+    let sss = mwst::build(&mwst::Params {
+        method: mwst::Method::Saldosteuersatz,
+        total_consideration: model_mwst::Amount(12_345_678),
+        activity_id: Some("00001".into()),
+        tax_rate: model_mwst::Percent(620),
+        ..base.clone()
+    })
+    .expect("SSS bauen");
+    assert!(sss.validate().is_empty(), "{:?}", sss.validate());
+    let xml = taxtsueri::mwst_to_xml(sss).expect("serialize SSS");
+    assert!(xml.contains("<eCH-0217:simpleTaxRateMethod>"));
+    assert!(validate(
+        "schema/eCH-0217-2-0-0.xsd",
+        &xml,
+        "taxtsueri-mwst-sss-validation.xml"
+    ));
+
+    // Effektive Methode mit Vorsteuerabzug und Exportabzug (Ziff. 220).
+    let eff = mwst::build(&mwst::Params {
+        method: mwst::Method::Effektiv,
+        total_consideration: model_mwst::Amount(10_000_000),
+        supplies_to_foreign_countries: Some(model_mwst::Amount(1_000_000)),
+        tax_rate: model_mwst::Percent(810),
+        input_tax_material_and_services: Some(model_mwst::Amount(120_000)),
+        input_tax_investments: Some(model_mwst::Amount(30_000)),
+        ..base
+    })
+    .expect("effektiv bauen");
+    assert!(eff.validate().is_empty(), "{:?}", eff.validate());
+    // 90'000.00 netto zu 8.1 % = 7'290.00, abzüglich 1'500.00 Vorsteuer = 5'790.00.
+    assert_eq!(eff.payable_tax, model_mwst::Amount(579_000));
+    let xml = taxtsueri::mwst_to_xml(eff).expect("serialize effektiv");
+    assert!(xml.contains("<eCH-0217:effectiveReportingMethod>"));
+    assert!(validate(
+        "schema/eCH-0217-2-0-0.xsd",
+        &xml,
+        "taxtsueri-mwst-eff-validation.xml"
     ));
 }
 

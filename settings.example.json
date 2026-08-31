@@ -5,5 +5,14 @@
   "jp": {
     "uid": "CHE000000000",
     "registerNumber": 0
+  },
+  "mwst": {
+    "uid": "CHE-000.000.000 MWST",
+    "organisationName": "Beispiel GmbH",
+    "activityId": "00000",
+    "taxRate": "6.2",
+    "methode": "saldosteuersatz",
+    "abrechnungsart": "vereinbart",
+    "manufacturer": "Beispiel GmbH"
   }
 }
