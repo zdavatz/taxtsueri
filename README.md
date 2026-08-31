@@ -9,6 +9,8 @@ validierungsfähige XML-Datei für die elektronische Einreichung erzeugt — fü
 - **Natürliche Personen (NP)** → **eCH-0119** «E-Tax Filing»
 - **Juristische Personen (JP)** → **eCH-0276** «E-Bilanz und E-Tax JP»
 
+Dazu die **MWST-Abrechnung** für die ESTV → **eCH-0217** «E-MWST» V2.0.0.
+
 ## Standards
 
 - **eCH-0119** «E-Tax Filing» — Austauschformat der Steuermeldung natürlicher
@@ -17,17 +19,24 @@ validierungsfähige XML-Datei für die elektronische Einreichung erzeugt — fü
   eingebettetem XML/Barcode).
 - **eCH-0276** «E-Bilanz und E-Tax JP» — Austauschformat für **juristische
   Personen** (Bilanz, Erfolgsrechnung, Gewinn-/Kapitalsteuer), von eCH + SSK.
+- **eCH-0217** «Spezifikation E-MWST» — elektronische **MWST-Abrechnung** für das
+  ESTV-Portal SuisseTax. Der Import in «MWST abrechnen» akzeptiert **ausschliesslich
+  Version 2.0.0**; ältere Versionen und abweichende Strukturen werden nicht mehr
+  verarbeitet.
 - **eCH-0044 / 0010 / 0011 / 0007** — Basisstandards für Personen-, Adress-
   und Gemeindedaten, auf denen eCH-0119/0276 aufbauen.
+- **eCH-0058 / 0108** — Rahmenstandards (Sendungs-Header, Unternehmensidentifikation),
+  die eCH-0217 importiert.
 
 Spezifikationen und XSD-Schemas sind frei (ohne Mitgliedschaft) von
 [www.ech.ch](https://www.ech.ch) beziehbar.
 
 ## XSD-Schemas
 
-Die vollständigen Import-Hüllen von **eCH-0119** v4.0.0 (NP) und **eCH-0276** v1.0.0
-(JP) liegen vendoriert in `schema/` (26 XSD) und sind offline validierbar; das
-eCH-0196-XSD (eSteuerauszug) liegt als Referenz daneben. Neu beziehen / reproduzieren:
+Die vollständigen Import-Hüllen von **eCH-0119** v4.0.0 (NP), **eCH-0276** v1.0.0
+(JP) und **eCH-0217** v2.0.0 (MWST) liegen vendoriert in `schema/` und sind offline
+validierbar; das eCH-0196-XSD (eSteuerauszug) liegt als Referenz daneben, die vier
+offiziellen eCH-0217-Beispiel-XML ebenfalls (das Fetch-Skript validiert sie erneut). Neu beziehen / reproduzieren:
 
 ```bash
 ./scripts/fetch-schemas.sh
@@ -80,6 +89,8 @@ cargo run -- --from-camt kontoauszug.xml                    # camt.053-Kontoausz
 cargo run -- --from-camt camt/                              # Verzeichnis mit camt.053-Dateien (täglich/monatlich) → aggregiert
 cargo run -- --from-mt940 konto.mt940 --from-vermoegensausweis depot.pdf  # kombiniert → eCH-0119 (MT940-Konto = Basis + Wertschriften)
 cargo run -- --from-mt940 konto.mt940 --wertschriften 38628 # → data/Cash-Flow-Rechnung.pdf (Bilanz + ER, Entwurf z. Hd. Vermögensverwalter)
+cargo run -- --mwst --periode S1/2026 --umsatz 123456.78 --activity-id 12345   # MWST-Abrechnung → eCH-0217 V2.0.0
+cargo run -- --mwst --periode S1/2026 --umsatz 123456.78 --from-mt940 konto.mt940  # + Gegenprobe gegen den Kontoauszug
 ```
 
 ### eCH-0196-Barcode (`--barcode`) — Fundament
@@ -154,6 +165,83 @@ bei `--from-mt940`: Kategorien, Cash-Basis-Erfolgsrechnung und Bilanz-Position.
 ywesee-Beispiel). Abgebildet: Kopf/Sitz, Bilanz (Aktiven/Passiven/Eigenkapital),
 Erfolgsrechnung, steuerliche Korrekturen, Gewinnverwendung und steuerbares
 Eigenkapital — gespeist aus Steuererklärung (StA 500) **und** Jahresrechnung.
+
+### MWST-Abrechnung (eCH-0217, `--mwst`)
+
+`--mwst` erzeugt die **MWST-Abrechnung** nach **eCH-0217 V2.0.0** und validiert sie
+gegen `schema/eCH-0217-2-0-0.xsd`. Hochladen im ESTV-Portal: *SuisseTax → MWST
+abrechnen → Abrechnungsdaten importieren*. Das deklarierende Unternehmen und die
+Steuerperiode erkennt das Portal automatisch aus der Datei.
+
+```bash
+cargo run -- --mwst --periode S1/2026 --umsatz 123456.78 \
+             --activity-id 12345 --from-mt940 konto.mt940
+```
+
+Ausgabe im Aufbau des Papierformulars (Ziff. 200 / 289 / 299 / 3xx / 399 / 500),
+danach die Gegenprobe gegen den Kontoauszug und `data/mwst-abrechnung-<von>-bis-<bis>.xml`.
+
+**Periode** `--periode S1/2026` (Semester), `Q2/2026` (Quartal) oder
+`2026-01-01:2026-06-30`. Ohne Angabe wird sie aus den `:60F:`/`:62F:`-Salden des
+MT940 übernommen.
+
+**Methode.** Die Abrechnungsmethode steckt im XML nicht in einem Flag, sondern im
+Namen des `xs:choice`-Elements:
+
+| Methode | Element | gültig |
+|---|---|---|
+| Saldo-/Pauschalsteuersatz | `simpleTaxRateMethod` | Abrechnungsperioden **ab 01.01.2025** |
+| effektiv (`--effektiv`) | `effectiveReportingMethod` | immer |
+
+Bei Saldosteuersatz verlangt der Standard seit 2025 eine **5-stellige `activityID`**
+(Tätigkeitscode). Es dürfen nur **von der ESTV bewilligte** Codes übermittelt werden;
+sie stehen in «MWST abrechnen» unter *Abrechnungsmodalitäten* bzw. auf den
+Subformularen. taxtsueri rät sie **nicht** — ohne `--activity-id` (oder
+`mwst.activityId` in `settings.json`) bricht der Lauf mit einem Hinweis ab. Ein nicht
+bewilligter Code wird vom Portal mit *«Die übermittelten Tätigkeiten entsprechen nicht
+der Bewilligung.»* zurückgewiesen. Für Umsätze aus Leistungen der Jahre 2023/2024, die
+erst ab 2025 deklariert werden, gibt es die technischen Codes `T0001`–`T0020`
+(in `model_mwst::TECHNICAL_ACTIVITY_IDS`).
+
+**Mehrere Tätigkeiten oder Steuersätze.** Umfasst die Bewilligung mehr als eine
+Tätigkeit, muss der Umsatz aufgeteilt werden — je eine Zeile `suppliesPerTaxRate`
+pro Tätigkeit. Dafür `--position` mehrfach angeben (statt `--activity-id`):
+
+```bash
+cargo run -- --mwst --periode S1/2026 --umsatz 123456.78 \
+  --position 12345:6.2:100000.00 \
+  --position 54321:1.2:23456.78
+```
+
+Format `CODE:SATZ:UMSATZ` (Saldosteuersatz) bzw. `SATZ:UMSATZ` (effektive Methode).
+Die Summe der Positionen muss Ziff. 299 ergeben, sonst bricht taxtsueri mit MWST-0005 ab.
+
+**Vereinbart oder vereinnahmt.** `formOfReporting = 1` (vereinbart, Art. 39 Abs. 1
+MWSTG) ist der gesetzliche Regelfall: massgebend ist das **Rechnungsdatum**, also der
+Erlös aus der Buchhaltung — den gibt `--umsatz` vor. Mit `--vereinnahmt`
+(`formOfReporting = 2`, nur mit Bewilligung nach Art. 39 Abs. 2) zählt der
+**Zahlungseingang**; dann leitet taxtsueri Ziff. 200 direkt aus den Kundengutschriften
+des MT940 ab.
+
+**Gegenprobe.** Ein mitgegebenes `--from-mt940` wird immer ausgewertet:
+Gutschriften total → abzüglich Dividenden/Zinsen (die als Ziff. 910
+`otherFlowsOfFunds/donations` deklariert werden) → abzüglich
+Wertschriftenabrechnungen → Kundenzahlungen (Ist). Die Differenz zum deklarierten
+Soll ist die Debitorenverschiebung über den Stichtag. Jede nicht als Entgelt gezählte
+Gutschrift wird einzeln aufgelistet, damit die Klassierung prüfbar bleibt.
+
+**Steuerberechnung.** `payableTax` (Ziff. 500 bzw. 510 bei Guthaben) wird nach
+eCH-0217 Kap. 6.2 berechnet — intern in Rappen bzw. Mikro-Rappen, damit wie in
+Kap. 7.5 gefordert **kein Zwischenschritt gerundet** wird. Gerundet wird genau einmal
+am Schluss, standardmässig **kaufmännisch auf Rappen** — so rechnet das ESTV-Portal
+(am Abrechnungsbeleg S1/2026 verifiziert); die ebenfalls zulässige 5-Rappen-Variante
+*zu Gunsten der steuerpflichtigen Unternehmung* (so die ESTV-Belege bis 2016)
+`--fuenf-rappen` schaltet auf die 5-Rappen-Rundung um. Vor dem Schreiben
+prüft taxtsueri zusätzlich die Plausibilisierung aus Kap. 7.5 (Ziff. 299 = Summe der
+Leistungen, Fehlercode MWST-0005).
+
+Identifizierende Angaben (`uid`, `organisationName`, `activityId`, `taxRate`) gehören
+in das gitignorierte `settings.json` — Vorlage: `settings.example.json`.
 
 ### Eingabe (datengetrieben)
 

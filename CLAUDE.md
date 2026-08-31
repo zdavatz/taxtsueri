@@ -24,8 +24,11 @@ cargo run -- --zh-barcode                   # ZH-Steuererklärungs-Barcode: eCH-
 cargo run --features gui --bin taxtsueri-gui  # native desktop GUI (eframe): MT940 (Basis) + Vermögensausweis → eCH-0119 XML
 cargo run -- --from-mt940 konto.mt940 --from-vermoegensausweis depot.pdf  # kombiniert → eCH-0119 (Konto = Basis)
 cargo run -- --from-mt940 konto.mt940 --wertschriften 38628  # → data/Cash-Flow-Rechnung.pdf (Bilanz + ER, Entwurf)
+cargo run -- --mwst --periode S1/2026 --umsatz 123456.78 --activity-id 12345  # MWST-Abrechnung → eCH-0217 V2.0.0
+cargo run -- --mwst --periode S1/2026 --umsatz 123456.78 --from-mt940 konto.mt940  # + Gegenprobe Ist/Soll
+cargo run -- --mwst --periode S1/2026 --umsatz 123456.78 --position 12345:6.2:100000.00 --position 54321:1.2:23456.78  # mehrere Tätigkeiten
 cargo run --example idg_brief  # IDG-Zugangsgesuch (Öffentlichkeitsprinzip) → ~/idg-zugangsgesuch.pdf (klickbare Gesetzeslinks)
-cargo test                  # run tests (incl. xmllint validation of NP eCH-0119 + JP eCH-0276, eCH-0196 parse, PDF roundtrip, SHA-256)
+cargo test                  # run tests (incl. xmllint validation of NP eCH-0119 + JP eCH-0276 + MWST eCH-0217, eCH-0196 parse, PDF roundtrip, SHA-256)
 ```
 
 The crate is a **library + two binaries**: `src/lib.rs` (engine, all modules) is used by the CLI
@@ -125,6 +128,35 @@ that **validates against the official XSD**. Three modules:
   `data/Cash-Flow-Rechnung.md`. The GUI saves it via the "Cash-Flow-Rechnung (PDF)" button.
   `--from-mt940 [--wertschriften <CHF>]` produces it; `--wertschriften` supplies the securities value for the
   Bilanz when no Vermögensausweis is given (e.g. from the Jahresrechnung).
+- **`src/model_mwst.rs` / `src/mwst.rs`** — the **MWST-Abrechnung** per **eCH-0217
+  «Spezifikation E-MWST» V2.0.0** (the *only* format ESTV SuisseTax still accepts for
+  «Abrechnungsdaten importieren»; older versions are rejected). Built from
+  `schema/eCH-0217-2-0-0.xsd` + the four official examples: `VATDeclaration` →
+  `generalInformation` + `turnoverComputation` + an `xs:choice` of method + `payableTax`
+  + optional `otherFlowsOfFunds`. Every element is prefixed `eCH-0217:` **except** the
+  children of `sendingApplication`, which live in `eCH-0058:` (its type is defined there —
+  the same cross-schema rule as in `model.rs`). Two branches are modelled:
+  `effectiveReportingMethod` and `simpleTaxRateMethod` (Saldo-/Pauschalsteuersatz, **periods
+  from 01.01.2025**, needs the 5-char `activityID`); `netTaxRateMethod`/`flatTaxRateMethod`
+  only apply up to 31.12.2024 and are not emitted. `Amount` is Rappen (`i64`) and `Percent`
+  hundredths of a percent, so nothing floats. **`payableTax` is summed in micro-Rappen and
+  rounded exactly once** — ch. 7.5 forbids rounding intermediate steps (error MWST-0006);
+  ch. 7.5 allows either commercial rounding to Rappen or 5-Rappen rounding in the
+  taxpayer's favour — the default is **commercial**, matching what the ESTV portal computes
+  (verified against a filed S1/2026 statement); `--fuenf-rappen` selects the other. `Document::validate()` checks the XSD facets plus
+  ch. 7.5's «Ziff. 299 == Σ Leistungen» rule (MWST-0005) before xmllint ever runs.
+  `mwst.rs` turns MT940 credits into VAT figures: `classify_credit` splits customer
+  payments (Ziff. 200) from dividends/interest (Ziff. 910, `otherFlowsOfFunds/donations`)
+  and securities settlements, using the `:61:` transaction code (`NDIV`/`NSEC`) before the
+  `mt940::category` heuristic. `--mwst` prints the declaration in the shape of the paper
+  form, reconciles Soll/Ist against the statement, lists every non-turnover credit for
+  review, writes `data/mwst-abrechnung-<von>-bis-<bis>.xml` and validates it.
+  There is **no guessing of the `activityID`** — without it the run fails and says where to
+  get it (ESTV «MWST abrechnen» → «Abrechnungsmodalitäten»); an unapproved code is rejected
+  by the portal with «Die übermittelten Tätigkeiten entsprechen nicht der Bewilligung.».
+  When the approval covers **several** activities the turnover has to be split across one
+  `suppliesPerTaxRate` row each — `mwst::Position` / repeated `--position CODE:SATZ:UMSATZ`
+  (`SATZ:UMSATZ` for the effective method); their sum must equal Ziff. 299 or MWST-0005 fires.
 - **`src/model_jp.rs` / `src/dataset_jp.rs`** — **juristische Personen** per **eCH-0276**
   «E-Bilanz und E-Tax JP» (built from `schema/eCH-0276-1-0.xsd` + `eCH-0276-beispiel.xml`):
   root `eBalanceSheetETaxLegalEntity` → `header`(title) + `content` (assets, equityAndLiabilities,
@@ -155,8 +187,10 @@ that **validates against the official XSD**. Three modules:
 published catalog has **no** code for «andere/konfessionslos», so that case stays empty.
 
 `src/settings.rs` loads `settings.json` (gitignored) for identifiers that must **not** live in
-code — the NP `vn` (AHVN13, applied in the NP flow) and the JP `uid`/`registerNumber` (applied in
-`run_jp`). `dataset.rs` holds only placeholders. A committed `settings.example.json` documents the format.
+code — the NP `vn` (AHVN13, applied in the NP flow), the JP `uid`/`registerNumber` (applied in
+`run_jp`) and the `mwst` block (`uid`, `organisationName`, `activityId`, `taxRate`, `methode`,
+`abrechnungsart`). `dataset.rs` holds only placeholders. A committed `settings.example.json`
+documents the format.
 
 `examples/input.sample.json` (synthetic JSON input) and `examples/ech0196.sample.xml`
 (synthetic eSteuerauszug) are committed; `tests/validation.rs` validates the example dataset
@@ -210,7 +244,8 @@ DA-1 (foreign withholding) has no dedicated form in eCH-0119 v4 — foreign hold
 ## Schemas (`schema/`)
 
 The full eCH-0119 v4.0.0 import closure (13 XSDs) is vendored here and validates
-offline. `scripts/fetch-schemas.sh` re-downloads them from www.ech.ch;
+offline, as do eCH-0276 (JP) and **eCH-0217 V2.0.0** (MWST, with its `eCH-0058`/`eCH-0108`
+imports and the four official example XMLs, which the fetch script re-validates). `scripts/fetch-schemas.sh` re-downloads them from www.ech.ch;
 `scripts/patch_schema_locations.py` then rewrites every `<xs:import>` to point at the
 sibling local file (the eCH schemas import by namespace with no `schemaLocation`, so
 libxml2 can't resolve them otherwise). The patch is idempotent and part of the fetch
