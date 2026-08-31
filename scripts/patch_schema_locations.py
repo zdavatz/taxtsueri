@@ -9,10 +9,12 @@ das Schema-Set self-contained und ohne Netzzugriff validierbar. Idempotent.
 import re
 import sys
 from pathlib import Path
+from typing import Dict
 
 schema_dir = Path(sys.argv[1] if len(sys.argv) > 1 else "schema")
 
-ns_to_file: dict[str, str] = {}
+# Dict[...] statt dict[...]: das Skript läuft auch unter dem system-python 3.7.
+ns_to_file: Dict[str, str] = {}
 for xsd in sorted(schema_dir.glob("*.xsd")):
     m = re.search(r'targetNamespace="([^"]+)"', xsd.read_text(encoding="utf-8"))
     if m:
@@ -22,7 +24,7 @@ for xsd in sorted(schema_dir.glob("*.xsd")):
 import_re = re.compile(r'<xs:import\b([^>]*?)/>', re.DOTALL)
 ns_attr_re = re.compile(r'namespace="([^"]+)"')
 
-def fix_import(match: re.Match) -> str:
+def fix_import(match) -> str:
     attrs = match.group(1)
     m = ns_attr_re.search(attrs)
     if not m:
