@@ -189,7 +189,9 @@ published catalog has **no** code for «andere/konfessionslos», so that case st
 `src/settings.rs` loads `settings.json` (gitignored) for identifiers that must **not** live in
 code — the NP `vn` (AHVN13, applied in the NP flow), the JP `uid`/`registerNumber` (applied in
 `run_jp`) and the `mwst` block (`uid`, `organisationName`, `activityId`, `taxRate`, `methode`,
-`abrechnungsart`). `dataset.rs` holds only placeholders. A committed `settings.example.json`
+`abrechnungsart` — «vereinbart»/«vereinnahmt», i.e. `formOfReporting` 1/2 — and `manufacturer`,
+which fills `sendingApplication` and defaults to a neutral "taxtsueri" so no company name sits in
+the code). `dataset.rs` holds only placeholders. A committed `settings.example.json`
 documents the format.
 
 `examples/input.sample.json` (synthetic JSON input) and `examples/ech0196.sample.xml`

@@ -240,8 +240,21 @@ am Schluss, standardmässig **kaufmännisch auf Rappen** — so rechnet das ESTV
 prüft taxtsueri zusätzlich die Plausibilisierung aus Kap. 7.5 (Ziff. 299 = Summe der
 Leistungen, Fehlercode MWST-0005).
 
-Identifizierende Angaben (`uid`, `organisationName`, `activityId`, `taxRate`) gehören
-in das gitignorierte `settings.json` — Vorlage: `settings.example.json`.
+Identifizierende Angaben gehören in das gitignorierte `settings.json` — Vorlage:
+`settings.example.json`:
+
+| Schlüssel | Bedeutung |
+|---|---|
+| `uid` | MWST-Nummer, z. B. `"CHE-123.456.789 MWST"` (wird normalisiert) |
+| `organisationName` | Firmenname wie bei der ESTV registriert |
+| `activityId` | 5-stelliger bewilligter Tätigkeitscode |
+| `taxRate` | Saldosteuersatz, z. B. `"6.2"` |
+| `methode` | `"saldosteuersatz"` (Default) oder `"effektiv"` |
+| `abrechnungsart` | `"vereinbart"` (Default) oder `"vereinnahmt"` |
+| `manufacturer` | Hersteller in `sendingApplication`; ohne Angabe neutral `taxtsueri` |
+
+Alle sind auch als CLI-Option überschreibbar (`--uid`, `--firma`, `--activity-id`,
+`--satz`, `--effektiv`, `--vereinnahmt`).
 
 ### Eingabe (datengetrieben)
 
