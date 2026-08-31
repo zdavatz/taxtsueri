@@ -55,6 +55,15 @@ B0276="$IMCE/0271-0310/eCH-0276/1.0.0/Beilagen/D_F"
 dl "$B0276/eCH-0276-1-0.xsd"                                eCH-0276-1-0.xsd
 dl "$B0276/Beispiel_XML_eBalanceSheetETaxLegalEntity.xml"  eCH-0276-beispiel.xml
 
+echo "eCH-0217 (E-MWST) V2.0.0 + die vier offiziellen Beispiele:"
+B0217="$IMCE/0211-0240/eCH-0217/2.0.0/Beilagen"
+dl "$B0217/eCH-0217-2-0-0.xsd"                                    eCH-0217-2-0-0.xsd
+dl "$B0217/eCH-0217_V2.0.0_example_effectiveReportingMethod.xml"  eCH-0217_V2.0.0_example_effectiveReportingMethod.xml
+dl "$B0217/eCH-0217_V2.0.0_example_netTaxRateMethod.xml"          eCH-0217_V2.0.0_example_netTaxRateMethod.xml
+dl "$B0217/eCH-0217_V2.0.0_example_simpleTaxRateMethod.xml"       eCH-0217_V2.0.0_example_simpleTaxRateMethod.xml
+dl "$B0217/eCH-0217_V2.0.0_exemple_flatTaxRateMethode.xml"        eCH-0217_V2.0.0_exemple_flatTaxRateMethode.xml
+dl "$XMLNS/eCH-0058/5/eCH-0058-5-0.xsd"        eCH-0058-5-0.xsd
+
 echo "eCH-0276 Import-Hülle (xmlns-Pfad):"
 dl "$XMLNS/eCH-0007/6/eCH-0007-6-0.xsd"        eCH-0007-6-0.xsd
 dl "$XMLNS/eCH-0008/3/eCH-0008-3-0.xsd"        eCH-0008-3-0.xsd
@@ -77,3 +86,7 @@ xmllint --nonet --noout --schema schema/eCH-0119-4-0-0.xsd \
   schema/test.eCH-0119.v4.0.0.major.xml && echo "eCH-0119 OK"
 xmllint --nonet --noout --schema schema/eCH-0276-1-0.xsd \
   schema/eCH-0276-beispiel.xml && echo "eCH-0276 OK"
+for f in schema/eCH-0217_V2.0.0_*.xml; do
+  xmllint --nonet --noout --schema schema/eCH-0217-2-0-0.xsd "$f" || exit 1
+done
+echo "eCH-0217 OK"
