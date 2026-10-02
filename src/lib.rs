@@ -29,6 +29,8 @@ pub mod vermoegensausweis;
 pub mod ebics;
 #[cfg(feature = "ebics")]
 pub mod ebics_brief;
+#[cfg(feature = "ebics")]
+pub mod ebics_download;
 #[cfg(feature = "gui")]
 pub mod update;
 

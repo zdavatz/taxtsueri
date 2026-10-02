@@ -47,7 +47,7 @@ fn rule(ops: &mut Vec<Operation>, x1: f64, x2: f64, y: f64) {
     ops.push(Operation::new("S", vec![]));
 }
 
-/// Bytes als Grossbuchstaben-Hex in Zeilen zu 16 Bytes (`2F 8F B6 …`).
+/// Bytes als Grossbuchstaben-Hex in Zeilen zu 16 Bytes (`0A 1B 2C …`).
 pub fn hex_rows(bytes: &[u8]) -> Vec<String> {
     bytes
         .chunks(16)

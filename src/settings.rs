@@ -81,6 +81,12 @@ pub struct EbicsSettings {
     /// Basisverzeichnis der privaten Schlüssel; ohne Angabe `~/.config/taxtsueri/ebics`.
     #[serde(rename = "keyDir")]
     pub key_dir: Option<String>,
+    /// SHA-256-Hashwerte der öffentlichen **Bankschlüssel** vom Bankparameterdaten-Blatt
+    /// (Hex, Leerzeichen erlaubt). `HPB` übernimmt die Bankschlüssel nur, wenn sie dazu passen.
+    #[serde(rename = "bankAuthHash")]
+    pub bank_auth_hash: Option<String>,
+    #[serde(rename = "bankEncHash")]
+    pub bank_enc_hash: Option<String>,
 }
 
 /// Lädt `settings.json`; gibt bei fehlender/ungültiger Datei Defaults zurück.

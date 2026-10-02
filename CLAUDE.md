@@ -28,8 +28,10 @@ cargo run -- --mwst --periode S1/2026 --umsatz 123456.78 --activity-id 12345  # 
 cargo run -- --mwst --periode S1/2026 --umsatz 123456.78 --from-mt940 konto.mt940  # + Gegenprobe Ist/Soll
 cargo run -- --mwst --periode S1/2026 --umsatz 123456.78 --position 12345:6.2:100000.00 --position 54321:1.2:23456.78  # mehrere Tätigkeiten
 cargo run --features ebics -- --ebics-init [--dry-run]  # EBICS H004: Schlüssel, INI + HIA an die Bank, INI-Brief → data/ebics-ini-brief.pdf
+cargo run --features ebics -- --ebics-hpb   # EBICS: Bankschlüssel holen, gegen settings.json (bankAuthHash/bankEncHash) prüfen
+cargo run --features ebics -- --ebics-z53 [--von JJJJ-MM-TT --bis JJJJ-MM-TT]  # EBICS: camt.053 (Z53) → camt/
 cargo run --example idg_brief  # IDG-Zugangsgesuch (Öffentlichkeitsprinzip) → ~/idg-zugangsgesuch.pdf (klickbare Gesetzeslinks)
-cargo test --features ebics # zusätzlich: INI/HIA gegen schema/ebics/ (H004-XSDs), Schlüsselablage, INI-Brief
+cargo test --features ebics # zusätzlich: EBICS-Requests gegen schema/ebics/ (H004-XSDs), Schlüsselablage, INI-Brief, HPB/Z53 gegen simulierte Bank
 cargo test                  # run tests (incl. xmllint validation of NP eCH-0119 + JP eCH-0276 + MWST eCH-0217, eCH-0196 parse, PDF roundtrip, SHA-256)
 ```
 
@@ -171,8 +173,27 @@ that **validates against the official XSD**. Three modules:
   Bankparameterdaten-Blatt. `ebics_brief::ini_brief_pdf` rendert den dreiseitigen INI-Brief via `lopdf`.
   `INI` trägt `SignaturePubKeyOrderData` (Namespace `http://www.ebics.org/S001`), `HIA`
   `HIARequestOrderData` (`urn:org:ebics:H004`). Bankparameter kommen aus dem `ebics`-Block von
-  `settings.json`. **Offen:** `HPB` und der Download (`Z53`) — beide brauchen die X002-Signatur über
-  kanonisiertes XML und die E002-Entschlüsselung.
+  `settings.json`.
+- **`src/ebics_download.rs`** (Feature `ebics`, zusätzlich `aes`, `cbc`, `zip`) — die **signierten**
+  Abholaufträge: `HPB` (`ebicsNoPubKeyDigestsRequest`) und der dreiphasige Download (`ebicsRequest`:
+  Initialisation → Transfer je Segment → Receipt) für `Z53`. **Authentifikationssignatur:** SHA-256
+  über die C14N-Form aller `authenticate="true"`-Elemente (Header, beim Quittieren auch
+  `TransferReceipt`), darüber RSA-PKCS#1-v1.5/SHA-256 mit dem X002-Schlüssel über das kanonisierte
+  `ds:SignedInfo`. Es gibt **keinen allgemeinen Kanonisierer**: die signierten Teile werden von
+  vornherein kanonisch geschrieben — keine Leerzeichen zwischen Elementen, `<a></a>` statt `<a/>`,
+  Attribute alphabetisch (`Algorithm` vor `Version`), Text-Escaping nur `& < >` — und
+  `canonical_authenticated` ergänzt bloss die von der Wurzel geerbten `xmlns`/`xmlns:ds`. **Wer hier
+  ein Element ändert, muss diese Regeln einhalten**, sonst lehnt die Bank mit `061001` ab; das wurde
+  einmalig gegen den C14N-Kanonisierer des JDK (Santuario) gegengeprüft, die Tests im Repo prüfen nur
+  XSD-Konformität und den Ablauf. **Auftragsdaten** (`decrypt_order_data`): RSA-PKCS#1-v1.5 entschlüsselt
+  den Transaktionsschlüssel, AES-128-CBC mit Null-IV die Daten, letztes Byte = Padding-Länge, dann zlib.
+  Segmentiert wird der **base64-Text** — erst alle Segmente verketten, dann dekodieren. `download`
+  quittiert erst **positiv**, wenn der `handle`-Callback (Entpacken nach `camt/`) `Ok` liefert; `090005`
+  (keine Daten) ergibt `Ok(None)`. `BankKeys` (aus `HPBResponseOrderData`, als `bank.json` neben den
+  eigenen Schlüsseln) werden nur nach `verify` gegen `ebics.bankAuthHash`/`bankEncHash` gespeichert;
+  ihre Hashwerte gehen als `BankPubKeyDigests` in jeden Download. Die Signatur der **Bank** auf den
+  Antworten wird nicht geprüft (TLS + geprüfte Bankschlüssel). Der Transport ist eine Closure
+  (`&mut dyn FnMut(&str) -> Result<String, String>`), damit `tests/ebics.rs` eine Bank simulieren kann.
 - **`src/model_jp.rs` / `src/dataset_jp.rs`** — **juristische Personen** per **eCH-0276**
   «E-Bilanz und E-Tax JP» (built from `schema/eCH-0276-1-0.xsd` + `eCH-0276-beispiel.xml`):
   root `eBalanceSheetETaxLegalEntity` → `header`(title) + `content` (assets, equityAndLiabilities,

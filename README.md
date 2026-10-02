@@ -89,6 +89,9 @@ cargo run -- --from-camt kontoauszug.xml                    # camt.053-Kontoausz
 cargo run -- --from-camt camt/                              # Verzeichnis mit camt.053-Dateien (täglich/monatlich) → aggregiert
 cargo run --features ebics -- --ebics-init --dry-run         # EBICS: Schlüssel erzeugen, INI/HIA-Requests + INI-Brief schreiben, nichts senden
 cargo run --features ebics -- --ebics-init                   # EBICS: INI + HIA an die Bank senden, INI-Brief → data/ebics-ini-brief.pdf
+cargo run --features ebics -- --ebics-hpb                    # EBICS: Bankschlüssel abholen + gegen das Bankparameterdaten-Blatt prüfen
+cargo run --features ebics -- --ebics-z53                    # EBICS: alle noch nicht abgeholten camt.053-Auszüge → camt/
+cargo run --features ebics -- --ebics-z53 --von 2026-01-01 --bis 2026-06-30   # EBICS: Auszüge eines Zeitraums
 cargo run -- --from-mt940 konto.mt940 --from-vermoegensausweis depot.pdf  # kombiniert → eCH-0119 (MT940-Konto = Basis + Wertschriften)
 cargo run -- --from-mt940 konto.mt940 --wertschriften 38628 # → data/Cash-Flow-Rechnung.pdf (Bilanz + ER, Entwurf z. Hd. Vermögensverwalter)
 cargo run -- --mwst --periode S1/2026 --umsatz 123456.78 --activity-id 12345   # MWST-Abrechnung → eCH-0217 V2.0.0
@@ -183,8 +186,33 @@ Passwort) zusammen mit `state.json` und den gesendeten Requests/Antworten. Sie w
 Requests nur nach `data/`. Die Requests validieren gegen die offiziellen EBICS-Schemas
 in `schema/ebics/` (`cargo test --features ebics`).
 
-Noch nicht gebaut: `HPB` (Bankschlüssel abholen und mit den Hashwerten des
-Bankparameterdaten-Blatts vergleichen) und der Abruf der Auszüge (`Z53`).
+### EBICS-Abruf der Kontoauszüge (`--ebics-hpb`, `--ebics-z53`)
+
+Sobald die Bank den Zugang freigeschaltet hat:
+
+- **`--ebics-hpb`** holt die öffentlichen **Bankschlüssel** (X002/E002) und übernimmt sie
+  nur, wenn ihre SHA-256-Hashwerte mit `ebics.bankAuthHash` / `ebics.bankEncHash` aus
+  `settings.json` übereinstimmen — das sind die Werte vom Bankparameterdaten-Blatt
+  («Öffentliche EBICS-Bankschlüssel», H003/H004). Ohne diese Angaben oder bei Abweichung
+  wird nichts gespeichert.
+- **`--ebics-z53`** holt die **camt.053**-Auszüge (Auftragsart `Z53`) und entpackt das ZIP
+  nach `camt/`. Ohne Zeitraum kommen alle noch nicht abgeholten Auszüge, mit
+  `--von`/`--bis` (JJJJ-MM-TT) ein bestimmter Zeitraum. Vorhandene Dateien werden nicht
+  überschrieben. Fehlen die Bankschlüssel noch, läuft `HPB` automatisch vorweg. Danach
+  wie gewohnt `cargo run -- --from-camt camt/`.
+
+Der Abruf läuft in drei Phasen (Initialisierung, Segmente, Quittung). **Positiv
+quittiert** — und damit bei der Bank als abgeholt markiert — wird erst, wenn die Dateien
+entschlüsselt und geschrieben sind; sonst geht eine negative Quittung zurück und die
+Auszüge bleiben abholbar. Meldet die Bank «keine Daten» (`090005`), ist das kein Fehler.
+Der jeweils letzte Request und die Antwort liegen zur Fehlersuche als
+`last-request.xml` / `last-response.xml` im Schlüsselverzeichnis.
+
+Jeder dieser Requests trägt eine **Authentifikationssignatur** (X002, XML-DSig über die
+C14N-kanonisierten `authenticate="true"`-Elemente); die Auftragsdaten sind mit dem
+E002-Schlüssel verschlüsselt (RSA + AES-128-CBC) und zlib-komprimiert. Die Signatur der
+Bank auf den Antworten wird nicht geprüft — die Echtheit stützt sich auf TLS und die
+geprüften Bankschlüssel.
 
 ### Juristische Personen (eCH-0276)
 

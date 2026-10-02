@@ -32,9 +32,9 @@ pub const KEY_BITS: usize = 2048;
 /// EBICS-Returncode «alles in Ordnung».
 pub const EBICS_OK: &str = "000000";
 
-const NS_H004: &str = "urn:org:ebics:H004";
+pub(crate) const NS_H004: &str = "urn:org:ebics:H004";
 const NS_S001: &str = "http://www.ebics.org/S001";
-const NS_DS: &str = "http://www.w3.org/2000/09/xmldsig#";
+pub(crate) const NS_DS: &str = "http://www.w3.org/2000/09/xmldsig#";
 
 /// Die Bankparameter eines Teilnehmers (aus dem Bankparameterdaten-Blatt).
 #[derive(Debug, Clone)]
@@ -343,7 +343,7 @@ pub fn hia_request(p: &Params, keys: &Keys) -> String {
 // ---- Antworten -----------------------------------------------------------------------
 
 /// Textinhalte aller Elemente mit lokalem Namen `local` (Präfix und Attribute egal).
-fn element_texts(xml: &str, local: &str) -> Vec<String> {
+pub(crate) fn element_texts(xml: &str, local: &str) -> Vec<String> {
     let mut out = Vec::new();
     let mut rest = xml;
     while let Some(lt) = rest.find('<') {

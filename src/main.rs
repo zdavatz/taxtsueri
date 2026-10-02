@@ -14,6 +14,10 @@
 //!                                       Import in ESTV SuisseTax «MWST abrechnen»
 //!   taxtsueri --ebics-init [--dry-run]  EBICS-Teilnehmer initialisieren (INI + HIA) und
 //!                                       den INI-Brief schreiben (Feature `ebics`)
+//!   taxtsueri --ebics-hpb               Bankschlüssel abholen und gegen das
+//!                                       Bankparameterdaten-Blatt prüfen
+//!   taxtsueri --ebics-z53 [--von JJJJ-MM-TT --bis JJJJ-MM-TT]
+//!                                       camt.053-Kontoauszüge per EBICS nach camt/ holen
 //!
 //! `data/` (Eingabe + XML + Paket) enthält Personendaten und ist gitignored.
 
@@ -86,6 +90,13 @@ struct Args {
     ebics_init: bool,
     /// Mit `--ebics-init`: Requests nur nach `data/` schreiben, nichts an die Bank senden.
     dry_run: bool,
+    /// Bankschlüssel abholen (HPB) und gegen das Bankparameterdaten-Blatt prüfen.
+    ebics_hpb: bool,
+    /// camt.053-Kontoauszüge (Z53) abholen und nach `camt/` entpacken.
+    ebics_z53: bool,
+    /// Zeitraum für `--ebics-z53` (JJJJ-MM-TT); ohne Angabe alle noch nicht abgeholten Auszüge.
+    von: Option<String>,
+    bis: Option<String>,
 }
 
 fn parse_args() -> Result<Args, String> {
@@ -156,6 +167,10 @@ fn parse_args() -> Result<Args, String> {
             "--fuenf-rappen" => a.fuenf_rappen = true,
             "--ebics-init" => a.ebics_init = true,
             "--dry-run" => a.dry_run = true,
+            "--ebics-hpb" => a.ebics_hpb = true,
+            "--ebics-z53" => a.ebics_z53 = true,
+            "--von" => a.von = Some(it.next().ok_or("--von erwartet ein Datum (JJJJ-MM-TT)")?),
+            "--bis" => a.bis = Some(it.next().ok_or("--bis erwartet ein Datum (JJJJ-MM-TT)")?),
             s if s.starts_with("--") => return Err(format!("unbekannte Option: {s}")),
             s => a.input_json = Some(s.to_string()),
         }
@@ -172,8 +187,8 @@ fn main() -> ExitCode {
         }
     };
 
-    if args.ebics_init {
-        return run_ebics_init(args.dry_run);
+    if args.ebics_init || args.ebics_hpb || args.ebics_z53 {
+        return run_ebics(&args);
     }
 
     // MWST-Abrechnung (eCH-0217) — eigener Modus; ein hier mitgegebenes MT940
@@ -472,91 +487,209 @@ fn read_bank_text(path: &Path) -> Result<String, String> {
 }
 
 #[cfg(not(feature = "ebics"))]
-fn run_ebics_init(_dry_run: bool) -> ExitCode {
-    eprintln!("--ebics-init braucht das Feature `ebics`: cargo run --features ebics -- --ebics-init");
+fn run_ebics(_args: &Args) -> ExitCode {
+    eprintln!("Die EBICS-Befehle brauchen das Feature `ebics`: cargo run --features ebics -- --ebics-init");
     ExitCode::FAILURE
 }
 
-/// `--ebics-init`: EBICS-Teilnehmer initialisieren — Schlüssel laden/erzeugen, `INI` und
-/// `HIA` an die Bank senden (bereits angenommene Schritte werden übersprungen) und den
-/// INI-Brief nach `data/ebics-ini-brief.pdf` schreiben.
+/// EBICS-Befehle: `--ebics-init` (Schlüssel, `INI` + `HIA`, INI-Brief), `--ebics-hpb`
+/// (Bankschlüssel) und `--ebics-z53` (camt.053-Auszüge nach `camt/`).
 #[cfg(feature = "ebics")]
-fn run_ebics_init(dry_run: bool) -> ExitCode {
-    match ebics_init(dry_run) {
+fn run_ebics(args: &Args) -> ExitCode {
+    let result = if args.ebics_init {
+        ebics_cli::init(args.dry_run)
+    } else if args.ebics_hpb {
+        ebics_cli::hpb()
+    } else {
+        ebics_cli::z53(args.von.as_deref(), args.bis.as_deref())
+    };
+    match result {
         Ok(()) => ExitCode::SUCCESS,
         Err(e) => {
-            eprintln!("EBICS-Initialisierung fehlgeschlagen: {e}");
+            eprintln!("EBICS: {e}");
             ExitCode::FAILURE
         }
     }
 }
 
 #[cfg(feature = "ebics")]
-fn ebics_init(dry_run: bool) -> Result<(), String> {
+mod ebics_cli {
+    use std::path::{Path, PathBuf};
     use taxtsueri::ebics::{self, KeyKind, Keys, Params, Response};
-    use taxtsueri::ebics_brief;
+    use taxtsueri::ebics_download::{self, BankKeys, DateRange};
+    use taxtsueri::settings::{self, EbicsSettings};
+    use taxtsueri::{camt053, ebics_brief};
 
-    let settings = settings::load();
-    let params = Params::from_settings(&settings.ebics)?;
-    let dir = ebics::key_dir(settings.ebics.key_dir.as_deref(), &params)?;
-    let (mut keys, generated) = Keys::load_or_generate(&dir)?;
-    println!(
-        "EBICS {} @ {} — Kunde {}, Teilnehmer {}",
-        params.host_id, params.url, params.partner_id, params.user_id
-    );
-    println!(
-        "Schlüssel {}: {} (erstellt {})",
-        if generated { "neu erzeugt" } else { "geladen" },
-        dir.display(),
-        keys.state.created
-    );
-    for kind in [KeyKind::Signature, KeyKind::Authentication, KeyKind::Encryption] {
-        let (n, e) = ebics::public_parts(keys.get(kind));
-        let hash = ebics::public_key_hash(&n, &e);
-        println!("  {} SHA-256: {}", kind.version(), ebics_brief::hex_rows(&hash).join(" "));
+    /// Zielverzeichnis der abgeholten camt.053-Dateien (gitignored).
+    const CAMT_DIR: &str = "camt";
+
+    struct Context {
+        settings: EbicsSettings,
+        params: Params,
+        dir: PathBuf,
     }
 
-    let io = |e: std::io::Error| e.to_string();
-    std::fs::create_dir_all("data").map_err(io)?;
-    let requests = [("INI", ebics::ini_request(&params, &keys)), ("HIA", ebics::hia_request(&params, &keys))];
-    for (order, request) in &requests {
-        let lower = order.to_lowercase();
-        if dry_run {
-            let path = format!("data/ebics-{lower}-request.xml");
-            std::fs::write(&path, request).map_err(io)?;
-            println!("{order}: nicht gesendet (--dry-run), Request in {path}");
-            continue;
-        }
-        let sent = if *order == "INI" { &keys.state.ini_sent } else { &keys.state.hia_sent };
-        if let Some(at) = sent {
-            println!("{order}: bereits am {at} von der Bank angenommen — übersprungen");
-            continue;
-        }
-        ebics::write_private(&dir.join(format!("{lower}-request.xml")), request.as_bytes())?;
-        let answer = ebics::post(&params.url, request)?;
-        ebics::write_private(&dir.join(format!("{lower}-response.xml")), answer.as_bytes())?;
-        let response = Response::parse(&answer)?;
-        if !response.is_ok() {
-            return Err(format!(
-                "{order}: Bank meldet {} {}",
-                response.return_codes.join("/"),
-                response.report_text
-            ));
-        }
-        println!("{order}: angenommen — {}", response.report_text);
-        let now = Some(ebics::utc_now());
-        if *order == "INI" {
-            keys.state.ini_sent = now;
-        } else {
-            keys.state.hia_sent = now;
-        }
-        keys.save_state()?;
+    fn context() -> Result<Context, String> {
+        let settings = settings::load().ebics;
+        let params = Params::from_settings(&settings)?;
+        let dir = ebics::key_dir(settings.key_dir.as_deref(), &params)?;
+        println!(
+            "EBICS {} @ {} — Kunde {}, Teilnehmer {}",
+            params.host_id, params.url, params.partner_id, params.user_id
+        );
+        Ok(Context { settings, params, dir })
     }
 
-    let brief = "data/ebics-ini-brief.pdf";
-    std::fs::write(brief, ebics_brief::ini_brief_pdf(&params, &keys)).map_err(io)?;
-    println!("INI-Brief: {brief} — ausdrucken, rechtsgültig unterzeichnen und an die Bank senden.");
-    Ok(())
+    /// Lädt die Schlüssel eines **initialisierten** Teilnehmers (für HPB und Abrufe).
+    fn initialised_keys(cx: &Context) -> Result<Keys, String> {
+        if !cx.dir.join("state.json").exists() {
+            return Err("noch keine Schlüssel — zuerst --ebics-init ausführen".into());
+        }
+        let (keys, _) = Keys::load_or_generate(&cx.dir)?;
+        if keys.state.ini_sent.is_none() || keys.state.hia_sent.is_none() {
+            return Err("INI/HIA noch nicht von der Bank angenommen — zuerst --ebics-init ausführen".into());
+        }
+        Ok(keys)
+    }
+
+    /// Sendet einen Request und legt ihn samt Antwort zur Fehlersuche im Schlüsselverzeichnis ab.
+    fn send(cx: &Context, request: &str) -> Result<String, String> {
+        ebics::write_private(&cx.dir.join("last-request.xml"), request.as_bytes())?;
+        let answer = ebics::post(&cx.params.url, request)?;
+        ebics::write_private(&cx.dir.join("last-response.xml"), answer.as_bytes())?;
+        Ok(answer)
+    }
+
+    pub fn init(dry_run: bool) -> Result<(), String> {
+        let cx = context()?;
+        let (params, dir) = (&cx.params, &cx.dir);
+        let (mut keys, generated) = Keys::load_or_generate(dir)?;
+        println!(
+            "Schlüssel {}: {} (erstellt {})",
+            if generated { "neu erzeugt" } else { "geladen" },
+            dir.display(),
+            keys.state.created
+        );
+        for kind in [KeyKind::Signature, KeyKind::Authentication, KeyKind::Encryption] {
+            let (n, e) = ebics::public_parts(keys.get(kind));
+            let hash = ebics::public_key_hash(&n, &e);
+            println!("  {} SHA-256: {}", kind.version(), ebics_brief::hex_rows(&hash).join(" "));
+        }
+
+        let io = |e: std::io::Error| e.to_string();
+        std::fs::create_dir_all("data").map_err(io)?;
+        let requests = [("INI", ebics::ini_request(params, &keys)), ("HIA", ebics::hia_request(params, &keys))];
+        for (order, request) in &requests {
+            let lower = order.to_lowercase();
+            if dry_run {
+                let path = format!("data/ebics-{lower}-request.xml");
+                std::fs::write(&path, request).map_err(io)?;
+                println!("{order}: nicht gesendet (--dry-run), Request in {path}");
+                continue;
+            }
+            let sent = if *order == "INI" { &keys.state.ini_sent } else { &keys.state.hia_sent };
+            if let Some(at) = sent {
+                println!("{order}: bereits am {at} von der Bank angenommen — übersprungen");
+                continue;
+            }
+            ebics::write_private(&dir.join(format!("{lower}-request.xml")), request.as_bytes())?;
+            let answer = ebics::post(&params.url, request)?;
+            ebics::write_private(&dir.join(format!("{lower}-response.xml")), answer.as_bytes())?;
+            let response = Response::parse(&answer)?;
+            if !response.is_ok() {
+                return Err(format!(
+                    "{order}: Bank meldet {} {}",
+                    response.return_codes.join("/"),
+                    response.report_text
+                ));
+            }
+            println!("{order}: angenommen — {}", response.report_text);
+            let now = Some(ebics::utc_now());
+            if *order == "INI" {
+                keys.state.ini_sent = now;
+            } else {
+                keys.state.hia_sent = now;
+            }
+            keys.save_state()?;
+        }
+
+        let brief = "data/ebics-ini-brief.pdf";
+        std::fs::write(brief, ebics_brief::ini_brief_pdf(params, &keys)).map_err(io)?;
+        println!("INI-Brief: {brief} — ausdrucken, rechtsgültig unterzeichnen und an die Bank senden.");
+        Ok(())
+    }
+
+    /// Holt die Bankschlüssel und übernimmt sie **nur**, wenn ihre Hashwerte zu
+    /// `bankAuthHash`/`bankEncHash` aus `settings.json` passen.
+    fn fetch_bank_keys(cx: &Context, keys: &Keys) -> Result<BankKeys, String> {
+        let bank = ebics_download::fetch_bank_keys(&cx.params, keys, &mut |xml| send(cx, xml))?;
+        let (auth, enc) = (bank.authentication.hash()?, bank.encryption.hash()?);
+        println!("Bankschlüssel X002 SHA-256: {}", ebics_brief::hex_rows(&auth).join(" "));
+        println!("Bankschlüssel E002 SHA-256: {}", ebics_brief::hex_rows(&enc).join(" "));
+        let (Some(want_auth), Some(want_enc)) = (&cx.settings.bank_auth_hash, &cx.settings.bank_enc_hash) else {
+            return Err(
+                "settings.json: ebics.bankAuthHash / ebics.bankEncHash fehlen — die Hashwerte vom \
+                 Bankparameterdaten-Blatt eintragen; ungeprüft werden die Bankschlüssel nicht übernommen"
+                    .into(),
+            );
+        };
+        bank.verify(want_auth, want_enc)?;
+        bank.save(&cx.dir)?;
+        println!("Bankschlüssel stimmen mit dem Bankparameterdaten-Blatt überein — gespeichert.");
+        Ok(bank)
+    }
+
+    pub fn hpb() -> Result<(), String> {
+        let cx = context()?;
+        let keys = initialised_keys(&cx)?;
+        fetch_bank_keys(&cx, &keys).map(|_| ())
+    }
+
+    pub fn z53(von: Option<&str>, bis: Option<&str>) -> Result<(), String> {
+        let range = match (von, bis) {
+            (Some(v), Some(b)) => Some(DateRange::new(v, b)?),
+            (None, None) => None,
+            _ => return Err("--von und --bis gehören zusammen (JJJJ-MM-TT)".into()),
+        };
+        let cx = context()?;
+        let keys = initialised_keys(&cx)?;
+        let bank = match BankKeys::load(&cx.dir)? {
+            Some(bank) => bank,
+            None => fetch_bank_keys(&cx, &keys)?,
+        };
+        match &range {
+            Some(r) => println!("Z53: Kontoauszüge {} bis {} …", r.start, r.end),
+            None => println!("Z53: alle noch nicht abgeholten Kontoauszüge …"),
+        }
+        let extracted = ebics_download::download(
+            &cx.params,
+            &keys,
+            &bank,
+            "Z53",
+            range.as_ref(),
+            &mut |xml| send(&cx, xml),
+            |zip| ebics_download::extract_statements(zip, Path::new(CAMT_DIR)),
+        )?;
+        let Some(extracted) = extracted else {
+            println!("Z53: Die Bank hat dafür keine Auszüge bereit.");
+            return Ok(());
+        };
+        println!(
+            "Z53: {} neue Datei(en) in {CAMT_DIR}/, {} bereits vorhanden.",
+            extracted.written.len(),
+            extracted.skipped.len()
+        );
+        for name in &extracted.written {
+            let path = Path::new(CAMT_DIR).join(name);
+            let note = match std::fs::read_to_string(&path).map_err(|e| e.to_string()).and_then(|x| camt053::parse(&x)) {
+                Ok(_) => String::new(),
+                Err(e) => format!("  (nicht als camt.053 lesbar: {e})"),
+            };
+            println!("  {name}{note}");
+        }
+        println!("Auswerten mit: cargo run -- --from-camt {CAMT_DIR}/");
+        Ok(())
+    }
 }
 
 /// `--from-camt`: camt.053 (ISO 20022) einlesen — eine Datei **oder** ein Verzeichnis
