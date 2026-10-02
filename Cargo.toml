@@ -5,6 +5,7 @@ edition = "2021"
 description = "eCH-0119 Steuererklärung-XML-Generator für den Kanton/die Stadt Zürich"
 license = "GPL-3.0-or-later"
 repository = "https://github.com/zdavatz/taxtsueri"
+default-run = "taxtsueri"
 
 [lib]
 name = "taxtsueri"
@@ -23,6 +24,9 @@ required-features = ["gui"]
 
 [features]
 gui = ["dep:eframe", "dep:egui", "dep:egui-file-dialog", "dep:reqwest", "dep:image"]
+# EBICS-Client (Kontoauszüge direkt bei der Bank abholen). Eigenes Feature, damit
+# RSA/HTTP nicht im Standardbuild landen.
+ebics = ["dep:rsa", "dep:sha2", "dep:base64", "dep:rand", "dep:reqwest"]
 
 [dependencies]
 barcoders = "2.0.0"
@@ -43,8 +47,18 @@ reqwest = { version = "0.12", default-features = false, features = ["blocking", 
 # PNG-Dekodierung fürs In-App-Logo + OS-Fenster-Icon.
 image = { version = "0.25", default-features = false, features = ["png"], optional = true }
 
+# EBICS-only (optional, via Feature `ebics`):
+rsa = { version = "0.9", optional = true }
+sha2 = { version = "0.10", optional = true }
+base64 = { version = "0.22", optional = true }
+rand = { version = "0.8", optional = true }
+
 [dev-dependencies]
 rxing = "0.9.1"
+
+# RSA-Schlüsselerzeugung ist im Debug-Build sonst quälend langsam.
+[profile.dev.package.num-bigint-dig]
+opt-level = 3
 
 [profile.release]
 lto = true

@@ -12,6 +12,8 @@
 //!   taxtsueri --mwst --periode S1/2026 --umsatz 123456.78 --activity-id 12345
 //!                                       MWST-Abrechnung nach eCH-0217 V2.0.0 für den
 //!                                       Import in ESTV SuisseTax «MWST abrechnen»
+//!   taxtsueri --ebics-init [--dry-run]  EBICS-Teilnehmer initialisieren (INI + HIA) und
+//!                                       den INI-Brief schreiben (Feature `ebics`)
 //!
 //! `data/` (Eingabe + XML + Paket) enthält Personendaten und ist gitignored.
 
@@ -78,6 +80,12 @@ struct Args {
     subventionen: Option<String>,
     /// payableTax auf 5 Rappen abwärts runden statt kaufmännisch auf Rappen.
     fuenf_rappen: bool,
+
+    // ---- EBICS ----
+    /// Teilnehmer initialisieren: Schlüssel erzeugen, INI + HIA senden, INI-Brief schreiben.
+    ebics_init: bool,
+    /// Mit `--ebics-init`: Requests nur nach `data/` schreiben, nichts an die Bank senden.
+    dry_run: bool,
 }
 
 fn parse_args() -> Result<Args, String> {
@@ -146,6 +154,8 @@ fn parse_args() -> Result<Args, String> {
                 a.subventionen = Some(it.next().ok_or("--subventionen erwartet einen CHF-Betrag")?)
             }
             "--fuenf-rappen" => a.fuenf_rappen = true,
+            "--ebics-init" => a.ebics_init = true,
+            "--dry-run" => a.dry_run = true,
             s if s.starts_with("--") => return Err(format!("unbekannte Option: {s}")),
             s => a.input_json = Some(s.to_string()),
         }
@@ -161,6 +171,10 @@ fn main() -> ExitCode {
             return ExitCode::FAILURE;
         }
     };
+
+    if args.ebics_init {
+        return run_ebics_init(args.dry_run);
+    }
 
     // MWST-Abrechnung (eCH-0217) — eigener Modus; ein hier mitgegebenes MT940
     // liefert die Gegenprobe bzw. bei «vereinnahmt» direkt die Entgelte.
@@ -455,6 +469,94 @@ fn read_bank_text(path: &Path) -> Result<String, String> {
         Ok(s) => s,
         Err(e) => e.into_bytes().iter().map(|&b| b as char).collect(),
     })
+}
+
+#[cfg(not(feature = "ebics"))]
+fn run_ebics_init(_dry_run: bool) -> ExitCode {
+    eprintln!("--ebics-init braucht das Feature `ebics`: cargo run --features ebics -- --ebics-init");
+    ExitCode::FAILURE
+}
+
+/// `--ebics-init`: EBICS-Teilnehmer initialisieren — Schlüssel laden/erzeugen, `INI` und
+/// `HIA` an die Bank senden (bereits angenommene Schritte werden übersprungen) und den
+/// INI-Brief nach `data/ebics-ini-brief.pdf` schreiben.
+#[cfg(feature = "ebics")]
+fn run_ebics_init(dry_run: bool) -> ExitCode {
+    match ebics_init(dry_run) {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(e) => {
+            eprintln!("EBICS-Initialisierung fehlgeschlagen: {e}");
+            ExitCode::FAILURE
+        }
+    }
+}
+
+#[cfg(feature = "ebics")]
+fn ebics_init(dry_run: bool) -> Result<(), String> {
+    use taxtsueri::ebics::{self, KeyKind, Keys, Params, Response};
+    use taxtsueri::ebics_brief;
+
+    let settings = settings::load();
+    let params = Params::from_settings(&settings.ebics)?;
+    let dir = ebics::key_dir(settings.ebics.key_dir.as_deref(), &params)?;
+    let (mut keys, generated) = Keys::load_or_generate(&dir)?;
+    println!(
+        "EBICS {} @ {} — Kunde {}, Teilnehmer {}",
+        params.host_id, params.url, params.partner_id, params.user_id
+    );
+    println!(
+        "Schlüssel {}: {} (erstellt {})",
+        if generated { "neu erzeugt" } else { "geladen" },
+        dir.display(),
+        keys.state.created
+    );
+    for kind in [KeyKind::Signature, KeyKind::Authentication, KeyKind::Encryption] {
+        let (n, e) = ebics::public_parts(keys.get(kind));
+        let hash = ebics::public_key_hash(&n, &e);
+        println!("  {} SHA-256: {}", kind.version(), ebics_brief::hex_rows(&hash).join(" "));
+    }
+
+    let io = |e: std::io::Error| e.to_string();
+    std::fs::create_dir_all("data").map_err(io)?;
+    let requests = [("INI", ebics::ini_request(&params, &keys)), ("HIA", ebics::hia_request(&params, &keys))];
+    for (order, request) in &requests {
+        let lower = order.to_lowercase();
+        if dry_run {
+            let path = format!("data/ebics-{lower}-request.xml");
+            std::fs::write(&path, request).map_err(io)?;
+            println!("{order}: nicht gesendet (--dry-run), Request in {path}");
+            continue;
+        }
+        let sent = if *order == "INI" { &keys.state.ini_sent } else { &keys.state.hia_sent };
+        if let Some(at) = sent {
+            println!("{order}: bereits am {at} von der Bank angenommen — übersprungen");
+            continue;
+        }
+        ebics::write_private(&dir.join(format!("{lower}-request.xml")), request.as_bytes())?;
+        let answer = ebics::post(&params.url, request)?;
+        ebics::write_private(&dir.join(format!("{lower}-response.xml")), answer.as_bytes())?;
+        let response = Response::parse(&answer)?;
+        if !response.is_ok() {
+            return Err(format!(
+                "{order}: Bank meldet {} {}",
+                response.return_codes.join("/"),
+                response.report_text
+            ));
+        }
+        println!("{order}: angenommen — {}", response.report_text);
+        let now = Some(ebics::utc_now());
+        if *order == "INI" {
+            keys.state.ini_sent = now;
+        } else {
+            keys.state.hia_sent = now;
+        }
+        keys.save_state()?;
+    }
+
+    let brief = "data/ebics-ini-brief.pdf";
+    std::fs::write(brief, ebics_brief::ini_brief_pdf(&params, &keys)).map_err(io)?;
+    println!("INI-Brief: {brief} — ausdrucken, rechtsgültig unterzeichnen und an die Bank senden.");
+    Ok(())
 }
 
 /// `--from-camt`: camt.053 (ISO 20022) einlesen — eine Datei **oder** ein Verzeichnis

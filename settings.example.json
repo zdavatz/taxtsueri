@@ -14,5 +14,12 @@
     "methode": "saldosteuersatz",
     "abrechnungsart": "vereinbart",
     "manufacturer": "Beispiel GmbH"
+  },
+  "ebics": {
+    "hostId": "EBXBANK",
+    "url": "https://ebics.example.com/ebicsweb/ebicsweb",
+    "partnerId": "CH000000",
+    "userId": "CHT00000",
+    "userName": "Beispiel GmbH"
   }
 }

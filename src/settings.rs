@@ -12,6 +12,7 @@ pub struct Settings {
     pub np: NpSettings,
     pub jp: JpSettings,
     pub mwst: MwstSettings,
+    pub ebics: EbicsSettings,
 }
 
 #[derive(Debug, Default, Deserialize)]
@@ -56,6 +57,30 @@ pub struct MwstSettings {
     /// Hersteller für `sendingApplication` (max. 30 Zeichen). Ohne Angabe
     /// meldet sich das Programm neutral als "taxtsueri".
     pub manufacturer: Option<String>,
+}
+
+/// EBICS-Zugang (Bankparameterdaten-Blatt der Bank). Kunden- und Teilnehmer-ID sind
+/// identifizierend und gehören deshalb nicht in den Code.
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+pub struct EbicsSettings {
+    /// EBICS-Host-ID der Bank, z. B. "EBXUBSCH".
+    #[serde(rename = "hostId")]
+    pub host_id: Option<String>,
+    /// EBICS-URL der Bank.
+    pub url: Option<String>,
+    /// Kunden-ID.
+    #[serde(rename = "partnerId")]
+    pub partner_id: Option<String>,
+    /// Teilnehmer-ID.
+    #[serde(rename = "userId")]
+    pub user_id: Option<String>,
+    /// Teilnehmername für den INI-Brief.
+    #[serde(rename = "userName")]
+    pub user_name: Option<String>,
+    /// Basisverzeichnis der privaten Schlüssel; ohne Angabe `~/.config/taxtsueri/ebics`.
+    #[serde(rename = "keyDir")]
+    pub key_dir: Option<String>,
 }
 
 /// Lädt `settings.json`; gibt bei fehlender/ungültiger Datei Defaults zurück.

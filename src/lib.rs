@@ -25,6 +25,10 @@ pub mod sheet;
 pub mod submit;
 pub mod vermoegensausweis;
 
+#[cfg(feature = "ebics")]
+pub mod ebics;
+#[cfg(feature = "ebics")]
+pub mod ebics_brief;
 #[cfg(feature = "gui")]
 pub mod update;
 

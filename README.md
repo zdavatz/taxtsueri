@@ -87,6 +87,8 @@ cargo run -- --jp --package                                 # JP + Einreichungs-
 cargo run -- --from-mt940 auszug.mt940                      # MT940-Kontoauszug einlesen (Salden/Buchungen)
 cargo run -- --from-camt kontoauszug.xml                    # camt.053-Kontoauszug (ISO 20022) einlesen — Nachfolger von MT940
 cargo run -- --from-camt camt/                              # Verzeichnis mit camt.053-Dateien (täglich/monatlich) → aggregiert
+cargo run --features ebics -- --ebics-init --dry-run         # EBICS: Schlüssel erzeugen, INI/HIA-Requests + INI-Brief schreiben, nichts senden
+cargo run --features ebics -- --ebics-init                   # EBICS: INI + HIA an die Bank senden, INI-Brief → data/ebics-ini-brief.pdf
 cargo run -- --from-mt940 konto.mt940 --from-vermoegensausweis depot.pdf  # kombiniert → eCH-0119 (MT940-Konto = Basis + Wertschriften)
 cargo run -- --from-mt940 konto.mt940 --wertschriften 38628 # → data/Cash-Flow-Rechnung.pdf (Bilanz + ER, Entwurf z. Hd. Vermögensverwalter)
 cargo run -- --mwst --periode S1/2026 --umsatz 123456.78 --activity-id 12345   # MWST-Abrechnung → eCH-0217 V2.0.0
@@ -156,6 +158,33 @@ Lohn, MWST/ESTV, Reisespesen) deutlich zuverlässiger macht.
 **beliebig viele** camt.053-Dateien (tägliche oder monatliche Auszüge) zu einem
 Statement (Eröffnung aus der frühesten, Schluss aus der spätesten Datei). Ausgabe wie
 bei `--from-mt940`: Kategorien, Cash-Basis-Erfolgsrechnung und Bilanz-Position.
+
+### EBICS-Initialisierung (`--ebics-init`, Feature `ebics`)
+
+Damit die camt.053-Auszüge nicht mehr von Hand aus dem E-Banking exportiert werden
+müssen, spricht taxtsueri **EBICS** (Protokoll **H004** / EBICS 2.5) direkt mit der Bank
+(z. B. UBS KeyPort). Dieser Schritt richtet den Teilnehmer ein:
+
+1. `settings.json` → Block `ebics` mit den Angaben vom **Bankparameterdaten-Blatt**
+   (`hostId`, `url`, `partnerId` = Kunden-ID, `userId` = Teilnehmer-ID, `userName`;
+   optional `keyDir`). Vorlage: `settings.example.json`.
+2. `--ebics-init` erzeugt drei RSA-2048-Schlüsselpaare — `A006` (elektronische
+   Unterschrift), `X002` (Authentifikation), `E002` (Verschlüsselung) —, sendet `INI`
+   und `HIA` und schreibt den **INI-Brief** nach `data/ebics-ini-brief.pdf` (eine Seite
+   pro Schlüssel mit Exponent, Modulus und SHA-256-Hashwert).
+3. Brief ausdrucken, rechtsgültig unterzeichnen, an die Bank senden. Nach deren Prüfung
+   ist der Zugang freigeschaltet.
+
+Die privaten Schlüssel liegen **ausserhalb des Repos** unter
+`~/.config/taxtsueri/ebics/<Host>-<Kunde>-<Teilnehmer>/` (PKCS#8-PEM, Modus 0600, ohne
+Passwort) zusammen mit `state.json` und den gesendeten Requests/Antworten. Sie werden
+**nie überschrieben**; ein von der Bank angenommener Schritt wird beim nächsten Aufruf
+übersprungen, der Brief lässt sich also jederzeit neu erzeugen. `--dry-run` schreibt die
+Requests nur nach `data/`. Die Requests validieren gegen die offiziellen EBICS-Schemas
+in `schema/ebics/` (`cargo test --features ebics`).
+
+Noch nicht gebaut: `HPB` (Bankschlüssel abholen und mit den Hashwerten des
+Bankparameterdaten-Blatts vergleichen) und der Abruf der Auszüge (`Z53`).
 
 ### Juristische Personen (eCH-0276)
 

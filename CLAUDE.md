@@ -27,7 +27,9 @@ cargo run -- --from-mt940 konto.mt940 --wertschriften 38628  # → data/Cash-Flo
 cargo run -- --mwst --periode S1/2026 --umsatz 123456.78 --activity-id 12345  # MWST-Abrechnung → eCH-0217 V2.0.0
 cargo run -- --mwst --periode S1/2026 --umsatz 123456.78 --from-mt940 konto.mt940  # + Gegenprobe Ist/Soll
 cargo run -- --mwst --periode S1/2026 --umsatz 123456.78 --position 12345:6.2:100000.00 --position 54321:1.2:23456.78  # mehrere Tätigkeiten
+cargo run --features ebics -- --ebics-init [--dry-run]  # EBICS H004: Schlüssel, INI + HIA an die Bank, INI-Brief → data/ebics-ini-brief.pdf
 cargo run --example idg_brief  # IDG-Zugangsgesuch (Öffentlichkeitsprinzip) → ~/idg-zugangsgesuch.pdf (klickbare Gesetzeslinks)
+cargo test --features ebics # zusätzlich: INI/HIA gegen schema/ebics/ (H004-XSDs), Schlüsselablage, INI-Brief
 cargo test                  # run tests (incl. xmllint validation of NP eCH-0119 + JP eCH-0276 + MWST eCH-0217, eCH-0196 parse, PDF roundtrip, SHA-256)
 ```
 
@@ -157,6 +159,20 @@ that **validates against the official XSD**. Three modules:
   When the approval covers **several** activities the turnover has to be split across one
   `suppliesPerTaxRate` row each — `mwst::Position` / repeated `--position CODE:SATZ:UMSATZ`
   (`SATZ:UMSATZ` for the effective method); their sum must equal Ziff. 299 or MWST-0005 fires.
+- **`src/ebics.rs` / `src/ebics_brief.rs`** (Feature `ebics`: `rsa`, `sha2`, `base64`, `rand`,
+  `reqwest`) — **EBICS**-Client, Protokoll **H004**, um camt.053 (`Z53`) direkt bei der Bank zu holen.
+  Bisher die **Initialisierung**: `Keys::load_or_generate` (drei RSA-2048-Paare A006/X002/E002 als
+  PKCS#8-PEM, 0600, in `~/.config/taxtsueri/ebics/<Host>-<Kunde>-<Teilnehmer>/` + `state.json`;
+  **überschreibt nie** — nach angenommenem `INI` kann nur die Bank zurücksetzen, ein unvollständiger
+  Satz ist ein Fehler), `ini_request`/`hia_request` (`ebicsUnsecuredRequest`, Auftragsdaten zlib +
+  base64, als Strings gebaut statt via serde), `Response` (technischer + fachlicher Returncode müssen
+  `000000` sein) und `public_key_hash` — SHA-256 über «Exponent, Leerzeichen, Modulus» in Kleinbuchstaben-
+  Hex ohne führende Nullen; derselbe Wert steht im INI-Brief und für die Bankschlüssel auf dem
+  Bankparameterdaten-Blatt. `ebics_brief::ini_brief_pdf` rendert den dreiseitigen INI-Brief via `lopdf`.
+  `INI` trägt `SignaturePubKeyOrderData` (Namespace `http://www.ebics.org/S001`), `HIA`
+  `HIARequestOrderData` (`urn:org:ebics:H004`). Bankparameter kommen aus dem `ebics`-Block von
+  `settings.json`. **Offen:** `HPB` und der Download (`Z53`) — beide brauchen die X002-Signatur über
+  kanonisiertes XML und die E002-Entschlüsselung.
 - **`src/model_jp.rs` / `src/dataset_jp.rs`** — **juristische Personen** per **eCH-0276**
   «E-Bilanz und E-Tax JP» (built from `schema/eCH-0276-1-0.xsd` + `eCH-0276-beispiel.xml`):
   root `eBalanceSheetETaxLegalEntity` → `header`(title) + `content` (assets, equityAndLiabilities,
