@@ -228,7 +228,9 @@ code — the NP `vn` (AHVN13, applied in the NP flow), the JP `uid`/`registerNum
 `run_jp`) and the `mwst` block (`uid`, `organisationName`, `activityId`, `taxRate`, `methode`,
 `abrechnungsart` — «vereinbart»/«vereinnahmt», i.e. `formOfReporting` 1/2 — and `manufacturer`,
 which fills `sendingApplication` and defaults to a neutral "taxtsueri" so no company name sits in
-the code). `dataset.rs` holds only placeholders. A committed `settings.example.json`
+the code), plus the `ebics` block (`hostId`, `url`, `partnerId`, `userId`, `userName`, optional
+`keyDir`, and `bankAuthHash`/`bankEncHash` — the bank key hashes from the Bankparameterdaten-Blatt
+that `--ebics-hpb` verifies against). `dataset.rs` holds only placeholders. A committed `settings.example.json`
 documents the format.
 
 `examples/input.sample.json` (synthetic JSON input) and `examples/ech0196.sample.xml`
@@ -289,6 +291,16 @@ imports and the four official example XMLs, which the fetch script re-validates)
 sibling local file (the eCH schemas import by namespace with no `schemaLocation`, so
 libxml2 can't resolve them otherwise). The patch is idempotent and part of the fetch
 script — re-run the fetch script rather than editing XSDs by hand.
+
+`schema/ebics/` holds the **EBICS H004** schema set (`ebics_H004.xsd` + includes, `ebics_signature.xsd`,
+`ebics_hev.xsd`, `xmldsig-core-schema.xsd`). These are **not** eCH schemas: they are not fetched by
+`fetch-schemas.sh` and need no location patch (they use relative `schemaLocation`). They were taken from
+the test fixtures of the open-source `node-ebics-client`, because ebics.org does not serve them under a
+stable URL. `tests/ebics.rs` validates every EBICS request against them.
+
+**EBICS status:** `--ebics-init` has been run against a real bank (INI + HIA accepted). `--ebics-hpb`
+and `--ebics-z53` are verified only against the simulated bank in `tests/ebics.rs`; the first real run
+is pending the bank's activation after the signed INI letter.
 
 Root element is `message` (attr `minorVersion`) with `header` + `content`; types
 come from the `-f` framework standards (`eCH-0044-f`, `eCH-0046-f`, `eCH-0007-f`,

@@ -9,7 +9,8 @@ validierungsfähige XML-Datei für die elektronische Einreichung erzeugt — fü
 - **Natürliche Personen (NP)** → **eCH-0119** «E-Tax Filing»
 - **Juristische Personen (JP)** → **eCH-0276** «E-Bilanz und E-Tax JP»
 
-Dazu die **MWST-Abrechnung** für die ESTV → **eCH-0217** «E-MWST» V2.0.0.
+Dazu die **MWST-Abrechnung** für die ESTV → **eCH-0217** «E-MWST» V2.0.0 und ein
+**EBICS-Client**, der die camt.053-Kontoauszüge direkt bei der Bank abholt.
 
 ## Standards
 
@@ -28,7 +29,11 @@ Dazu die **MWST-Abrechnung** für die ESTV → **eCH-0217** «E-MWST» V2.0.0.
 - **eCH-0058 / 0108** — Rahmenstandards (Sendungs-Header, Unternehmensidentifikation),
   die eCH-0217 importiert.
 
-Spezifikationen und XSD-Schemas sind frei (ohne Mitgliedschaft) von
+- **EBICS** (Electronic Banking Internet Communication Standard), Protokollversion
+  **H004** (EBICS 2.5) — der Bankkanal für den Abruf der camt.053-Auszüge. Kein
+  eCH-Standard; Spezifikation und Schemas stammen von [www.ebics.org](https://www.ebics.org).
+
+Spezifikationen und XSD-Schemas der eCH-Standards sind frei (ohne Mitgliedschaft) von
 [www.ech.ch](https://www.ech.ch) beziehbar.
 
 ## XSD-Schemas
@@ -47,6 +52,15 @@ Das Skript lädt von www.ech.ch und verdrahtet anschliessend die `schemaLocation
 lokal (`scripts/patch_schema_locations.py`), weil die eCH-Schemas per Namespace
 ohne `schemaLocation` importieren. eCH-0119 importiert die **Framework-Varianten**
 `eCH-0007-f`, `eCH-0011-f`, `eCH-0044-f`, `eCH-0046-f` sowie `eCH-0097`.
+
+Die **EBICS-H004**-Schemas liegen getrennt in `schema/ebics/` (`ebics_H004.xsd` mit
+seinen Includes, `ebics_signature.xsd`, `ebics_hev.xsd`, `xmldsig-core-schema.xsd`). Sie
+referenzieren sich über relative `schemaLocation` und brauchen keinen Patch; das
+Fetch-Skript fasst sie nicht an.
+
+```bash
+xmllint --nonet --noout --schema schema/ebics/ebics_H004.xsd <ebics-request>.xml
+```
 
 ## Desktop-GUI (eframe, Win/Mac/Linux)
 
@@ -177,6 +191,19 @@ müssen, spricht taxtsueri **EBICS** (Protokoll **H004** / EBICS 2.5) direkt mit
    pro Schlüssel mit Exponent, Modulus und SHA-256-Hashwert).
 3. Brief ausdrucken, rechtsgültig unterzeichnen, an die Bank senden. Nach deren Prüfung
    ist der Zugang freigeschaltet.
+
+Die `ebics`-Schlüssel in `settings.json`:
+
+| Schlüssel | Bedeutung |
+|---|---|
+| `hostId` | EBICS-Host-ID der Bank |
+| `url` | EBICS-URL der Bank |
+| `partnerId` | Kunden-ID |
+| `userId` | Teilnehmer-ID |
+| `userName` | Teilnehmername, erscheint im INI-Brief |
+| `keyDir` | optional: Basisverzeichnis der privaten Schlüssel |
+| `bankAuthHash` | SHA-256-Hashwert des Bankschlüssels X002 (Hex, Leerzeichen erlaubt) — für `--ebics-hpb` |
+| `bankEncHash` | SHA-256-Hashwert des Bankschlüssels E002 — für `--ebics-hpb` |
 
 Die privaten Schlüssel liegen **ausserhalb des Repos** unter
 `~/.config/taxtsueri/ebics/<Host>-<Kunde>-<Teilnehmer>/` (PKCS#8-PEM, Modus 0600, ohne
@@ -393,6 +420,11 @@ konfessionslos». Diese verifizierten Codes stehen als Konstanten bereit
 - PDF417-Barcode-**Bild**decoder für Scan-PDFs (heute: eingebettetes XML +
   JSON `Document`).
 - Tatsächliche Übermittlung an ZHprivateTax (interaktives Portal, keine API).
+- EBICS: `--ebics-init` (INI + HIA) ist gegen eine echte Bank gelaufen; `--ebics-hpb`
+  und `--ebics-z53` sind bisher nur gegen die simulierte Bank der Tests geprüft, weil
+  der Zugang erst nach der Prüfung des INI-Briefs durch die Bank freigeschaltet wird.
+- EBICS: Die Authentifikationssignatur der **Bank** auf den Antworten wird nicht
+  geprüft; dafür fehlt ein allgemeiner XML-Kanonisierer (C14N).
 
 ## Lizenz
 
