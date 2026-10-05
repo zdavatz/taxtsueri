@@ -29,7 +29,8 @@ cargo run -- --mwst --periode S1/2026 --umsatz 123456.78 --from-mt940 konto.mt94
 cargo run -- --mwst --periode S1/2026 --umsatz 123456.78 --position 12345:6.2:100000.00 --position 54321:1.2:23456.78  # mehrere Tätigkeiten
 cargo run --features ebics -- --ebics-init [--dry-run]  # EBICS H004: Schlüssel, INI + HIA an die Bank, INI-Brief → data/ebics-ini-brief.pdf
 cargo run --features ebics -- --ebics-hpb   # EBICS: Bankschlüssel holen, gegen settings.json (bankAuthHash/bankEncHash) prüfen
-cargo run --features ebics -- --ebics-z53 [--von JJJJ-MM-TT --bis JJJJ-MM-TT]  # EBICS: camt.053 (Z53) → camt/
+cargo run --features ebics -- --ebics-z53 [--von JJJJ-MM-TT --bis JJJJ-MM-TT]  # EBICS: camt.053 (Z53) → camt/<IBAN>/
+cargo run -- --from-camt camt/ [--konto IBAN]  # camt.053 auswerten (Datei oder Ordner inkl. Unterordner), je Konto getrennt
 cargo run --example idg_brief  # IDG-Zugangsgesuch (Öffentlichkeitsprinzip) → ~/idg-zugangsgesuch.pdf (klickbare Gesetzeslinks)
 cargo test --features ebics # zusätzlich: EBICS-Requests gegen schema/ebics/ (H004-XSDs), Schlüsselablage, INI-Brief, HPB/Z53 gegen simulierte Bank
 cargo test                  # run tests (incl. xmllint validation of NP eCH-0119 + JP eCH-0276 + MWST eCH-0217, eCH-0196 parse, PDF roundtrip, SHA-256)
@@ -188,12 +189,21 @@ that **validates against the official XSD**. Three modules:
   XSD-Konformität und den Ablauf. **Auftragsdaten** (`decrypt_order_data`): RSA-PKCS#1-v1.5 entschlüsselt
   den Transaktionsschlüssel, AES-128-CBC mit Null-IV die Daten, letztes Byte = Padding-Länge, dann zlib.
   Segmentiert wird der **base64-Text** — erst alle Segmente verketten, dann dekodieren. `download`
-  quittiert erst **positiv**, wenn der `handle`-Callback (Entpacken nach `camt/`) `Ok` liefert; `090005`
+  quittiert erst **positiv**, wenn der `handle`-Callback (`extract_statements`: Entpacken nach
+  `camt/<IBAN>/`, IBAN via `camt053::parse` aus dem Auszug, unlesbare Dateien bleiben im
+  Zielverzeichnis) `Ok` liefert; `090005`
   (keine Daten) ergibt `Ok(None)`. `BankKeys` (aus `HPBResponseOrderData`, als `bank.json` neben den
   eigenen Schlüsseln) werden nur nach `verify` gegen `ebics.bankAuthHash`/`bankEncHash` gespeichert;
   ihre Hashwerte gehen als `BankPubKeyDigests` in jeden Download. Die Signatur der **Bank** auf den
   Antworten wird nicht geprüft (TLS + geprüfte Bankschlüssel). Der Transport ist eine Closure
   (`&mut dyn FnMut(&str) -> Result<String, String>`), damit `tests/ebics.rs` eine Bank simulieren kann.
+- **`src/camt053.rs`** — camt.053-Reader (ISO 20022) auf die `mt940::Statement`-Struktur. Liest
+  `camt.053.001.08` (E-Banking-Export) **und** `.001.04` (so liefert die UBS über EBICS) — der
+  Namespace wird nicht geprüft. **Konten werden nie vermischt:** `parse_by_account` liefert je IBAN
+  eine aggregierte `Statement`; `parse_many` ist nur für **ein** Konto und gibt bei gemischten Dateien
+  einen Fehler zurück. `--from-camt <ordner>` liest rekursiv und verlangt bei mehreren Konten
+  `--konto <IBAN>`, weil `report_statement` feste Ausgabedateien schreibt
+  (`data/mt940-summary.json`, `data/Cash-Flow-Rechnung.{md,pdf}`) — jeder Lauf überschreibt sie.
 - **`src/model_jp.rs` / `src/dataset_jp.rs`** — **juristische Personen** per **eCH-0276**
   «E-Bilanz und E-Tax JP» (built from `schema/eCH-0276-1-0.xsd` + `eCH-0276-beispiel.xml`):
   root `eBalanceSheetETaxLegalEntity` → `header`(title) + `content` (assets, equityAndLiabilities,
@@ -298,9 +308,15 @@ script — re-run the fetch script rather than editing XSDs by hand.
 the test fixtures of the open-source `node-ebics-client`, because ebics.org does not serve them under a
 stable URL. `tests/ebics.rs` validates every EBICS request against them.
 
-**EBICS status:** `--ebics-init` has been run against a real bank (INI + HIA accepted). `--ebics-hpb`
-and `--ebics-z53` are verified only against the simulated bank in `tests/ebics.rs`; the first real run
-is pending the bank's activation after the signed INI letter.
+**EBICS status:** `--ebics-init`, `--ebics-hpb` and `--ebics-z53` (no date range, one small response) have
+all run successfully against a real bank — so the hand-written canonical form of the authentication
+signature and the E002 decryption are confirmed in practice. Still verified only against the simulated
+bank in `tests/ebics.rs`: a download with `--von`/`--bis` and large multi-segment responses (not deliberately exercised live). How far back a
+date range reaches is the bank's decision (typically only from contract setup, limited retention).
+
+**Test fixtures are synthetic.** The MT940 and camt.053 samples in the unit tests use example IBANs
+(`CH9300762011623852957`, `CH5604835012345678009`) and round amounts — never paste real statement
+lines into tests.
 
 Root element is `message` (attr `minorVersion`) with `header` + `content`; types
 come from the `-f` framework standards (`eCH-0044-f`, `eCH-0046-f`, `eCH-0007-f`,

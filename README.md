@@ -100,11 +100,12 @@ cargo run -- --jp                                           # juristische Person
 cargo run -- --jp --package                                 # JP + Einreichungs-Paket
 cargo run -- --from-mt940 auszug.mt940                      # MT940-Kontoauszug einlesen (Salden/Buchungen)
 cargo run -- --from-camt kontoauszug.xml                    # camt.053-Kontoauszug (ISO 20022) einlesen — Nachfolger von MT940
-cargo run -- --from-camt camt/                              # Verzeichnis mit camt.053-Dateien (täglich/monatlich) → aggregiert
+cargo run -- --from-camt camt/                              # Verzeichnis mit camt.053-Dateien (täglich/monatlich, auch Unterordner) → je Konto aggregiert
+cargo run -- --from-camt camt/ --konto CH9300762011623852957 # bei mehreren Konten im Verzeichnis: eines auswählen
 cargo run --features ebics -- --ebics-init --dry-run         # EBICS: Schlüssel erzeugen, INI/HIA-Requests + INI-Brief schreiben, nichts senden
 cargo run --features ebics -- --ebics-init                   # EBICS: INI + HIA an die Bank senden, INI-Brief → data/ebics-ini-brief.pdf
 cargo run --features ebics -- --ebics-hpb                    # EBICS: Bankschlüssel abholen + gegen das Bankparameterdaten-Blatt prüfen
-cargo run --features ebics -- --ebics-z53                    # EBICS: alle noch nicht abgeholten camt.053-Auszüge → camt/
+cargo run --features ebics -- --ebics-z53                    # EBICS: alle noch nicht abgeholten camt.053-Auszüge → camt/<IBAN>/
 cargo run --features ebics -- --ebics-z53 --von 2026-01-01 --bis 2026-06-30   # EBICS: Auszüge eines Zeitraums
 cargo run -- --from-mt940 konto.mt940 --from-vermoegensausweis depot.pdf  # kombiniert → eCH-0119 (MT940-Konto = Basis + Wertschriften)
 cargo run -- --from-mt940 konto.mt940 --wertschriften 38628 # → data/Cash-Flow-Rechnung.pdf (Bilanz + ER, Entwurf z. Hd. Vermögensverwalter)
@@ -172,9 +173,15 @@ liefert camt.053 **strukturierte Felder** (Gegenpartei `RltdPties`, Zahlungszwec
 Lohn, MWST/ESTV, Reisespesen) deutlich zuverlässiger macht.
 
 `--from-camt <datei.xml>` liest eine Datei, `--from-camt <verzeichnis>` aggregiert
-**beliebig viele** camt.053-Dateien (tägliche oder monatliche Auszüge) zu einem
-Statement (Eröffnung aus der frühesten, Schluss aus der spätesten Datei). Ausgabe wie
-bei `--from-mt940`: Kategorien, Cash-Basis-Erfolgsrechnung und Bilanz-Position.
+**beliebig viele** camt.053-Dateien (tägliche oder monatliche Auszüge, auch in
+Unterordnern) zu einem Statement **je Konto** (Eröffnung aus der frühesten, Schluss aus
+der spätesten Datei). Ausgabe wie bei `--from-mt940`: Kategorien,
+Cash-Basis-Erfolgsrechnung und Bilanz-Position.
+
+Auszüge verschiedener Konten werden nie vermischt. Enthält das Verzeichnis mehrere
+Konten, listet taxtsueri sie mit Zeitraum und Anzahl Buchungen auf und verlangt
+`--konto <IBAN>`. Gelesen werden die Versionen `camt.053.001.08` (E-Banking-Export)
+und `camt.053.001.04` (so liefert die UBS über EBICS).
 
 ### EBICS-Initialisierung (`--ebics-init`, Feature `ebics`)
 
@@ -223,10 +230,15 @@ Sobald die Bank den Zugang freigeschaltet hat:
   («Öffentliche EBICS-Bankschlüssel», H003/H004). Ohne diese Angaben oder bei Abweichung
   wird nichts gespeichert.
 - **`--ebics-z53`** holt die **camt.053**-Auszüge (Auftragsart `Z53`) und entpackt das ZIP
-  nach `camt/`. Ohne Zeitraum kommen alle noch nicht abgeholten Auszüge, mit
+  nach `camt/<IBAN>/` — je Konto ein Unterordner, die IBAN stammt aus dem Auszug selbst. Ohne Zeitraum kommen alle noch nicht abgeholten Auszüge, mit
   `--von`/`--bis` (JJJJ-MM-TT) ein bestimmter Zeitraum. Vorhandene Dateien werden nicht
   überschrieben. Fehlen die Bankschlüssel noch, läuft `HPB` automatisch vorweg. Danach
-  wie gewohnt `cargo run -- --from-camt camt/`.
+  wie gewohnt `cargo run -- --from-camt camt/ [--konto <IBAN>]`.
+
+Wie weit ein Zeitraum zurückreichen kann, bestimmt die Bank, nicht das Protokoll: Sie
+liefert nur, was sie für den EBICS-Kanal bereithält — in der Regel erst ab der
+Einrichtung des Vertrags und nur für eine begrenzte Aufbewahrungsdauer. Ältere Auszüge
+kommen weiterhin aus dem E-Banking-Export.
 
 Der Abruf läuft in drei Phasen (Initialisierung, Segmente, Quittung). **Positiv
 quittiert** — und damit bei der Bank als abgeholt markiert — wird erst, wenn die Dateien
@@ -420,9 +432,10 @@ konfessionslos». Diese verifizierten Codes stehen als Konstanten bereit
 - PDF417-Barcode-**Bild**decoder für Scan-PDFs (heute: eingebettetes XML +
   JSON `Document`).
 - Tatsächliche Übermittlung an ZHprivateTax (interaktives Portal, keine API).
-- EBICS: `--ebics-init` (INI + HIA) ist gegen eine echte Bank gelaufen; `--ebics-hpb`
-  und `--ebics-z53` sind bisher nur gegen die simulierte Bank der Tests geprüft, weil
-  der Zugang erst nach der Prüfung des INI-Briefs durch die Bank freigeschaltet wird.
+- EBICS: `--ebics-init`, `--ebics-hpb` und `--ebics-z53` (ohne Zeitraum, eine kleine
+  Antwort mit elf Tagesauszügen) sind gegen eine echte Bank gelaufen. Nicht gezielt gegen
+  eine echte Bank geprüft sind der Abruf mit `--von`/`--bis` und grosse, in mehrere
+  Segmente geteilte Antworten; beides decken nur die Tests mit der simulierten Bank ab.
 - EBICS: Die Authentifikationssignatur der **Bank** auf den Antworten wird nicht
   geprüft; dafür fehlt ein allgemeiner XML-Kanonisierer (C14N).
 

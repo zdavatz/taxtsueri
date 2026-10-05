@@ -287,14 +287,9 @@ fn ntry_to_tx(n: Ntry) -> Transaction {
     }
 }
 
-/// Aggregiert mehrere camt.053-Tagesdateien (XML-Strings, in beliebiger Reihenfolge) zu
-/// **einer** [`Statement`]: Buchungen chronologisch zusammengefügt, Eröffnungssaldo vom
-/// frühesten Tag, Schlusssaldo vom spätesten.
-pub fn parse_many(xmls: &[String]) -> Result<Statement, String> {
-    let mut stmts: Vec<Statement> = xmls.iter().map(|x| parse(x)).collect::<Result<_, _>>()?;
-    if stmts.is_empty() {
-        return Err("keine camt.053-Dateien".into());
-    }
+/// Fasst die Tagesauszüge **eines** Kontos zusammen: Buchungen chronologisch
+/// zusammengefügt, Eröffnungssaldo vom frühesten Tag, Schlusssaldo vom spätesten.
+fn aggregate(mut stmts: Vec<Statement>) -> Statement {
     // Nach Schlusssaldo-Datum (bzw. erster Buchung) sortieren.
     stmts.sort_by(|a, b| {
         let ka = a.closing.as_ref().map(|x| x.date.clone()).unwrap_or_default();
@@ -305,12 +300,43 @@ pub fn parse_many(xmls: &[String]) -> Result<Statement, String> {
     let opening = stmts.first().and_then(|s| s.opening.clone());
     let closing = stmts.last().and_then(|s| s.closing.clone());
     let transactions = stmts.into_iter().flat_map(|s| s.transactions).collect();
-    Ok(Statement {
+    Statement {
         account,
         opening,
         closing,
         transactions,
-    })
+    }
+}
+
+/// Liest mehrere camt.053-Tagesdateien (XML-Strings, in beliebiger Reihenfolge) und
+/// liefert **je Konto** eine aggregierte [`Statement`], nach IBAN sortiert. Auszüge
+/// verschiedener Konten werden nie vermischt — ihre Salden hätten nichts miteinander zu tun.
+pub fn parse_by_account(xmls: &[String]) -> Result<Vec<Statement>, String> {
+    if xmls.is_empty() {
+        return Err("keine camt.053-Dateien".into());
+    }
+    let mut by_account: std::collections::BTreeMap<String, Vec<Statement>> = std::collections::BTreeMap::new();
+    for xml in xmls {
+        let stmt = parse(xml)?;
+        by_account.entry(stmt.account.clone()).or_default().push(stmt);
+    }
+    Ok(by_account.into_values().map(aggregate).collect())
+}
+
+/// Aggregiert die camt.053-Tagesdateien **eines** Kontos zu einer [`Statement`].
+/// Enthalten die Dateien mehrere Konten, ist das ein Fehler — dafür gibt es
+/// [`parse_by_account`].
+pub fn parse_many(xmls: &[String]) -> Result<Statement, String> {
+    let mut accounts = parse_by_account(xmls)?;
+    if accounts.len() > 1 {
+        let ibans: Vec<&str> = accounts.iter().map(|s| s.account.as_str()).collect();
+        return Err(format!(
+            "die Dateien gehören zu {} verschiedenen Konten ({}) — bitte nach Konto getrennt auswerten",
+            accounts.len(),
+            ibans.join(", ")
+        ));
+    }
+    Ok(accounts.remove(0))
 }
 
 #[cfg(test)]
@@ -321,9 +347,9 @@ mod tests {
 <Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.08">
   <BkToCstmrStmt>
     <Stmt>
-      <Acct><Id><IBAN>CH8600225225P56012300</IBAN></Id></Acct>
-      <Bal><Tp><CdOrPrtry><Cd>OPBD</Cd></CdOrPrtry></Tp><Amt Ccy="CHF">46014.97</Amt><CdtDbtInd>CRDT</CdtDbtInd><Dt><Dt>2026-06-01</Dt></Dt></Bal>
-      <Bal><Tp><CdOrPrtry><Cd>CLBD</Cd></CdOrPrtry></Tp><Amt Ccy="CHF">45773.84</Amt><CdtDbtInd>CRDT</CdtDbtInd><Dt><Dt>2026-06-01</Dt></Dt></Bal>
+      <Acct><Id><IBAN>CH9300762011623852957</IBAN></Id></Acct>
+      <Bal><Tp><CdOrPrtry><Cd>OPBD</Cd></CdOrPrtry></Tp><Amt Ccy="CHF">50000.00</Amt><CdtDbtInd>CRDT</CdtDbtInd><Dt><Dt>2026-06-01</Dt></Dt></Bal>
+      <Bal><Tp><CdOrPrtry><Cd>CLBD</Cd></CdOrPrtry></Tp><Amt Ccy="CHF">48873.47</Amt><CdtDbtInd>CRDT</CdtDbtInd><Dt><Dt>2026-06-01</Dt></Dt></Bal>
       <Ntry>
         <Amt Ccy="CHF">73.47</Amt><CdtDbtInd>CRDT</CdtDbtInd>
         <ValDt><Dt>2026-05-31</Dt></ValDt>
@@ -333,7 +359,7 @@ mod tests {
       <Ntry>
         <Amt Ccy="CHF">1200.00</Amt><CdtDbtInd>DBIT</CdtDbtInd>
         <ValDt><Dt>2026-06-01</Dt></ValDt>
-        <AddtlNtryInf>MIETE YWESEE</AddtlNtryInf>
+        <AddtlNtryInf>MIETE BEISPIEL</AddtlNtryInf>
         <NtryDtls><TxDtls><RltdPties><Cdtr><Pty><Nm>Immobilien AG</Nm></Pty></Cdtr></RltdPties></TxDtls></NtryDtls>
       </Ntry>
     </Stmt>
@@ -343,9 +369,9 @@ mod tests {
     #[test]
     fn parses_balances_entries_and_parties() {
         let s = parse(SAMPLE).expect("parse");
-        assert_eq!(s.account, "CH8600225225P56012300");
-        assert_eq!(s.opening.as_ref().unwrap().amount_cents, 4_601_497);
-        assert_eq!(s.closing.as_ref().unwrap().amount_cents, 4_577_384);
+        assert_eq!(s.account, "CH9300762011623852957");
+        assert_eq!(s.opening.as_ref().unwrap().amount_cents, 5_000_000);
+        assert_eq!(s.closing.as_ref().unwrap().amount_cents, 4_887_347);
         assert_eq!(s.transactions.len(), 2);
         // Gutschrift: Gegenpartei = Zahler (Dbtr), Dividende erkennbar.
         assert!(s.transactions[0].credit);
@@ -356,6 +382,24 @@ mod tests {
         assert!(!s.transactions[1].credit);
         assert!(s.transactions[1].description.contains("Immobilien AG"));
         assert!(s.transactions[1].description.contains("MIETE"));
+    }
+
+    #[test]
+    fn statements_of_different_accounts_are_kept_apart() {
+        let other = SAMPLE.replace("CH9300762011623852957", "CH5604835012345678009");
+        let next_day = SAMPLE.replace("2026-06-01", "2026-06-02");
+        let xmls = [other, SAMPLE.to_string(), next_day];
+        let accounts = parse_by_account(&xmls).expect("parse");
+        assert_eq!(accounts.len(), 2);
+        assert_eq!(accounts[0].account, "CH5604835012345678009");
+        assert_eq!(accounts[0].transactions.len(), 2);
+        // Zwei Tage desselben Kontos werden zusammengefasst.
+        assert_eq!(accounts[1].account, "CH9300762011623852957");
+        assert_eq!(accounts[1].transactions.len(), 4);
+        assert_eq!(accounts[1].closing.as_ref().unwrap().date, "2026-06-02");
+        // parse_many vermischt nichts, sondern lehnt gemischte Dateien ab.
+        assert!(parse_many(&xmls).unwrap_err().contains("2 verschiedenen Konten"));
+        assert_eq!(parse_many(&xmls[1..]).unwrap().transactions.len(), 4);
     }
 
     #[test]

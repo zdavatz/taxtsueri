@@ -427,7 +427,7 @@ pub fn pseudo_statements_markdown(ps: &PseudoStatements) -> String {
     m
 }
 
-/// MT940-Betrag mit Komma ("105232,94", "34,1", "21,") → Rappen.
+/// MT940-Betrag mit Komma ("1234,56", "34,1", "21,") → Rappen.
 fn parse_amount_cents(s: &str) -> Option<i64> {
     let s = s.trim();
     if s.is_empty() {
@@ -571,32 +571,32 @@ pub fn parse(input: &str) -> Result<Statement, String> {
 mod tests {
     use super::*;
 
-    const SAMPLE: &str = ":20:0083002401Z162\n\
-        :25:CH870025125183002401Z\n\
-        :28C:162/1\n\
-        :60F:C250101CHF105232,94\n\
-        :61:2501020103D146,9NTRFNONREF//9930503BN3667947\n\
+    const SAMPLE: &str = ":20:REF0000000001\n\
+        :25:CH5604835012345678009\n\
+        :28C:1/1\n\
+        :60F:C250101CHF100000,00\n\
+        :61:2501020103D146,9NTRFNONREF//REF0001\n\
         Zahlung Debitkarte\n\
-        :86:Avent�ras Sport 7537 Müstair\n\
-        :61:2501070107C8273,67NTRFNONREF//9751007TO4147811\n\
+        :86:Beispiel Sport 7537 Müstair\n\
+        :61:2501070107C8000,50NTRFNONREF//REF0002\n\
         :86:Gutschrift Steuerverwaltung\n\
-        :62F:C251231CHF113439,85\n";
+        :62F:C251231CHF107853,60\n";
 
     #[test]
     fn parses_balances_and_transactions() {
         let s = parse(SAMPLE).expect("parse");
-        assert_eq!(s.account, "CH870025125183002401Z");
-        assert_eq!(s.opening.as_ref().unwrap().amount_cents, 10_523_294);
+        assert_eq!(s.account, "CH5604835012345678009");
+        assert_eq!(s.opening.as_ref().unwrap().amount_cents, 10_000_000);
         assert_eq!(s.opening.as_ref().unwrap().date, "2025-01-01");
-        assert_eq!(s.closing.as_ref().unwrap().amount_cents, 11_343_985);
+        assert_eq!(s.closing.as_ref().unwrap().amount_cents, 10_785_360);
         assert_eq!(s.transactions.len(), 2);
         assert_eq!(s.transactions[0].credit, false);
         assert_eq!(s.transactions[0].amount_cents, 14_690); // 146,90
         assert_eq!(s.transactions[0].kind, "NTRF");
         assert!(s.transactions[0].description.contains("Sport"));
         assert_eq!(s.transactions[1].credit, true);
-        assert_eq!(s.transactions[1].amount_cents, 827_367); // 8273,67
-        assert_eq!(s.total_credit_cents(), 827_367);
+        assert_eq!(s.transactions[1].amount_cents, 800_050); // 8000,50
+        assert_eq!(s.total_credit_cents(), 800_050);
         assert_eq!(s.total_debit_cents(), 14_690);
     }
 
@@ -679,6 +679,6 @@ mod tests {
         assert_eq!(parse_amount_cents("21,"), Some(2100));
         assert_eq!(parse_amount_cents("34,1"), Some(3410));
         assert_eq!(parse_amount_cents("0,05"), Some(5));
-        assert_eq!(format_cents(11_343_985), "113439.85");
+        assert_eq!(format_cents(10_785_360), "107853.60");
     }
 }

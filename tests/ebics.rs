@@ -139,7 +139,9 @@ fn bank_keys() -> BankKeys {
 fn statement_zip() -> Vec<u8> {
     let mut zip = zip::ZipWriter::new(std::io::Cursor::new(Vec::new()));
     let options = zip::write::SimpleFileOptions::default().compression_method(zip::CompressionMethod::Deflated);
-    for (name, body) in [("2026-01-05_Z53_TEST_CHF_A.xml", "<Document>a</Document>"), ("sub/2026-01-06_Z53_TEST_CHF_B.xml", "<Document>b</Document>")] {
+    // A ist ein lesbares camt.053 (→ Unterordner mit der IBAN), B nicht (→ Zielverzeichnis).
+    let camt = r#"<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.04"><BkToCstmrStmt><Stmt><Acct><Id><IBAN>CH9300762011623852957</IBAN></Id></Acct></Stmt></BkToCstmrStmt></Document>"#;
+    for (name, body) in [("2026-01-05_Z53_TEST_CHF_A.xml", camt), ("sub/2026-01-06_Z53_TEST_CHF_B.xml", "<Document>b</Document>")] {
         zip.start_file(name, options).unwrap();
         zip.write_all(body.as_bytes()).unwrap();
     }
@@ -229,7 +231,11 @@ fn hpb_and_segmented_download_against_simulated_bank() {
     })
     .expect("Download")
     .expect("Daten vorhanden");
-    assert_eq!(extracted.written, ["2026-01-05_Z53_TEST_CHF_A.xml", "2026-01-06_Z53_TEST_CHF_B.xml"]);
+    assert_eq!(
+        extracted.written,
+        ["CH9300762011623852957/2026-01-05_Z53_TEST_CHF_A.xml", "2026-01-06_Z53_TEST_CHF_B.xml"]
+    );
+    assert!(out.join("CH9300762011623852957/2026-01-05_Z53_TEST_CHF_A.xml").exists());
     assert_eq!(std::fs::read_to_string(out.join("2026-01-06_Z53_TEST_CHF_B.xml")).unwrap(), "<Document>b</Document>");
 
     // Scheitert die Verarbeitung, wird negativ quittiert — die Daten bleiben abholbar.

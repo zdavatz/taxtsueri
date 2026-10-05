@@ -443,7 +443,8 @@ pub fn download<T>(
     Ok(Some(value))
 }
 
-/// Ergebnis des Entpackens eines Auszugs-ZIPs.
+/// Ergebnis des Entpackens eines Auszugs-ZIPs. Die Namen sind relativ zum
+/// Zielverzeichnis, also `<IBAN>/<Datei>`.
 #[derive(Debug, Default, PartialEq, Eq)]
 pub struct Extracted {
     /// Neu geschriebene Dateien.
@@ -452,11 +453,18 @@ pub struct Extracted {
     pub skipped: Vec<String>,
 }
 
-/// Entpackt das ZIP eines `Z53`-Abrufs nach `dir`. Vorhandene Dateien werden nicht
-/// überschrieben; Verzeichnisanteile in den ZIP-Namen werden verworfen.
+/// Unterordner für einen Auszug: die IBAN aus dem camt.053, damit die Auszüge
+/// verschiedener Konten getrennt bleiben. Ist die Datei kein lesbares camt.053 oder
+/// die IBAN kein reiner Buchstaben-/Ziffernname, bleibt sie im Zielverzeichnis selbst.
+fn account_folder(content: &[u8]) -> Option<String> {
+    let account = crate::camt053::parse(&String::from_utf8_lossy(content)).ok()?.account;
+    (!account.is_empty() && account.chars().all(|c| c.is_ascii_alphanumeric())).then_some(account)
+}
+
+/// Entpackt das ZIP eines `Z53`-Abrufs nach `dir/<IBAN>/`. Vorhandene Dateien werden
+/// nicht überschrieben; Verzeichnisanteile in den ZIP-Namen werden verworfen.
 pub fn extract_statements(zip_bytes: &[u8], dir: &Path) -> Result<Extracted, String> {
     let mut archive = zip::ZipArchive::new(std::io::Cursor::new(zip_bytes)).map_err(|e| format!("ZIP nicht lesbar: {e}"))?;
-    std::fs::create_dir_all(dir).map_err(|e| format!("{}: {e}", dir.display()))?;
     let mut out = Extracted::default();
     for i in 0..archive.len() {
         let mut file = archive.by_index(i).map_err(|e| format!("ZIP-Eintrag {i}: {e}"))?;
@@ -466,15 +474,20 @@ pub fn extract_statements(zip_bytes: &[u8], dir: &Path) -> Result<Extracted, Str
         let Some(name) = Path::new(file.name()).file_name().map(|n| n.to_string_lossy().into_owned()) else {
             continue;
         };
-        let target = dir.join(&name);
-        if target.exists() {
-            out.skipped.push(name);
-            continue;
-        }
         let mut content = Vec::new();
         file.read_to_end(&mut content).map_err(|e| format!("{name}: {e}"))?;
+        let (folder, relative) = match account_folder(&content) {
+            Some(account) => (dir.join(&account), format!("{account}/{name}")),
+            None => (dir.to_path_buf(), name.clone()),
+        };
+        let target = folder.join(&name);
+        if target.exists() {
+            out.skipped.push(relative);
+            continue;
+        }
+        std::fs::create_dir_all(&folder).map_err(|e| format!("{}: {e}", folder.display()))?;
         std::fs::write(&target, content).map_err(|e| format!("{}: {e}", target.display()))?;
-        out.written.push(name);
+        out.written.push(relative);
     }
     Ok(out)
 }

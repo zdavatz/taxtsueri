@@ -12,12 +12,15 @@
 //!   taxtsueri --mwst --periode S1/2026 --umsatz 123456.78 --activity-id 12345
 //!                                       MWST-Abrechnung nach eCH-0217 V2.0.0 für den
 //!                                       Import in ESTV SuisseTax «MWST abrechnen»
+//!   taxtsueri --from-camt PFAD [--konto IBAN]
+//!                                       camt.053-Auszüge auswerten (Datei oder Ordner,
+//!                                       je Konto getrennt)
 //!   taxtsueri --ebics-init [--dry-run]  EBICS-Teilnehmer initialisieren (INI + HIA) und
 //!                                       den INI-Brief schreiben (Feature `ebics`)
 //!   taxtsueri --ebics-hpb               Bankschlüssel abholen und gegen das
 //!                                       Bankparameterdaten-Blatt prüfen
 //!   taxtsueri --ebics-z53 [--von JJJJ-MM-TT --bis JJJJ-MM-TT]
-//!                                       camt.053-Kontoauszüge per EBICS nach camt/ holen
+//!                                       camt.053-Kontoauszüge per EBICS nach camt/<IBAN>/ holen
 //!
 //! `data/` (Eingabe + XML + Paket) enthält Personendaten und ist gitignored.
 
@@ -40,6 +43,8 @@ struct Args {
     jp: bool,
     from_mt940: Option<String>,
     from_camt: Option<String>,
+    /// Mit `--from-camt`: IBAN des auszuwertenden Kontos, wenn der Ordner mehrere enthält.
+    konto: Option<String>,
     from_vermoegensausweis: Option<String>,
     barcode: Option<String>,
     zh_barcode: bool,
@@ -112,6 +117,7 @@ fn parse_args() -> Result<Args, String> {
             "--jp" => a.jp = true,
             "--from-mt940" => a.from_mt940 = Some(it.next().ok_or("--from-mt940 erwartet einen Pfad")?),
             "--from-camt" => a.from_camt = Some(it.next().ok_or("--from-camt erwartet einen Pfad (Datei oder Verzeichnis)")?),
+            "--konto" => a.konto = Some(it.next().ok_or("--konto erwartet eine IBAN")?),
             "--from-vermoegensausweis" => {
                 a.from_vermoegensausweis = Some(it.next().ok_or("--from-vermoegensausweis erwartet einen Pfad")?)
             }
@@ -208,7 +214,7 @@ fn main() -> ExitCode {
     }
 
     if let Some(path) = &args.from_camt {
-        return run_camt(path, args.wertschriften);
+        return run_camt(path, args.konto.as_deref(), args.wertschriften);
     }
 
     if let Some(path) = &args.barcode {
@@ -520,7 +526,8 @@ mod ebics_cli {
     use taxtsueri::settings::{self, EbicsSettings};
     use taxtsueri::{camt053, ebics_brief};
 
-    /// Zielverzeichnis der abgeholten camt.053-Dateien (gitignored).
+    /// Zielverzeichnis der abgeholten camt.053-Dateien (gitignored); je Konto ein
+    /// Unterordner mit der IBAN als Namen.
     const CAMT_DIR: &str = "camt";
 
     struct Context {
@@ -687,37 +694,44 @@ mod ebics_cli {
             };
             println!("  {name}{note}");
         }
-        println!("Auswerten mit: cargo run -- --from-camt {CAMT_DIR}/");
+        println!("Auswerten mit: cargo run -- --from-camt {CAMT_DIR}/ [--konto <IBAN>]");
         Ok(())
     }
 }
 
-/// `--from-camt`: camt.053 (ISO 20022) einlesen — eine Datei **oder** ein Verzeichnis
-/// mit Tagesdateien (`*.xml`), die zu einem Auszug aggregiert werden.
-fn run_camt(path: &str, wertschriften_chf: Option<i64>) -> ExitCode {
-    let p = Path::new(path);
-    let mut xmls: Vec<String> = Vec::new();
-    if p.is_dir() {
-        let mut files: Vec<PathBuf> = match std::fs::read_dir(p) {
-            Ok(rd) => rd
-                .filter_map(|e| e.ok().map(|e| e.path()))
-                .filter(|p| p.extension().is_some_and(|e| e == "xml"))
-                .collect(),
-            Err(e) => {
-                eprintln!("Konnte {path} nicht lesen: {e}");
-                return ExitCode::FAILURE;
-            }
-        };
-        files.sort();
-        for f in files {
-            match std::fs::read(&f) {
-                Ok(b) => xmls.push(String::from_utf8_lossy(&b).into_owned()),
-                Err(e) => eprintln!("Hinweis: {} übersprungen: {e}", f.display()),
-            }
+/// Sammelt alle `*.xml` unter `dir`, auch in Unterordnern (ein Ordner pro Konto).
+fn collect_xml_files(dir: &Path, out: &mut Vec<PathBuf>) -> std::io::Result<()> {
+    for entry in std::fs::read_dir(dir)? {
+        let path = entry?.path();
+        if path.is_dir() {
+            collect_xml_files(&path, out)?;
+        } else if path.extension().is_some_and(|e| e == "xml") {
+            out.push(path);
         }
+    }
+    Ok(())
+}
+
+/// `--from-camt`: camt.053 (ISO 20022) einlesen — eine Datei **oder** ein Verzeichnis
+/// mit Tagesdateien (`*.xml`, auch in Unterordnern), die **je Konto** zu einem Auszug
+/// aggregiert werden. Liegen mehrere Konten vor, wählt `--konto <IBAN>` eines aus.
+fn run_camt(path: &str, konto: Option<&str>, wertschriften_chf: Option<i64>) -> ExitCode {
+    let p = Path::new(path);
+    let mut files: Vec<PathBuf> = Vec::new();
+    if p.is_dir() {
+        if let Err(e) = collect_xml_files(p, &mut files) {
+            eprintln!("Konnte {path} nicht lesen: {e}");
+            return ExitCode::FAILURE;
+        }
+        files.sort();
     } else {
-        match std::fs::read(p) {
+        files.push(p.to_path_buf());
+    }
+    let mut xmls: Vec<String> = Vec::new();
+    for f in &files {
+        match std::fs::read(f) {
             Ok(b) => xmls.push(String::from_utf8_lossy(&b).into_owned()),
+            Err(e) if p.is_dir() => eprintln!("Hinweis: {} übersprungen: {e}", f.display()),
             Err(e) => {
                 eprintln!("Konnte {path} nicht lesen: {e}");
                 return ExitCode::FAILURE;
@@ -725,14 +739,37 @@ fn run_camt(path: &str, wertschriften_chf: Option<i64>) -> ExitCode {
         }
     }
     println!("camt.053: {} Tagesdatei(en) eingelesen.", xmls.len());
-    let stmt = match camt053::parse_many(&xmls) {
-        Ok(s) => s,
+    let mut accounts = match camt053::parse_by_account(&xmls) {
+        Ok(a) => a,
         Err(e) => {
             eprintln!("camt.053 nicht lesbar: {e}");
             return ExitCode::FAILURE;
         }
     };
-    report_statement(&stmt, wertschriften_chf)
+    if let Some(wanted) = konto {
+        let wanted: String = wanted.split_whitespace().collect::<String>().to_uppercase();
+        accounts.retain(|s| s.account.to_uppercase() == wanted);
+        if accounts.is_empty() {
+            eprintln!("camt.053: kein Auszug für das Konto {wanted} gefunden.");
+            return ExitCode::FAILURE;
+        }
+    }
+    if accounts.len() > 1 {
+        // Salden und Buchungen verschiedener Konten gehören nicht in einen Report.
+        eprintln!("camt.053: {} Konten gefunden — bitte eines mit --konto <IBAN> auswählen:", accounts.len());
+        for s in &accounts {
+            let date = |b: &Option<mt940::Balance>| b.as_ref().map(|b| b.date.clone()).unwrap_or_else(|| "?".into());
+            eprintln!(
+                "  {}  {} bis {}, {} Buchung(en)",
+                s.account,
+                date(&s.opening),
+                date(&s.closing),
+                s.transactions.len()
+            );
+        }
+        return ExitCode::FAILURE;
+    }
+    report_statement(&accounts[0], wertschriften_chf)
 }
 
 /// Gemeinsamer Report für MT940 und camt.053: Kategorien, Cash-Basis-ER, Bilanz-Position,
