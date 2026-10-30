@@ -404,6 +404,29 @@ Annotationen**, eigenem Zeilenumbruch, Helvetica/Helvetica-Bold-Breitentabellen 
 WinAnsi-Encoding (Umlaute, §, •, –). Der Brieftext enthält **nur Platzhalter** (keine
 Personen-/Firmennamen).
 
+### Rekurs D10/2026 und Recherche (`docs/rekurs/`, `examples/rekurs_findings.rs`)
+
+Das Kantonale Steueramt hat den Zugang zum API-Beschrieb mit Verfügung vom
+23. Oktober 2026 verweigert; der **Rekurs an die Finanzdirektion** liegt mit Beilagen
+in `docs/rekurs/`. Dazu erzeugt `examples/rekurs_findings.rs` eine **Recherche-Notiz
+als PDF** (alle Urteile und Quellen im Text verlinkt):
+
+- Rechtsprechung zum Öffentlichkeitsprinzip bei IT-Dokumenten — Bundesgericht zum
+  Kanton Zug (pauschale Sicherheitsbegründung verworfen, März 2026), BGE 142 II 313,
+  BVGer A-4595/2020, VGr ZH VB.2019.00603 / VB.2021.00858 / VB.2024.00043, sowie die
+  zu erwartenden Gegenargumente (VB.2022.00142, Steuergeheimnis);
+- Vergleich mit **swissdamed** (Swissmedic) und **EUDAMED** (EU-Kommission), die ihre
+  Machine-to-Machine-Schnittstellen (REST-/OpenAPI-Doku, XSD, Business Rules) für eine
+  gesetzliche Registrierungspflicht **ohne Login veröffentlichen**;
+- Rechtsvergleich (TA Paris 2016: Quellcode des Steuerrechners; Consiglio di Stato
+  2270/2019), Argumentationskette und offene Punkte für die Replik.
+
+```bash
+cargo run --example rekurs_findings   # → docs/rekurs/Recherche_Rechtsprechung_API-Beschrieb_2026-10-30.pdf
+```
+
+Beide Beispiele teilen den PDF-Satz in `examples/common/linkpdf.rs`.
+
 ## Stand
 
 Das erzeugte XML **validiert gegen das offizielle eCH-0119-v4.0.0-XSD**
