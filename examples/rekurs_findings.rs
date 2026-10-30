@@ -14,6 +14,7 @@ use linkpdf::{lk, save, t, Doc, Span};
 
 // ---- Fundstellen --------------------------------------------------------
 // Schweiz
+const U_BGER_ZUG: &str = "https://www.bger.ch/ext/eurospider/live/de/php/aza/http/index.php?highlight_docid=aza%3A%2F%2F02-02-2026-1C_136-2025&lang=de&type=show_document&zoom=YES";
 const U_ZUG_ZW: &str = "https://www.zugerpresse.ch/zuger-news/detail/transparenz-statt-pauschalgeheimnis";
 const U_ZUG_BOTE: &str = "https://www.bote.ch/nachrichten/zentralschweiz/bundesgericht-zu-geheimhaltung-von-it-dokumenten-art-1691625";
 const U_ZUG_ZZ: &str = "https://www.zugerzeitung.ch/zentralschweiz/zug/bundesgericht-zu-geheimhaltung-von-it-dokumenten-ld.4128834";
@@ -99,12 +100,12 @@ fn findings() -> Doc {
          Steuerverwaltung sei öffentlich zugänglich zu machen, wurde weder in der Schweiz noch im \
          Ausland gefunden. Der Rekurs D10/2026 betrifft insofern eine offene Rechtsfrage. Tragfähig sind:",
     )]);
-    let zw = u!(U_ZUG_ZW);
+    let bz = u!(U_BGER_ZUG);
     bullet(&mut d, vec![
-        t("ein Bundesgerichtsentscheid vom März 2026 zum Kanton Zug, der eine pauschale \
-           Sicherheitsbegründung für die Geheimhaltung von IT-Dokumenten verwirft ("),
-        lk("Zuger Woche", zw),
-        t(");"),
+        t("das Urteil des Bundesgerichts "),
+        lk("1C_136/2025 vom 2. Februar 2026", bz),
+        t(" (Kanton Zug), das die pauschale Verweigerung des Zugangs zu IT-Dokumenten mit einer \
+           allgemeinen Sicherheitsbegründung aufhebt;"),
     ]);
     bullet(&mut d, vec![t(
         "die gefestigte Rechtsprechung zur Zugangsvermutung, zur Beweislast der Behörde und zur \
@@ -131,41 +132,77 @@ fn findings() -> Doc {
     ]);
 
     // ---- 2. Zug ---------------------------------------------------------
-    h1(&mut d, "2. Bundesgericht zum Kanton Zug: IT-Dokumente (März 2026)");
-    let (bote, zz, zp) = (u!(U_ZUG_BOTE), u!(U_ZUG_ZZ), u!(U_ZUG_ZP));
+    h1(&mut d, "2. BGer 1C_136/2025 vom 2. Februar 2026 (Kanton Zug, IT-Dokumente)");
+    let (zw, bote, zz, zp) = (u!(U_ZUG_ZW), u!(U_ZUG_BOTE), u!(U_ZUG_ZZ), u!(U_ZUG_ZP));
     p(&mut d, vec![
-        t("Quellen: "),
-        lk("Zuger Woche, 11.03.2026", zw),
-        t("; "),
-        lk("Bote der Urschweiz, 04.03.2026", bote),
-        t("; "),
+        t("Volltext: "),
+        lk("Urteil 1C_136/2025 vom 2. Februar 2026, I. öffentlich-rechtliche Abteilung", bz),
+        t(" (Haag, Kneubühler, Müller). Vorinstanz: Beschluss der Präsidentin des Verwaltungsgerichts \
+           des Kantons Zug vom 31. Januar 2025 (K 2024 9). Medienberichte: "),
+        lk("Zuger Woche", zw),
+        t(", "),
+        lk("Bote der Urschweiz", bote),
+        t(", "),
         lk("Zuger Zeitung", zz),
-        t("; "),
+        t(", "),
         lk("zentralplus", zp),
         t("."),
     ]);
     bullet(&mut d, vec![t(
-        "Sachverhalt: Die Zuger Partei «Parat» verlangte gestützt auf das Öffentlichkeitsprinzip \
-         Einsicht in «Unterlagen über IT Systeme und deren Datenbearbeitung in der Zuger Verwaltung».",
+        "Sachverhalt: Die Partei PARAT verlangte am 22. September 2024 vom Verwaltungsgericht Zug \
+         Zugang zu den amtlichen Dokumenten über die eingesetzten Softwareprodukte und Dienstleister, \
+         die Standorte der Server und Cloud-Infrastruktur, die Administration der Geräte, die \
+         vertraglichen Zusicherungen, die Evaluation bei der Beschaffung und die Richtlinien zur \
+         Datenbearbeitung (Zuger Öffentlichkeitsgesetz, BGS 158.1).",
     )]);
     bullet(&mut d, vec![t(
-        "Vorinstanz: Das Verwaltungsgericht Zug verweigerte den Zugang weitgehend mit Verweis auf \
-         die IT-Sicherheit. Laut Bericht stufte es «alle Dokumente als potenziell sicherheitsrelevant \
-         ein, ohne dies im Detail zu begründen».",
+        "Vorinstanz: beantwortete einige Fragen knapp (kantonale Rechenzentren, Betrieb durch das \
+         Amt für Informatik und Organisation mit ISO-27001-zertifiziertem ISMS) und verweigerte \
+         jede Einsicht in Dokumente – Offenlegung könne die Datensicherheit kompromittieren, \
+         Hackerangriffe und Spear-Phishing begünstigen; selbst ein eingeschränkter Zugang sei \
+         nicht möglich (E. 4.1).",
     )]);
     bullet(&mut d, vec![t(
-        "Bundesgericht: Gutheissung der Beschwerde, Aufhebung und Rückweisung. Sicherheitsargumente \
-         seien im Einzelfall sorgfältig zu prüfen; eine pauschale Geheimhaltung sei «rechtlich \
-         problematisch». Behörden müssen konkret darlegen, weshalb eine Herausgabe schaden könnte.",
+        "E. 6.3: «Aus der Begründung geht jedoch in keiner Weise hervor, auf welche Dokumente sich \
+         die Vorinstanz genau bezieht, ob es sich um physische oder elektronische Dokumente handelt, \
+         ob diese sich überhaupt im Besitz der Vorinstanz befinden und ob bzw. inwiefern alle Teile \
+         aller betroffenen Dokumente schutzwürdig sind, inkl. die Benennung dieser Dokumente.»",
     )]);
     bullet(&mut d, vec![t(
-        "Bezug zum Rekurs: engster Schweizer Präzedenzfall – IT-Dokumentation einer kantonalen \
-         Verwaltung, pauschale Sicherheitsbegründung verworfen.",
+        "E. 6.3: «Aus dem Umstand, dass die Vorinstanz einige Fragen der Beschwerdeführerin \
+         beantwortet hat, ist abzuleiten, dass zumindest einige der betroffenen Dokumente \
+         Informationen enthalten, die nicht schutzwürdig sind.» Die Behörde wäre verpflichtet \
+         gewesen, diese Teile offenzulegen oder genauer darzulegen, weshalb auch sie nicht \
+         zugänglich sind (§ 9 Abs. 2 Öffentlichkeitsgesetz ZG: Einschränkung nur des schutzwürdigen Teils).",
     )]);
     bullet(&mut d, vec![t(
-        "Offen: Aktenzeichen (1C_…) und Urteilsdatum werden in keinem Artikel genannt. Die Zitate \
-         sind Formulierungen der Journalisten, nicht des Gerichts. Das Urteil ist in der \
-         Entscheiddatenbank des Bundesgerichts zu identifizieren und im Volltext zu lesen.",
+        "E. 6.3: Die «sehr allgemein gehaltene Begründung» erlaube nicht zu prüfen, «ob tatsächlich \
+         überwiegende öffentliche Interessen an der Geheimhaltung bestehen, oder ob die Vorinstanz \
+         diese nur vorschiebt». E. 6.4: Verletzung der Begründungspflicht (Art. 112 Abs. 1 BGG, \
+         Art. 29 Abs. 2 BV).",
+    )]);
+    bullet(&mut d, vec![t(
+        "Dispositiv: Beschwerde gutgeheissen, soweit darauf einzutreten ist; Beschluss aufgehoben, \
+         Rückweisung zu neuem Entscheid; keine Kosten.",
+    )]);
+    h2(&mut d, "Tragweite – genau lesen");
+    bullet(&mut d, vec![t(
+        "Das Bundesgericht hat nicht entschieden, dass IT-Dokumente herauszugeben sind. Es hat den \
+         Entscheid wegen ungenügender Begründung aufgehoben (Art. 112 Abs. 3 BGG) und die Frage, ob \
+         die Zugangsverweigerung willkürlich ist, offen gelassen. Die in den Medien zitierte Wendung \
+         «rechtlich problematisch» steht nicht im Urteil.",
+    )]);
+    bullet(&mut d, vec![t(
+        "Auf die Rüge nach Art. 16 Abs. 3 BV (Informationsfreiheit) trat das Gericht mangels \
+         Substantiierung nicht ein (E. 5); es hält an 1C_462/2018 fest, wonach Art. 16 Abs. 3 BV \
+         keine über das Öffentlichkeitsgesetz hinausgehenden Zugangsrechte gibt. Für die Replik: \
+         Art. 16 BV nur mit Auseinandersetzung mit dieser Rechtsprechung anrufen, sonst auf IDG stützen.",
+    )]);
+    bullet(&mut d, vec![t(
+        "Bezug zum Rekurs: Die Verfügung vom 23. Oktober 2026 ist am Massstab von E. 6.3 zu messen – \
+         welche Dokumente genau, welche Teile schutzwürdig, weshalb kein teilweiser Zugang. Und wie im \
+         Zuger Fall die beantworteten Fragen zeigt beim Steueramt die Abgabe an \
+         Treuhand-Softwarelieferanten, dass die Dokumentation zumindest teilweise nicht schutzwürdig ist.",
     )]);
 
     // ---- 3. Weitere Schweizer Entscheide --------------------------------
@@ -295,7 +332,7 @@ fn findings() -> Doc {
         "Das Sicherheitsargument trägt nicht: Eine Bundesbehörde und die EU-Kommission veröffentlichen \
          für Gesundheitsdaten vollständige M2M-Spezifikationen. Die Sicherheit liegt bei \
          Authentifizierung, Zertifikaten und Rate-Limits, nicht in der Geheimhaltung der Dokumentation. \
-         Das deckt sich mit dem Zuger Bundesgerichtsentscheid.",
+         Vgl. BGer 1C_136/2025 E. 6.3: Eine allgemein gehaltene Sicherheitsbegründung genügt nicht.",
     )]);
     bullet(&mut d, vec![t(
         "Im Steuerbereich selbst sind die Schemas eCH-0119 (Steuererklärung natürliche Personen) und \
@@ -373,7 +410,7 @@ fn findings() -> Doc {
     for (i, s) in [
         vec![t("Der API-Beschrieb ist eine Information nach § 3 Abs. 2 und § 20 IDG ("), lk("VB.2021.00858", v858), t(").")],
         vec![t("Es gilt eine Vermutung für den Zugang; die Beweislast trägt das Steueramt ("), lk("BVGer A-4595/2020", b4595), t(").")],
-        vec![t("Geheimhaltungsgründe sind konkret zu begründen, pauschale Sicherheits- oder Geheimnisargumente genügen nicht ("), lk("BGer, Zug 2026", zw), t("; "), lk("VB.2019.00603", v603), t(").")],
+        vec![t("Geheimhaltungsgründe sind konkret zu begründen, pauschale Sicherheits- oder Geheimnisargumente genügen nicht ("), lk("BGer 1C_136/2025", bz), t("; "), lk("VB.2019.00603", v603), t(").")],
         vec![t("Widerspruch: «vertraulich», aber gegen Business-Plan an Treuhand-Softwarelieferanten ausgehändigt (Rekurs, Abschnitt 3).")],
         vec![t("Vergleich: "), lk("swissdamed", smt), t(" und "), lk("EUDAMED", eut), t(" veröffentlichen ihre M2M-Schnittstellen ohne Login – ohne Sicherheitsproblem.")],
         vec![t("Rechtsvergleich: "), lk("TA Paris 2016", tap), t(" und "), lk("CdS 2270/2019", cds), t(".")],
@@ -388,7 +425,7 @@ fn findings() -> Doc {
 
     // ---- 9. Offene Punkte -----------------------------------------------
     h1(&mut d, "9. Offene Punkte vor dem Einreichen");
-    bullet(&mut d, vec![t("Aktenzeichen und Datum des Zuger Bundesgerichtsurteils ermitteln, Volltext lesen und wörtlich zitieren.")]);
+    bullet(&mut d, vec![t("Prüfen, ob die Zuger Vorinstanz nach der Rückweisung (1C_136/2025) neu entschieden hat.")]);
     bullet(&mut d, vec![t("Alle Schweizer Entscheide im Volltext auf die zitierten Erwägungen prüfen.")]);
     bullet(&mut d, vec![t("TA Paris 2016 und CdS 2270/2019 im Original prüfen (bisher Auszug bzw. Sekundärquellen).")]);
     bullet(&mut d, vec![t("swissdamed- und EUDAMED-Seiten zum Einreichungsdatum als Beilage sichern (PDF-Ausdruck mit Datum).")]);
@@ -398,6 +435,7 @@ fn findings() -> Doc {
     d.rule();
     d.para(10.5, 14.0, 6.0, true, 0.0, vec![t("Quellen")]);
     let quellen = [
+        ("BGer 1C_136/2025 vom 2. Februar 2026 (Kanton Zug, IT-Dokumente) – Volltext", U_BGER_ZUG),
         ("BGer zum Kanton Zug – Zuger Woche, 11.03.2026", U_ZUG_ZW),
         ("BGer zum Kanton Zug – Bote der Urschweiz, 04.03.2026", U_ZUG_BOTE),
         ("BGer zum Kanton Zug – Zuger Zeitung", U_ZUG_ZZ),

@@ -412,7 +412,7 @@ in `docs/rekurs/`. Dazu erzeugt `examples/rekurs_findings.rs` eine **Recherche-N
 als PDF** (alle Urteile und Quellen im Text verlinkt):
 
 - Rechtsprechung zum Öffentlichkeitsprinzip bei IT-Dokumenten — Bundesgericht zum
-  Kanton Zug (pauschale Sicherheitsbegründung verworfen, März 2026), BGE 142 II 313,
+  Kanton Zug (1C_136/2025 vom 2. Februar 2026: allgemein gehaltene Sicherheitsbegründung genügt nicht), BGE 142 II 313,
   BVGer A-4595/2020, VGr ZH VB.2019.00603 / VB.2021.00858 / VB.2024.00043, sowie die
   zu erwartenden Gegenargumente (VB.2022.00142, Steuergeheimnis);
 - Vergleich mit **swissdamed** (Swissmedic) und **EUDAMED** (EU-Kommission), die ihre

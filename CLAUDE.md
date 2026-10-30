@@ -263,7 +263,7 @@ is safe to commit; `cargo run --example idg_brief [-- out.pdf]` writes `~/idg-zu
 The PDF typesetting (line breaker, AFM widths, WinAnsi, `/Link` annotations, `save`) lives in
 `examples/common/linkpdf.rs`, pulled into each example via `#[path]` (a directory without `main.rs`
 is not an example target). `examples/rekurs_findings.rs` uses it for the **Rekurs D10/2026 research
-note** — case law on access to IT documentation (BGer Zug 2026, BGE 142 II 313, VGr ZH IDG cases,
+note** — case law on access to IT documentation (BGer 1C_136/2025 Zug, BGE 142 II 313, VGr ZH IDG cases,
 TA Paris 2016, CdS 2270/2019) and the swissdamed/EUDAMED comparison (public M2M API docs) — with
 every decision linked; it writes `docs/rekurs/Recherche_Rechtsprechung_API-Beschrieb_2026-10-30.pdf`
 (public sources only; `*.pdf` is gitignored, so add it with `git add -f`).
