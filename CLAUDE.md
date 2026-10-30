@@ -32,6 +32,7 @@ cargo run --features ebics -- --ebics-hpb   # EBICS: Bankschlüssel holen, gegen
 cargo run --features ebics -- --ebics-z53 [--von JJJJ-MM-TT --bis JJJJ-MM-TT]  # EBICS: camt.053 (Z53) → camt/<IBAN>/
 cargo run -- --from-camt camt/ [--konto IBAN]  # camt.053 auswerten (Datei oder Ordner inkl. Unterordner), je Konto getrennt
 cargo run --example idg_brief  # IDG-Zugangsgesuch (Öffentlichkeitsprinzip) → ~/idg-zugangsgesuch.pdf (klickbare Gesetzeslinks)
+cargo run --example rekurs_findings  # Recherche Rekurs D10/2026 (Urteile + swissdamed/EUDAMED-Vergleich, verlinkt) → docs/rekurs/
 cargo test --features ebics # zusätzlich: EBICS-Requests gegen schema/ebics/ (H004-XSDs), Schlüsselablage, INI-Brief, HPB/Z53 gegen simulierte Bank
 cargo test                  # run tests (incl. xmllint validation of NP eCH-0119 + JP eCH-0276 + MWST eCH-0217, eCH-0196 parse, PDF roundtrip, SHA-256)
 ```
@@ -258,6 +259,14 @@ review; the e-filing legal basis is §§ 109c/109d/133 StG + Verordnung LS 631.1
 timeline/structure — for commercial representatives § 12 Abs. 2 even states «keine weiteren
 Abklärungen» are made. The letter body is **placeholder-only** (no personal/company names), so it
 is safe to commit; `cargo run --example idg_brief [-- out.pdf]` writes `~/idg-zugangsgesuch.pdf`.
+
+The PDF typesetting (line breaker, AFM widths, WinAnsi, `/Link` annotations, `save`) lives in
+`examples/common/linkpdf.rs`, pulled into each example via `#[path]` (a directory without `main.rs`
+is not an example target). `examples/rekurs_findings.rs` uses it for the **Rekurs D10/2026 research
+note** — case law on access to IT documentation (BGer Zug 2026, BGE 142 II 313, VGr ZH IDG cases,
+TA Paris 2016, CdS 2270/2019) and the swissdamed/EUDAMED comparison (public M2M API docs) — with
+every decision linked; it writes `docs/rekurs/Recherche_Rechtsprechung_API-Beschrieb_2026-10-30.pdf`
+(public sources only; `*.pdf` is gitignored, so add it with `git add -f`).
 
 ### Namespaces — the rule that makes it validate
 

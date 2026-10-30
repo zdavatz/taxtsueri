@@ -1,0 +1,2425 @@
+%PDF-1.5
+%ª≠¿ﬁ
+1 0 obj
+<</Type/Pages/Kids[17 0 R 36 0 R 51 0 R 74 0 R 102 0 R]/Count 5>>
+endobj
+2 0 obj
+<</Type/Font/Subtype/Type1/BaseFont/Helvetica/Encoding/WinAnsiEncoding>>
+endobj
+3 0 obj
+<</Type/Font/Subtype/Type1/BaseFont/Helvetica-Bold/Encoding/WinAnsiEncoding>>
+endobj
+4 0 obj
+<</Font<</F1 2 0 R/F2 3 0 R>>>>
+endobj
+5 0 obj
+<</Length 6369>>stream
+0 0 0 rg
+BT
+/F2 15 Tf
+62 776 Td
+(Zugang zum API-Beschrieb f¸r Steuereinreichungen) Tj
+ET
+0 0 0 rg
+BT
+/F1 11 Tf
+62 752 Td
+(Rechtsprechung zum ÷ffentlichkeitsprinzip bei IT-Dokumenten und Vergleich mit swissdamed / ) Tj
+ET
+0 0 0 rg
+BT
+/F1 11 Tf
+62 737 Td
+(EUDAMED) Tj
+ET
+0 0 0 rg
+BT
+/F1 9.5 Tf
+62 718 Td
+(Recherche vom 30. Oktober 2026 zum Rekurs D10/2026 (Finanzdirektion des Kantons Z¸rich) ñ) Tj
+ET
+0 0 0 rg
+BT
+/F1 9.5 Tf
+62 705 Td
+(Arbeitsgrundlage f¸r die Replik) Tj
+ET
+0.6 0.6 0.6 rg
+62 684 471 0.6 re
+f
+0 0 0 rg
+BT
+/F1 9 Tf
+62 674 Td
+(Hinweis zur Belastbarkeit: Die Fundstellen wurden ¸ber Websuche, Entscheid-Ausz¸ge und Sekund‰rquellen) Tj
+ET
+0 0 0 rg
+BT
+/F1 9 Tf
+62 661.5 Td
+((Medienberichte, Fachartikel) erschlossen. Vor dem Zitieren in der Replik ist jeder Entscheid im Volltext zu pr¸fen. Wo) Tj
+ET
+0 0 0 rg
+BT
+/F1 9 Tf
+62 649 Td
+(nur eine Sekund‰rquelle vorliegt, ist das ausdr¸cklich vermerkt.) Tj
+ET
+0 0 0 rg
+BT
+/F2 12.5 Tf
+62 622.5 Td
+(1. Ergebnis in K¸rze) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+62 599.5 Td
+(Ein Urteil, das ausdr¸cklich festh‰lt, der API- oder Schnittstellenbeschrieb einer Steuerverwaltung sei) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+62 585.5 Td
+(ˆffentlich zug‰nglich zu machen, wurde weder in der Schweiz noch im Ausland gefunden. Der Rekurs) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+62 571.5 Td
+(D10/2026 betrifft insofern eine offene Rechtsfrage. Tragf‰hig sind:) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 550.5 Td
+(ï  ein Bundesgerichtsentscheid vom M‰rz 2026 zum Kanton Zug, der eine pauschale) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 536.5 Td
+(Sicherheitsbegr¸ndung f¸r die Geheimhaltung von IT-Dokumenten verwirft \() Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+407.69 536.5 Td
+(Zuger Woche) Tj
+ET
+0.043 0.373 0.647 rg
+407.69 535.1 60.02 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+467.71 536.5 Td
+(\);) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 517.5 Td
+(ï  die gefestigte Rechtsprechung zur Zugangsvermutung, zur Beweislast der Behˆrde und zur konkreten) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 503.5 Td
+(Begr¸ndungspflicht bei Gesch‰ftsgeheimnissen;) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 484.5 Td
+(ï  der Vergleich mit ) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+158.86 484.5 Td
+(swissdamed (Swissmedic)) Tj
+ET
+0.043 0.373 0.647 rg
+158.86 483.1 117.23 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+276.09 484.5 Td
+( und ) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+298.33 484.5 Td
+(EUDAMED (EU-Kommission)) Tj
+ET
+0.043 0.373 0.647 rg
+298.33 483.1 131.11 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+429.44 484.5 Td
+(: Dort werden die) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 470.5 Td
+(Maschinenschnittstellen f¸r eine gesetzliche Registrierungspflicht vollst‰ndig und ohne Login) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 456.5 Td
+(verˆffentlicht;) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 437.5 Td
+(ï  ausl‰ndische Entscheide zum Zugang zu Verwaltungssoftware, namentlich ) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+415.65 437.5 Td
+(TA Paris vom 10. M‰rz) Tj
+ET
+0.043 0.373 0.647 rg
+415.65 436.1 101.69 0.5 re
+f
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+72 423.5 Td
+(2016) Tj
+ET
+0.043 0.373 0.647 rg
+72 422.1 22.24 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+94.24 423.5 Td
+( (Quellcode des Steuerrechners) und ) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+260.98 423.5 Td
+(Consiglio di Stato Nr. 2270/2019) Tj
+ET
+0.043 0.373 0.647 rg
+260.98 422.1 143.96 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+404.94 423.5 Td
+(.) Tj
+ET
+0 0 0 rg
+BT
+/F2 12.5 Tf
+62 398.5 Td
+(2. Bundesgericht zum Kanton Zug: IT-Dokumente (M‰rz 2026)) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+62 375.5 Td
+(Quellen: ) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+102.02 375.5 Td
+(Zuger Woche, 11.03.2026) Tj
+ET
+0.043 0.373 0.647 rg
+102.02 374.1 115.62 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+217.64 375.5 Td
+(; ) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+223.2 375.5 Td
+(Bote der Urschweiz, 04.03.2026) Tj
+ET
+0.043 0.373 0.647 rg
+223.2 374.1 142.29 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+365.49 375.5 Td
+(; ) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+371.05 375.5 Td
+(Zuger Zeitung) Tj
+ET
+0.043 0.373 0.647 rg
+371.05 374.1 62.25 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+433.3 375.5 Td
+(; ) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+438.86 375.5 Td
+(zentralplus) Tj
+ET
+0.043 0.373 0.647 rg
+438.86 374.1 48.35 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+487.21 375.5 Td
+(.) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 354.5 Td
+(ï  Sachverhalt: Die Zuger Partei ´Paratª verlangte gest¸tzt auf das ÷ffentlichkeitsprinzip Einsicht in) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 340.5 Td
+(´Unterlagen ¸ber IT Systeme und deren Datenbearbeitung in der Zuger Verwaltungª.) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 321.5 Td
+(ï  Vorinstanz: Das Verwaltungsgericht Zug verweigerte den Zugang weitgehend mit Verweis auf die) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 307.5 Td
+(IT-Sicherheit. Laut Bericht stufte es ´alle Dokumente als potenziell sicherheitsrelevant ein, ohne dies im) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 293.5 Td
+(Detail zu begr¸ndenª.) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 274.5 Td
+(ï  Bundesgericht: Gutheissung der Beschwerde, Aufhebung und R¸ckweisung. Sicherheitsargumente) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 260.5 Td
+(seien im Einzelfall sorgf‰ltig zu pr¸fen; eine pauschale Geheimhaltung sei ´rechtlich problematischª.) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 246.5 Td
+(Behˆrden m¸ssen konkret darlegen, weshalb eine Herausgabe schaden kˆnnte.) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 227.5 Td
+(ï  Bezug zum Rekurs: engster Schweizer Pr‰zedenzfall ñ IT-Dokumentation einer kantonalen) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 213.5 Td
+(Verwaltung, pauschale Sicherheitsbegr¸ndung verworfen.) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 194.5 Td
+(ï  Offen: Aktenzeichen (1C_Ö) und Urteilsdatum werden in keinem Artikel genannt. Die Zitate sind) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 180.5 Td
+(Formulierungen der Journalisten, nicht des Gerichts. Das Urteil ist in der Entscheiddatenbank des) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 166.5 Td
+(Bundesgerichts zu identifizieren und im Volltext zu lesen.) Tj
+ET
+0 0 0 rg
+BT
+/F2 12.5 Tf
+62 141.5 Td
+(3. Weitere Schweizer Entscheide) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 118.5 Td
+(ï  ) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+81.06 118.5 Td
+(BGE 142 II 313 (1C_296/2015)) Tj
+ET
+0.043 0.373 0.647 rg
+81.06 117.1 137.86 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+218.92 118.5 Td
+( ñ ESTV-Fall: Auch gegen¸ber der Steuerverwaltung besteht ein) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 104.5 Td
+(subjektiver Zugangsanspruch; Ausnahmen sind im Einzelfall zu pr¸fen. Nutzen: Steuerbehˆrden sind) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 90.5 Td
+(nicht ausgenommen.) Tj
+ET
+0 0 0 rg
+BT
+/F1 8 Tf
+496.976 34 Td
+(Seite 1 / 5) Tj
+ET
+endstream 
+endobj
+6 0 obj
+<</Type/Annot/Subtype/Link/Rect[407.69 534.3 467.71 544.5]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.zugerpresse.ch/zuger-news/detail/transparenz-statt-pauschalgeheimnis)>>>>
+endobj
+7 0 obj
+<</Type/Annot/Subtype/Link/Rect[158.86 482.3 276.09 492.5]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.swissmedic.ch/swissmedic/de/home/medizinprodukte/medizinprodukte-datenbank/technische-dokumentation.html)>>>>
+endobj
+8 0 obj
+<</Type/Annot/Subtype/Link/Rect[298.33 482.3 429.44 492.5]/Border[0 0 0]/H/N/A<</S/URI/URI(https://webgate.ec.europa.eu/eudamed-help/en/documentation/technical-documentation.html)>>>>
+endobj
+9 0 obj
+<</Type/Annot/Subtype/Link/Rect[415.65 435.3 517.34 445.5]/Border[0 0 0]/H/N/A<</S/URI/URI(https://lexing.law/wp-content/uploads/2014/05/33796487.pdf)>>>>
+endobj
+10 0 obj
+<</Type/Annot/Subtype/Link/Rect[72 421.3 94.24 431.5]/Border[0 0 0]/H/N/A<</S/URI/URI(https://lexing.law/wp-content/uploads/2014/05/33796487.pdf)>>>>
+endobj
+11 0 obj
+<</Type/Annot/Subtype/Link/Rect[260.98 421.3 404.94 431.5]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.agendadigitale.eu/cultura-digitale/laccesso-allalgoritmo-secondo-il-giudice-amministrativo/)>>>>
+endobj
+12 0 obj
+<</Type/Annot/Subtype/Link/Rect[102.02 373.3 217.64 383.5]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.zugerpresse.ch/zuger-news/detail/transparenz-statt-pauschalgeheimnis)>>>>
+endobj
+13 0 obj
+<</Type/Annot/Subtype/Link/Rect[223.2 373.3 365.49 383.5]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.bote.ch/nachrichten/zentralschweiz/bundesgericht-zu-geheimhaltung-von-it-dokumenten-art-1691625)>>>>
+endobj
+14 0 obj
+<</Type/Annot/Subtype/Link/Rect[371.05 373.3 433.3 383.5]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.zugerzeitung.ch/zentralschweiz/zug/bundesgericht-zu-geheimhaltung-von-it-dokumenten-ld.4128834)>>>>
+endobj
+15 0 obj
+<</Type/Annot/Subtype/Link/Rect[438.86 373.3 487.21 383.5]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.zentralplus.ch/justiz/knatsch-um-gerichts-it-bundesgericht-ruegt-zuger-behoerde-2847864/)>>>>
+endobj
+16 0 obj
+<</Type/Annot/Subtype/Link/Rect[81.06 116.3 218.92 126.5]/Border[0 0 0]/H/N/A<</S/URI/URI(http://relevancy.bger.ch/php/clir/http/index.php?highlight_docid=atf%3A%2F%2F142-II-313%3Ade&lang=de&type=show_document)>>>>
+endobj
+17 0 obj
+<</Type/Page/Parent 1 0 R/MediaBox[0 0 595 842]/Resources 4 0 R/Contents 5 0 R/Annots[6 0 R 7 0 R 8 0 R 9 0 R 10 0 R 11 0 R 12 0 R 13 0 R 14 0 R 15 0 R 16 0 R]>>
+endobj
+18 0 obj
+<</Length 7214>>stream
+0 0 0 rg
+BT
+/F1 10 Tf
+72 776 Td
+(ï  ) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+81.06 776 Td
+(BVGer A-4595/2020) Tj
+ET
+0.043 0.373 0.647 rg
+81.06 774.6 90.05 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+171.11 776 Td
+( ñ widerlegbare Vermutung zugunsten des Zugangs. Nutzen: Die Beweislast f¸r) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 762 Td
+(einen Ausnahmegrund tr‰gt das Steueramt.) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 743 Td
+(ï  BGer 1C_509/2016 vom 9. Februar 2017, zitiert in ) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+305.61 743 Td
+(BVGer A-1432/2016) Tj
+ET
+0.043 0.373 0.647 rg
+305.61 741.6 90.05 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+395.66 743 Td
+( ñ die Behˆrde muss ´konkret ) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 729 Td
+(und im Detailª darlegen, inwiefern ein Gesch‰ftsgeheimnis vorliegt. Nutzen: gegen die pauschale) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 715 Td
+(Einstufung ´vertraulichª.) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 696 Td
+(ï  ) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+81.06 696 Td
+(VGr ZH VB.2019.00603) Tj
+ET
+0.043 0.373 0.647 rg
+81.06 694.6 105.61 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+186.67 696 Td
+( ñ ein pauschaler Hinweis auf ein Geheimnis gen¸gt nicht; die Partei muss) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 682 Td
+(konkret begr¸nden. Nutzen: dasselbe Argument, vom Z¸rcher Verwaltungsgericht.) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 663 Td
+(ï  ) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+81.06 663 Td
+(VGr ZH VB.2021.00858) Tj
+ET
+0.043 0.373 0.647 rg
+81.06 661.6 105.61 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+186.67 663 Td
+( ñ ß 3 Abs. 2 IDG: Aufgezeichnete Informationen zur Erf¸llung einer) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 649 Td
+(ˆffentlichen Aufgabe sind ´Informationª, unabh‰ngig von Form und Datentr‰ger. Nutzen: Der) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 635 Td
+(API-Beschrieb ist eine Information im Sinne des IDG.) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 616 Td
+(ï  ) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+81.06 616 Td
+(VGr ZH VB.2024.00043) Tj
+ET
+0.043 0.373 0.647 rg
+81.06 614.6 105.61 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+186.67 616 Td
+( ñ der Zugang nach ß 20 IDG setzt kein besonderes Interesse voraus. Nutzen:) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 602 Td
+(Ein Business-Plan darf keine Voraussetzung sein.) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 583 Td
+(ï  ) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+81.06 583 Td
+(BVGer A-7405/2014) Tj
+ET
+0.043 0.373 0.647 rg
+81.06 581.6 90.05 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+171.11 583 Td
+( ñ unterscheidet die Datenbank als technisches System von den darin) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 569 Td
+(enthaltenen Daten. Nutzen: Verlangt ist die Beschreibung der Schnittstelle, nicht der Inhalt einer) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 555 Td
+(Datenbank.) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 536 Td
+(ï  ) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+81.06 536 Td
+(Bundeskanzlei, FAQ Open-Source-Software) Tj
+ET
+0.043 0.373 0.647 rg
+81.06 534.6 196.19 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+277.25 536 Td
+( ñ Quellcode eines Bundesamts f‰llt unter das BG÷;) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 522 Td
+(Herausgabe, sofern keine Ausnahme nach Art. 7 BG÷ greift. \(Verwaltungsauffassung, kein) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 508 Td
+(Gerichtsentscheid.\)) Tj
+ET
+0 0 0 rg
+BT
+/F2 12.5 Tf
+62 483 Td
+(4. Zu erwartende Gegenargumente) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 460 Td
+(ï  ) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+81.06 460 Td
+(VGr ZH VB.2022.00142) Tj
+ET
+0.043 0.373 0.647 rg
+81.06 458.6 105.61 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+186.67 460 Td
+( (Kantonspolizei): Zugang zu ´eingesetzten Mittelnª, auch technischen, nach ) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 446 Td
+(ß 23 Abs. 2 IDG verweigert. Abgrenzung: Dort ging es um Ermittlungsmittel; hier um eine) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 432 Td
+(Einreichungsschnittstelle, die gerade f¸r B¸rgerinnen, B¸rger und Software bestimmt ist.) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 413 Td
+(ï  Steuergeheimnis \() Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+162.2 413 Td
+(BGer 1C_272/2022, Besprechung) Tj
+ET
+0.043 0.373 0.647 rg
+162.2 411.6 150.64 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+312.84 413 Td
+(\): geht dem ÷ffentlichkeitsprinzip vor, sch¸tzt) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 399 Td
+(aber Daten von Steuerpflichtigen ñ nicht eine technische Spezifikation, die keine Steuerdaten enth‰lt.) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 380 Td
+(ï  ) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+81.06 380 Td
+(Kanton Luzern, Merkblatt ÷ffentlichkeitsprinzip) Tj
+ET
+0.043 0.373 0.647 rg
+81.06 378.6 206.75 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+287.81 380 Td
+(: kein Anspruch auf Datenbankinhalte, keine) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 366 Td
+(Herausgabe von IT-Risikoanalysen. Trifft den Antrag nicht: Verlangt sind weder Datenbankinhalte noch ) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 352 Td
+(Risikoanalysen.) Tj
+ET
+0 0 0 rg
+BT
+/F2 12.5 Tf
+62 327 Td
+(5. Vergleich: swissdamed und EUDAMED) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+62 304 Td
+(Die Lage ist dieselbe wie beim Steueramt: Private m¸ssen gesetzlich verpflichtet regulierte Daten) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+62 290 Td
+(maschinell bei einer Behˆrde einreichen ñ bei Medizinprodukten die ) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+364.91 290 Td
+(UDI-Registrierung nach Art. 17) Tj
+ET
+0.043 0.373 0.647 rg
+364.91 288.6 136.71 0.5 re
+f
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+62 276 Td
+(MepV) Tj
+ET
+0.043 0.373 0.647 rg
+62 274.6 26.12 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+88.12 276 Td
+(, verpflichtend seit 1. Juli 2026.) Tj
+ET
+0 0 0 rg
+BT
+/F2 10.5 Tf
+62 253 Td
+(swissdamed (Swissmedic)) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 234 Td
+(ï  Auf der Seite ´) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+147.21 234 Td
+(Technische Dokumentation) Tj
+ET
+0.043 0.373 0.647 rg
+147.21 232.6 121.16 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+268.37 234 Td
+(ª ohne Login: ) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+331.75 234 Td
+(BW630_40_810e Machine-to-Machine REST) Tj
+ET
+0.043 0.373 0.647 rg
+331.75 232.6 200.08 0.5 re
+f
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+72 220 Td
+(API Documentation) Tj
+ET
+0.043 0.373 0.647 rg
+72 218.6 86.15 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+158.15 220 Td
+( (02.09.2026), BW630_40_002e Business Rules (02.09.2026), BW630_40_001e) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 206 Td
+(UDI Data Dictionary (XLSX, 19.06.2026) sowie Verweis auf das EUDAMED-XSD v3.0.30 f¸r den) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 192 Td
+(XML-Upload.) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 173 Td
+(ï  OpenAPI-Spezifikation direkt auf dem Server (/v3/api-docs/udi-m2m-v1) und ˆffentliche) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 159 Td
+(Testumgebung ´Playgroundª seit M‰rz 2026 \(laut API-Dokument und ) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+383.81 159 Td
+(Walder Wyss, 20.02.2026) Tj
+ET
+0.043 0.373 0.647 rg
+383.81 157.6 114.49 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+498.3 159 Td
+(\).) Tj
+ET
+0 0 0 rg
+BT
+/F2 10.5 Tf
+62 138 Td
+(EUDAMED (EU-Kommission)) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 119 Td
+(ï  Auf der Seite ´) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+147.21 119 Td
+(Technical documentation) Tj
+ET
+0.043 0.373 0.647 rg
+147.21 117.6 111.16 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+258.37 119 Td
+(ª ohne Login (Plattform v2.27.0, 24.07.2026): XSD) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 105 Td
+(schemas.zip (v3.0.30), XML-Beispiele f¸r Behˆrden, Wirtschaftsakteure und Benannte Stellen, eine) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 91 Td
+(Swagger/OpenAPI-Datei (.yaml), Data Dictionaries, Business Rules und Service-Definitionen.) Tj
+ET
+0 0 0 rg
+BT
+/F1 8 Tf
+496.976 34 Td
+(Seite 2 / 5) Tj
+ET
+endstream 
+endobj
+19 0 obj
+<</Type/Annot/Subtype/Link/Rect[81.06 773.8 171.11 784]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.swissrights.ch/bvge/2021-A-4595/2020.php)>>>>
+endobj
+20 0 obj
+<</Type/Annot/Subtype/Link/Rect[305.61 740.8 395.66 751]/Border[0 0 0]/H/N/A<</S/URI/URI(https://entscheide.weblaw.ch/cache.php?link=05-04-2017-A-1432-2016)>>>>
+endobj
+21 0 obj
+<</Type/Annot/Subtype/Link/Rect[81.06 693.8 186.67 704]/Border[0 0 0]/H/N/A<</S/URI/URI(https://entscheidsuche.ch/docs/ZH_Verwaltungsgericht/ZH_VG_001_-VB-2019-00603_2019-12-19.html)>>>>
+endobj
+22 0 obj
+<</Type/Annot/Subtype/Link/Rect[81.06 660.8 186.67 671]/Border[0 0 0]/H/N/A<</S/URI/URI(https://entscheidsuche.ch/dok/ZH_Verwaltungsgericht/ZH_VG_001_-VB-2021-00858_2022-06-30.html)>>>>
+endobj
+23 0 obj
+<</Type/Annot/Subtype/Link/Rect[81.06 613.8 186.67 624]/Border[0 0 0]/H/N/A<</S/URI/URI(https://entscheide.weblaw.ch/dumppdf.php?link=ZH-VG-2024-12-31_VB.2024.00043)>>>>
+endobj
+24 0 obj
+<</Type/Annot/Subtype/Link/Rect[81.06 580.8 171.11 591]/Border[0 0 0]/H/N/A<</S/URI/URI(https://entscheide.weblaw.ch/cache.php?link=23-11-2015-A-7405-2014)>>>>
+endobj
+25 0 obj
+<</Type/Annot/Subtype/Link/Rect[81.06 533.8 277.25 544]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.bk.admin.ch/dam/de/sd-web/OmKVvt8e0eVp/Em002-6%20FAQ-OSS.pdf)>>>>
+endobj
+26 0 obj
+<</Type/Annot/Subtype/Link/Rect[81.06 457.8 186.67 468]/Border[0 0 0]/H/N/A<</S/URI/URI(https://entscheidsuche.ch/docs/ZH_Verwaltungsgericht/ZH_VG_001_-VB-2022-00142_2023-03-30.html)>>>>
+endobj
+27 0 obj
+<</Type/Annot/Subtype/Link/Rect[162.2 410.8 312.84 421]/Border[0 0 0]/H/N/A<</S/URI/URI(https://cdbf.ch/de/1323/)>>>>
+endobj
+28 0 obj
+<</Type/Annot/Subtype/Link/Rect[81.06 377.8 287.81 388]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.lu.ch/verwaltung/JSD/JSD_Projekte_und_Themen/Oeffentlichkeitsprinzip)>>>>
+endobj
+29 0 obj
+<</Type/Annot/Subtype/Link/Rect[364.91 287.8 501.62 298]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.swissmedic.ch/swissmedic/de/home/medizinprodukte/medizinprodukte-datenbank/udi-eindeutige-produktidentifikation.html)>>>>
+endobj
+30 0 obj
+<</Type/Annot/Subtype/Link/Rect[62 273.8 88.12 284]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.swissmedic.ch/swissmedic/de/home/medizinprodukte/medizinprodukte-datenbank/udi-eindeutige-produktidentifikation.html)>>>>
+endobj
+31 0 obj
+<</Type/Annot/Subtype/Link/Rect[147.21 231.8 268.37 242]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.swissmedic.ch/swissmedic/de/home/medizinprodukte/medizinprodukte-datenbank/technische-dokumentation.html)>>>>
+endobj
+32 0 obj
+<</Type/Annot/Subtype/Link/Rect[331.75 231.8 531.83 242]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.swissmedic.ch/dam/swissmedic/de/dokumente/medizinprodukte/mep_urr/bw630_40_810e_pu_swissdamed_machine_to_machine_rest_api-documentation.pdf.download.pdf/BW630_40_810e_PU_swissdamed_Machine_to_Machine_REST_%20API_Documentation.pdf)>>>>
+endobj
+33 0 obj
+<</Type/Annot/Subtype/Link/Rect[72 217.8 158.15 228]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.swissmedic.ch/dam/swissmedic/de/dokumente/medizinprodukte/mep_urr/bw630_40_810e_pu_swissdamed_machine_to_machine_rest_api-documentation.pdf.download.pdf/BW630_40_810e_PU_swissdamed_Machine_to_Machine_REST_%20API_Documentation.pdf)>>>>
+endobj
+34 0 obj
+<</Type/Annot/Subtype/Link/Rect[383.81 156.8 498.3 167]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.walderwyss.com/en/news/2026-02-20_swissmedic-publication-of-technical-documentation-for-m2m-registration-in-swissdamed)>>>>
+endobj
+35 0 obj
+<</Type/Annot/Subtype/Link/Rect[147.21 116.8 258.37 127]/Border[0 0 0]/H/N/A<</S/URI/URI(https://webgate.ec.europa.eu/eudamed-help/en/documentation/technical-documentation.html)>>>>
+endobj
+36 0 obj
+<</Type/Page/Parent 1 0 R/MediaBox[0 0 595 842]/Resources 4 0 R/Contents 18 0 R/Annots[19 0 R 20 0 R 21 0 R 22 0 R 23 0 R 24 0 R 25 0 R 26 0 R 27 0 R 28 0 R 29 0 R 30 0 R 31 0 R 32 0 R 33 0 R 34 0 R 35 0 R]>>
+endobj
+37 0 obj
+<</Length 6730>>stream
+0 0 0 rg
+BT
+/F1 10 Tf
+72 776 Td
+(ï  F¸r den Produktivanschluss gibt es ein Formular ´Technical onboardingª und ein ´Third-party) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 762 Td
+(agreementª ñ als offene Vorlagen. Architektur und Ablauf beschreibt der ) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+395.5 762 Td
+(M2M User Guide) Tj
+ET
+0.043 0.373 0.647 rg
+395.5 760.6 75.57 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+471.07 762 Td
+(.) Tj
+ET
+0 0 0 rg
+BT
+/F2 10.5 Tf
+62 741 Td
+(Folgerungen f¸r die Replik) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 722 Td
+(ï  Dokumentation und Produktionszugang sind getrennt: EUDAMED verlangt ein technisches) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 708 Td
+(Onboarding f¸r den Anschluss, die Dokumentation ist aber frei. Dieselbe Trennung kann vom Steueramt) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 694 Td
+(verlangt werden. Einen Business-Plan verlangt keine der beiden Stellen.) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 675 Td
+(ï  Das Sicherheitsargument tr‰gt nicht: Eine Bundesbehˆrde und die EU-Kommission verˆffentlichen f¸r) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 661 Td
+(Gesundheitsdaten vollst‰ndige M2M-Spezifikationen. Die Sicherheit liegt bei Authentifizierung,) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 647 Td
+(Zertifikaten und Rate-Limits, nicht in der Geheimhaltung der Dokumentation. Das deckt sich mit dem) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 633 Td
+(Zuger Bundesgerichtsentscheid.) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 614 Td
+(ï  Im Steuerbereich selbst sind die Schemas eCH-0119 (Steuererkl‰rung nat¸rliche Personen) und) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 600 Td
+(eCH-0217 (MWST-Abrechnung, Import bei der ESTV) ˆffentlich. Zur¸ckgehalten wird nur die Z¸rcher) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 586 Td
+(‹bermittlungsschnittstelle.) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 567 Td
+(ï  Gleichbehandlung: Swissmedic und EUDAMED stellen die Dokumentation allen gleich zur Verf¸gung.) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 553 Td
+(Das Steueramt gibt sie nach Business-Case an ausgew‰hlte Treuhand-Softwarelieferanten ab ñ das) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 539 Td
+(widerspricht der Einstufung als vertraulich (Rekurs, Abschnitt 3).) Tj
+ET
+0 0 0 rg
+BT
+/F2 12.5 Tf
+62 514 Td
+(6. Ausl‰ndische Entscheide (Rechtsvergleich)) Tj
+ET
+0 0 0 rg
+BT
+/F2 10.5 Tf
+62 489 Td
+(Frankreich) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 470 Td
+(ï  ) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+81.06 470 Td
+(Tribunal administratif de Paris, 10. M‰rz 2016, Nr. 1508951/5-2) Tj
+ET
+0.043 0.373 0.647 rg
+81.06 468.6 279.56 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+360.62 470 Td
+(, nach ) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+390.64 470 Td
+(CADA-Gutachten Nr. 20144578) Tj
+ET
+0.043 0.373 0.647 rg
+390.64 468.6 140.62 0.5 re
+f
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+72 456 Td
+(vom 8. Januar 2015) Tj
+ET
+0.043 0.373 0.647 rg
+72 454.6 88.38 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+160.38 456 Td
+(: Der Quellcode des Einkommenssteuer-Rechners der Steuerverwaltung DGFiP ist ) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 442 Td
+(ein herausgabepflichtiges Verwaltungsdokument; der Einwand ´unfertiges Dokumentª wurde) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 428 Td
+(verworfen, jede Version des Codes ist ein Verwaltungsdokument \() Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+364.34 428 Td
+(Bericht Next INpact) Tj
+ET
+0.043 0.373 0.647 rg
+364.34 426.6 86.14 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+450.48 428 Td
+(\). Danach) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 414 Td
+(verˆffentlichte die DGFiP den Code. Der Schluss auf den Schnittstellenbeschrieb ist ein Argument a) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 400 Td
+(maiore ad minus, kein direkter Pr‰zedenzfall.) Tj
+ET
+0 0 0 rg
+BT
+/F2 10.5 Tf
+62 379 Td
+(Italien) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 360 Td
+(ï  ) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+81.06 360 Td
+(Consiglio di Stato, Sez. VI, Nr. 2270/2019 vom 8. April 2019) Tj
+ET
+0.043 0.373 0.647 rg
+81.06 358.6 265.13 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+346.19 360 Td
+(, weitergef¸hrt in Nr. 2936/2019 und) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 346 Td
+(8474/2019 \() Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+125.37 346 Td
+(Besprechung) Tj
+ET
+0.043 0.373 0.647 rg
+125.37 344.6 58.92 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+184.29 346 Td
+(\): Zugang zum Quellcode eines Verwaltungsalgorithmus nach Art. 22 L.) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 332 Td
+(241/1990; die technische Regel sei eine allgemeine Verwaltungsregel und m¸sse von aussen) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 318 Td
+(erkennbar sein. Gesch‰ftsgeheimnisse des Herstellers werden abgewogen, schliessen den Zugang) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 304 Td
+(aber nicht aus.) Tj
+ET
+0 0 0 rg
+BT
+/F2 10.5 Tf
+62 283 Td
+(Deutschland und ÷sterreich) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 264 Td
+(ï  ELSTER: Die Schnittstelle (ERiC) kˆnnen Softwarehersteller frei nutzen; Schnittstellen und) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 250 Td
+(Dokumentation stehen in einem ´gesch¸tzten Bereichª \() Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+323.23 250 Td
+(FG Bremen 2 K 12/14) Tj
+ET
+0.043 0.373 0.647 rg
+323.23 248.6 97.27 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+420.5 250 Td
+(; ) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+426.06 250 Td
+(Bundestag, Kleine) Tj
+ET
+0.043 0.373 0.647 rg
+426.06 248.6 81.16 0.5 re
+f
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+72 236 Td
+(Anfrage 19/1058) Tj
+ET
+0.043 0.373 0.647 rg
+72 234.6 73.94 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+145.94 236 Td
+(\). Volltext des FG-Urteils und genaue Rechtsgrundlage (ß 87b AO / StD‹V) nicht) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 222 Td
+(gepr¸ft ñ eher Praxisvergleich als Pr‰judiz.) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 203 Td
+(ï  ) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+81.06 203 Td
+(BVerfG 2 BvC 3/07 (Wahlcomputer, 2009)) Tj
+ET
+0.043 0.373 0.647 rg
+81.06 201.6 186.74 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+267.8 203 Td
+( und ) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+290.04 203 Td
+(VfGH V 85/11 (E-Voting, 2011)) Tj
+ET
+0.043 0.373 0.647 rg
+290.04 201.6 137.29 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+427.33 203 Td
+(: verlangen ˆffentliche ) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 189 Td
+(‹berpr¸fbarkeit staatlicher IT-Verfahren ñ allerdings im Wahlrecht.) Tj
+ET
+0 0 0 rg
+BT
+/F2 12.5 Tf
+62 164 Td
+(7. Nicht abschliessend gepr¸fte Rechtsgrundlagen) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 141 Td
+(ï  EMBAG Art. 9 \(Offenlegung von Quellcode, seit 1. Januar 2024 verbindlich, vgl.) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+72 127 Td
+(Open-Source-Strategie BACS) Tj
+ET
+0.043 0.373 0.647 rg
+72 125.6 132.83 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+204.83 127 Td
+(\), Art. 10 (Open Government Data) und Art. 13 (Schnittstellen) gelten f¸r) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 113 Td
+(die Bundesverwaltung, nicht direkt f¸r das kantonale Steueramt. Als Wertung anf¸hrbar; Wortlaut von) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 99 Td
+(Art. 13 nicht gepr¸ft.) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 80 Td
+(ï  Rechtsgrundlage der EUDAMED-Verˆffentlichung in der MDR (vermutlich Art. 33) nicht belegt.) Tj
+ET
+0 0 0 rg
+BT
+/F1 8 Tf
+496.976 34 Td
+(Seite 3 / 5) Tj
+ET
+endstream 
+endobj
+38 0 obj
+<</Type/Annot/Subtype/Link/Rect[395.5 759.8 471.07 770]/Border[0 0 0]/H/N/A<</S/URI/URI(https://webgate.ec.europa.eu/eudamed-help/en/files/M2M%20-%20user%20guide.pdf)>>>>
+endobj
+39 0 obj
+<</Type/Annot/Subtype/Link/Rect[81.06 467.8 360.62 478]/Border[0 0 0]/H/N/A<</S/URI/URI(https://lexing.law/wp-content/uploads/2014/05/33796487.pdf)>>>>
+endobj
+40 0 obj
+<</Type/Annot/Subtype/Link/Rect[390.64 467.8 531.26 478]/Border[0 0 0]/H/N/A<</S/URI/URI(https://larevue.squirepattonboggs.com/cada-avis-favorable-pour-l-acces-au-code-source-d-un-logiciel-de-bercy_a2572.html)>>>>
+endobj
+41 0 obj
+<</Type/Annot/Subtype/Link/Rect[72 453.8 160.38 464]/Border[0 0 0]/H/N/A<</S/URI/URI(https://larevue.squirepattonboggs.com/cada-avis-favorable-pour-l-acces-au-code-source-d-un-logiciel-de-bercy_a2572.html)>>>>
+endobj
+42 0 obj
+<</Type/Annot/Subtype/Link/Rect[364.34 425.8 450.48 436]/Border[0 0 0]/H/N/A<</S/URI/URI(https://next.ink/14734/99038-la-justice-confirme-qu-un-code-source-logiciel-est-document-administratif-communicable-au-citoyen/)>>>>
+endobj
+43 0 obj
+<</Type/Annot/Subtype/Link/Rect[81.06 357.8 346.19 368]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.agendadigitale.eu/cultura-digitale/laccesso-allalgoritmo-secondo-il-giudice-amministrativo/)>>>>
+endobj
+44 0 obj
+<</Type/Annot/Subtype/Link/Rect[125.37 343.8 184.29 354]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.agendadigitale.eu/documenti/algoritmi-nella-pa-accesso-al-software-e-diritti-del-produttore-i-paletti-del-consiglio-di-stato/)>>>>
+endobj
+45 0 obj
+<</Type/Annot/Subtype/Link/Rect[323.23 247.8 420.5 258]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.finanzgericht-bremen.de/sixcms/media.php/13/2k_12_14_(2)_an.pdf)>>>>
+endobj
+46 0 obj
+<</Type/Annot/Subtype/Link/Rect[426.06 247.8 507.22 258]/Border[0 0 0]/H/N/A<</S/URI/URI(https://kleineanfragen.de/bundestag/19/1058-elektronische-erledigung-von-steueranmeldungen-und-erklaerungen-mit-elster.pdf)>>>>
+endobj
+47 0 obj
+<</Type/Annot/Subtype/Link/Rect[72 233.8 145.94 244]/Border[0 0 0]/H/N/A<</S/URI/URI(https://kleineanfragen.de/bundestag/19/1058-elektronische-erledigung-von-steueranmeldungen-und-erklaerungen-mit-elster.pdf)>>>>
+endobj
+48 0 obj
+<</Type/Annot/Subtype/Link/Rect[81.06 200.8 267.8 211]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.bundesverfassungsgericht.de/SharedDocs/Entscheidungen/DE/2009/03/cs20090303_2bvc000307.html)>>>>
+endobj
+49 0 obj
+<</Type/Annot/Subtype/Link/Rect[290.04 200.8 427.33 211]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.vfgh.gv.at/downloads/VfGH_V_85-96-11_e-voting.pdf)>>>>
+endobj
+50 0 obj
+<</Type/Annot/Subtype/Link/Rect[72 124.8 204.83 135]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.ncsc.admin.ch/dam/ncsc/de/dokumente/ueber-ncsc/Open-Source-Strategie-BACS_DE.pdf.download.pdf/Open-Source-Strategie-BACS_DE.pdf)>>>>
+endobj
+51 0 obj
+<</Type/Page/Parent 1 0 R/MediaBox[0 0 595 842]/Resources 4 0 R/Contents 37 0 R/Annots[38 0 R 39 0 R 40 0 R 41 0 R 42 0 R 43 0 R 44 0 R 45 0 R 46 0 R 47 0 R 48 0 R 49 0 R 50 0 R]>>
+endobj
+52 0 obj
+<</Length 6337>>stream
+0 0 0 rg
+BT
+/F2 12.5 Tf
+62 776 Td
+(8. Vorgeschlagene Argumentationskette f¸r die Replik) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 753 Td
+(1.  Der API-Beschrieb ist eine Information nach ß 3 Abs. 2 und ß 20 IDG \() Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+396.6 753 Td
+(VB.2021.00858) Tj
+ET
+0.043 0.373 0.647 rg
+396.6 751.6 68.94 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+465.54 753 Td
+(\).) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 734 Td
+(2.  Es gilt eine Vermutung f¸r den Zugang; die Beweislast tr‰gt das Steueramt \() Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+423.28 734 Td
+(BVGer A-4595/2020) Tj
+ET
+0.043 0.373 0.647 rg
+423.28 732.6 90.05 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+513.33 734 Td
+(\).) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 715 Td
+(3.  Geheimhaltungsgr¸nde sind konkret zu begr¸nden, pauschale Sicherheits- oder) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 701 Td
+(Geheimnisargumente gen¸gen nicht \() Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+239.3 701 Td
+(BGer, Zug 2026) Tj
+ET
+0.043 0.373 0.647 rg
+239.3 699.6 71.15 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+310.45 701 Td
+(; ) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+316.01 701 Td
+(VB.2019.00603) Tj
+ET
+0.043 0.373 0.647 rg
+316.01 699.6 68.94 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+384.95 701 Td
+(\).) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 682 Td
+(4.  Widerspruch: ´vertraulichª, aber gegen Business-Plan an Treuhand-Softwarelieferanten) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 668 Td
+(ausgeh‰ndigt (Rekurs, Abschnitt 3).) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 649 Td
+(5.  Vergleich: ) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+133.14 649 Td
+(swissdamed) Tj
+ET
+0.043 0.373 0.647 rg
+133.14 647.6 55.01 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+188.15 649 Td
+( und ) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+210.39 649 Td
+(EUDAMED) Tj
+ET
+0.043 0.373 0.647 rg
+210.39 647.6 50 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+260.39 649 Td
+( verˆffentlichen ihre M2M-Schnittstellen ohne Login ñ ohne) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 635 Td
+(Sicherheitsproblem.) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 616 Td
+(6.  Rechtsvergleich: ) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+162.59 616 Td
+(TA Paris 2016) Tj
+ET
+0.043 0.373 0.647 rg
+162.59 614.6 63.36 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+225.95 616 Td
+( und ) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 10 Tf
+248.19 616 Td
+(CdS 2270/2019) Tj
+ET
+0.043 0.373 0.647 rg
+248.19 614.6 69.49 0.5 re
+f
+0 0 0 rg
+BT
+/F1 10 Tf
+317.68 616 Td
+(.) Tj
+ET
+0 0 0 rg
+BT
+/F2 12.5 Tf
+62 591 Td
+(9. Offene Punkte vor dem Einreichen) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 568 Td
+(ï  Aktenzeichen und Datum des Zuger Bundesgerichtsurteils ermitteln, Volltext lesen und wˆrtlich) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 554 Td
+(zitieren.) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 535 Td
+(ï  Alle Schweizer Entscheide im Volltext auf die zitierten Erw‰gungen pr¸fen.) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 516 Td
+(ï  TA Paris 2016 und CdS 2270/2019 im Original pr¸fen (bisher Auszug bzw. Sekund‰rquellen).) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 497 Td
+(ï  swissdamed- und EUDAMED-Seiten zum Einreichungsdatum als Beilage sichern \(PDF-Ausdruck mit ) Tj
+ET
+0 0 0 rg
+BT
+/F1 10 Tf
+72 483 Td
+(Datum\).) Tj
+ET
+0.6 0.6 0.6 rg
+62 456 471 0.6 re
+f
+0 0 0 rg
+BT
+/F2 10.5 Tf
+62 446 Td
+(Quellen) Tj
+ET
+0 0 0 rg
+BT
+/F1 9 Tf
+62 426 Td
+(ï  BGer zum Kanton Zug ñ Zuger Woche, 11.03.2026) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 413 Td
+(https://www.zugerpresse.ch/zuger-news/detail/transparenz-statt-pauschalgeheimnis) Tj
+ET
+0.043 0.373 0.647 rg
+76 411.88 296.552 0.5 re
+f
+0 0 0 rg
+BT
+/F1 9 Tf
+62 397 Td
+(ï  BGer zum Kanton Zug ñ Bote der Urschweiz, 04.03.2026) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 384 Td
+(https://www.bote.ch/nachrichten/zentralschweiz/bundesgericht-zu-geheimhaltung-von-it-dokumenten-art-1691625) Tj
+ET
+0.043 0.373 0.647 rg
+76 382.88 401.496 0.5 re
+f
+0 0 0 rg
+BT
+/F1 9 Tf
+62 368 Td
+(ï  BGer zum Kanton Zug ñ Zuger Zeitung) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 355 Td
+(https://www.zugerzeitung.ch/zentralschweiz/zug/bundesgericht-zu-geheimhaltung-von-it-dokumenten-ld.4128834) Tj
+ET
+0.043 0.373 0.647 rg
+76 353.88 399.72 0.5 re
+f
+0 0 0 rg
+BT
+/F1 9 Tf
+62 339 Td
+(ï  BGer zum Kanton Zug ñ zentralplus) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 326 Td
+(https://www.zentralplus.ch/justiz/knatsch-um-gerichts-it-bundesgericht-ruegt-zuger-behoerde-2847864/) Tj
+ET
+0.043 0.373 0.647 rg
+76 324.88 363.24 0.5 re
+f
+0 0 0 rg
+BT
+/F1 9 Tf
+62 310 Td
+(ï  BGE 142 II 313 (1C_296/2015)) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 297 Td
+(http://relevancy.bger.ch/php/clir/http/index.php?highlight_docid=atf%3A%2F%2F142-II-313%3Ade&lang=de&type=show_docum) Tj
+ET
+0.043 0.373 0.647 rg
+76 295.88 453.344 0.5 re
+f
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 286 Td
+(ent) Tj
+ET
+0.043 0.373 0.647 rg
+76 284.88 11.12 0.5 re
+f
+0 0 0 rg
+BT
+/F1 9 Tf
+62 270 Td
+(ï  BVGer A-4595/2020) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 257 Td
+(https://www.swissrights.ch/bvge/2021-A-4595/2020.php) Tj
+ET
+0.043 0.373 0.647 rg
+76 255.88 196.976 0.5 re
+f
+0 0 0 rg
+BT
+/F1 9 Tf
+62 241 Td
+(ï  BVGer A-1432/2016 (zitiert BGer 1C_509/2016)) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 228 Td
+(https://entscheide.weblaw.ch/cache.php?link=05-04-2017-A-1432-2016) Tj
+ET
+0.043 0.373 0.647 rg
+76 226.88 252.352 0.5 re
+f
+0 0 0 rg
+BT
+/F1 9 Tf
+62 212 Td
+(ï  BVGer A-7405/2014) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 199 Td
+(https://entscheide.weblaw.ch/cache.php?link=23-11-2015-A-7405-2014) Tj
+ET
+0.043 0.373 0.647 rg
+76 197.88 252.352 0.5 re
+f
+0 0 0 rg
+BT
+/F1 9 Tf
+62 183 Td
+(ï  VGr ZH VB.2019.00603) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 170 Td
+(https://entscheidsuche.ch/docs/ZH_Verwaltungsgericht/ZH_VG_001_-VB-2019-00603_2019-12-19.html) Tj
+ET
+0.043 0.373 0.647 rg
+76 168.88 367.28 0.5 re
+f
+0 0 0 rg
+BT
+/F1 9 Tf
+62 154 Td
+(ï  VGr ZH VB.2021.00858) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 141 Td
+(https://entscheidsuche.ch/dok/ZH_Verwaltungsgericht/ZH_VG_001_-VB-2021-00858_2022-06-30.html) Tj
+ET
+0.043 0.373 0.647 rg
+76 139.88 363.28 0.5 re
+f
+0 0 0 rg
+BT
+/F1 9 Tf
+62 125 Td
+(ï  VGr ZH VB.2024.00043) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 112 Td
+(https://entscheide.weblaw.ch/dumppdf.php?link=ZH-VG-2024-12-31_VB.2024.00043) Tj
+ET
+0.043 0.373 0.647 rg
+76 110.88 300.376 0.5 re
+f
+0 0 0 rg
+BT
+/F1 9 Tf
+62 96 Td
+(ï  VGr ZH VB.2022.00142) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 83 Td
+(https://entscheidsuche.ch/docs/ZH_Verwaltungsgericht/ZH_VG_001_-VB-2022-00142_2023-03-30.html) Tj
+ET
+0.043 0.373 0.647 rg
+76 81.88 367.28 0.5 re
+f
+0 0 0 rg
+BT
+/F1 8 Tf
+496.976 34 Td
+(Seite 4 / 5) Tj
+ET
+endstream 
+endobj
+53 0 obj
+<</Type/Annot/Subtype/Link/Rect[396.6 750.8 465.54 761]/Border[0 0 0]/H/N/A<</S/URI/URI(https://entscheidsuche.ch/dok/ZH_Verwaltungsgericht/ZH_VG_001_-VB-2021-00858_2022-06-30.html)>>>>
+endobj
+54 0 obj
+<</Type/Annot/Subtype/Link/Rect[423.28 731.8 513.33 742]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.swissrights.ch/bvge/2021-A-4595/2020.php)>>>>
+endobj
+55 0 obj
+<</Type/Annot/Subtype/Link/Rect[239.3 698.8 310.45 709]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.zugerpresse.ch/zuger-news/detail/transparenz-statt-pauschalgeheimnis)>>>>
+endobj
+56 0 obj
+<</Type/Annot/Subtype/Link/Rect[316.01 698.8 384.95 709]/Border[0 0 0]/H/N/A<</S/URI/URI(https://entscheidsuche.ch/docs/ZH_Verwaltungsgericht/ZH_VG_001_-VB-2019-00603_2019-12-19.html)>>>>
+endobj
+57 0 obj
+<</Type/Annot/Subtype/Link/Rect[133.14 646.8 188.15 657]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.swissmedic.ch/swissmedic/de/home/medizinprodukte/medizinprodukte-datenbank/technische-dokumentation.html)>>>>
+endobj
+58 0 obj
+<</Type/Annot/Subtype/Link/Rect[210.39 646.8 260.39 657]/Border[0 0 0]/H/N/A<</S/URI/URI(https://webgate.ec.europa.eu/eudamed-help/en/documentation/technical-documentation.html)>>>>
+endobj
+59 0 obj
+<</Type/Annot/Subtype/Link/Rect[162.59 613.8 225.95 624]/Border[0 0 0]/H/N/A<</S/URI/URI(https://lexing.law/wp-content/uploads/2014/05/33796487.pdf)>>>>
+endobj
+60 0 obj
+<</Type/Annot/Subtype/Link/Rect[248.19 613.8 317.68 624]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.agendadigitale.eu/cultura-digitale/laccesso-allalgoritmo-secondo-il-giudice-amministrativo/)>>>>
+endobj
+61 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 411.24 372.552 419.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.zugerpresse.ch/zuger-news/detail/transparenz-statt-pauschalgeheimnis)>>>>
+endobj
+62 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 382.24 477.496 390.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.bote.ch/nachrichten/zentralschweiz/bundesgericht-zu-geheimhaltung-von-it-dokumenten-art-1691625)>>>>
+endobj
+63 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 353.24 475.72 361.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.zugerzeitung.ch/zentralschweiz/zug/bundesgericht-zu-geheimhaltung-von-it-dokumenten-ld.4128834)>>>>
+endobj
+64 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 324.24 439.24 332.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.zentralplus.ch/justiz/knatsch-um-gerichts-it-bundesgericht-ruegt-zuger-behoerde-2847864/)>>>>
+endobj
+65 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 295.24 529.344 303.4]/Border[0 0 0]/H/N/A<</S/URI/URI(http://relevancy.bger.ch/php/clir/http/index.php?highlight_docid=atf%3A%2F%2F142-II-313%3Ade&lang=de&type=show_document)>>>>
+endobj
+66 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 284.24 87.12 292.4]/Border[0 0 0]/H/N/A<</S/URI/URI(http://relevancy.bger.ch/php/clir/http/index.php?highlight_docid=atf%3A%2F%2F142-II-313%3Ade&lang=de&type=show_document)>>>>
+endobj
+67 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 255.24 272.976 263.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.swissrights.ch/bvge/2021-A-4595/2020.php)>>>>
+endobj
+68 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 226.24 328.352 234.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://entscheide.weblaw.ch/cache.php?link=05-04-2017-A-1432-2016)>>>>
+endobj
+69 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 197.24 328.352 205.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://entscheide.weblaw.ch/cache.php?link=23-11-2015-A-7405-2014)>>>>
+endobj
+70 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 168.24 443.28 176.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://entscheidsuche.ch/docs/ZH_Verwaltungsgericht/ZH_VG_001_-VB-2019-00603_2019-12-19.html)>>>>
+endobj
+71 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 139.24 439.28 147.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://entscheidsuche.ch/dok/ZH_Verwaltungsgericht/ZH_VG_001_-VB-2021-00858_2022-06-30.html)>>>>
+endobj
+72 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 110.24 376.376 118.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://entscheide.weblaw.ch/dumppdf.php?link=ZH-VG-2024-12-31_VB.2024.00043)>>>>
+endobj
+73 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 81.24 443.28 89.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://entscheidsuche.ch/docs/ZH_Verwaltungsgericht/ZH_VG_001_-VB-2022-00142_2023-03-30.html)>>>>
+endobj
+74 0 obj
+<</Type/Page/Parent 1 0 R/MediaBox[0 0 595 842]/Resources 4 0 R/Contents 52 0 R/Annots[53 0 R 54 0 R 55 0 R 56 0 R 57 0 R 58 0 R 59 0 R 60 0 R 61 0 R 62 0 R 63 0 R 64 0 R 65 0 R 66 0 R 67 0 R 68 0 R 69 0 R 70 0 R 71 0 R 72 0 R 73 0 R]>>
+endobj
+75 0 obj
+<</Length 6203>>stream
+0 0 0 rg
+BT
+/F1 9 Tf
+62 776 Td
+(ï  Besprechung BGer 1C_272/2022 (Steuergeheimnis)) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 763 Td
+(https://cdbf.ch/de/1323/) Tj
+ET
+0.043 0.373 0.647 rg
+76 761.88 83.168 0.5 re
+f
+0 0 0 rg
+BT
+/F1 9 Tf
+62 747 Td
+(ï  Kanton Luzern ñ ÷ffentlichkeitsprinzip) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 734 Td
+(https://www.lu.ch/verwaltung/JSD/JSD_Projekte_und_Themen/Oeffentlichkeitsprinzip) Tj
+ET
+0.043 0.373 0.647 rg
+76 732.88 301.888 0.5 re
+f
+0 0 0 rg
+BT
+/F1 9 Tf
+62 718 Td
+(ï  Bundeskanzlei ñ FAQ Open-Source-Software) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 705 Td
+(https://www.bk.admin.ch/dam/de/sd-web/OmKVvt8e0eVp/Em002-6%20FAQ-OSS.pdf) Tj
+ET
+0.043 0.373 0.647 rg
+76 703.88 303.232 0.5 re
+f
+0 0 0 rg
+BT
+/F1 9 Tf
+62 689 Td
+(ï  BACS ñ Open-Source-Strategie (EMBAG Art. 9)) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 676 Td
+(https://www.ncsc.admin.ch/dam/ncsc/de/dokumente/ueber-ncsc/Open-Source-Strategie-BACS_DE.pdf.download.pdf/Open-Sour) Tj
+ET
+0.043 0.373 0.647 rg
+76 674.88 454.856 0.5 re
+f
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 665 Td
+(ce-Strategie-BACS_DE.pdf) Tj
+ET
+0.043 0.373 0.647 rg
+76 663.88 96.48 0.5 re
+f
+0 0 0 rg
+BT
+/F1 9 Tf
+62 649 Td
+(ï  Swissmedic ñ swissdamed Technische Dokumentation) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 636 Td
+(https://www.swissmedic.ch/swissmedic/de/home/medizinprodukte/medizinprodukte-datenbank/technische-dokumentation.html) Tj
+ET
+0.043 0.373 0.647 rg
+76 634.88 446.376 0.5 re
+f
+0 0 0 rg
+BT
+/F1 9 Tf
+62 620 Td
+(ï  Swissmedic ñ swissdamed M2M REST API Documentation) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 607 Td
+(https://www.swissmedic.ch/dam/swissmedic/de/dokumente/medizinprodukte/mep_urr/bw630_40_810e_pu_swissdamed_machin) Tj
+ET
+0.043 0.373 0.647 rg
+76 605.88 455.272 0.5 re
+f
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 596 Td
+(e_to_machine_rest_api-documentation.pdf.download.pdf/BW630_40_810e_PU_swissdamed_Machine_to_Machine_REST_%20) Tj
+ET
+0.043 0.373 0.647 rg
+76 594.88 456.216 0.5 re
+f
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 585 Td
+(API_Documentation.pdf) Tj
+ET
+0.043 0.373 0.647 rg
+76 583.88 84.488 0.5 re
+f
+0 0 0 rg
+BT
+/F1 9 Tf
+62 569 Td
+(ï  Swissmedic ñ UDI (Art. 17 MepV)) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 556 Td
+(https://www.swissmedic.ch/swissmedic/de/home/medizinprodukte/medizinprodukte-datenbank/udi-eindeutige-produktidentifikatio) Tj
+ET
+0.043 0.373 0.647 rg
+76 554.88 455.272 0.5 re
+f
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 545 Td
+(n.html) Tj
+ET
+0.043 0.373 0.647 rg
+76 543.88 21.784 0.5 re
+f
+0 0 0 rg
+BT
+/F1 9 Tf
+62 529 Td
+(ï  Walder Wyss ñ Publication of Technical Documentation for M2M in swissdamed) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 516 Td
+(https://www.walderwyss.com/en/news/2026-02-20_swissmedic-publication-of-technical-documentation-for-m2m-registration-in-s) Tj
+ET
+0.043 0.373 0.647 rg
+76 514.88 452.56 0.5 re
+f
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 505 Td
+(wissdamed) Tj
+ET
+0.043 0.373 0.647 rg
+76 503.88 40.008 0.5 re
+f
+0 0 0 rg
+BT
+/F1 9 Tf
+62 489 Td
+(ï  EUDAMED ñ Technical documentation) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 476 Td
+(https://webgate.ec.europa.eu/eudamed-help/en/documentation/technical-documentation.html) Tj
+ET
+0.043 0.373 0.647 rg
+76 474.88 328.616 0.5 re
+f
+0 0 0 rg
+BT
+/F1 9 Tf
+62 460 Td
+(ï  EUDAMED ñ M2M User Guide) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 447 Td
+(https://webgate.ec.europa.eu/eudamed-help/en/files/M2M%20-%20user%20guide.pdf) Tj
+ET
+0.043 0.373 0.647 rg
+76 445.88 303.264 0.5 re
+f
+0 0 0 rg
+BT
+/F1 9 Tf
+62 431 Td
+(ï  TA Paris, 10.03.2016, Nr. 1508951/5-2) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 418 Td
+(https://lexing.law/wp-content/uploads/2014/05/33796487.pdf) Tj
+ET
+0.043 0.373 0.647 rg
+76 416.88 213.016 0.5 re
+f
+0 0 0 rg
+BT
+/F1 9 Tf
+62 402 Td
+(ï  Next INpact ñ Code source = document administratif) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 389 Td
+(https://next.ink/14734/99038-la-justice-confirme-qu-un-code-source-logiciel-est-document-administratif-communicable-au-citoyen) Tj
+ET
+0.043 0.373 0.647 rg
+76 387.88 455.696 0.5 re
+f
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 378 Td
+(/) Tj
+ET
+0.043 0.373 0.647 rg
+76 376.88 2.224 0.5 re
+f
+0 0 0 rg
+BT
+/F1 9 Tf
+62 362 Td
+(ï  CADA-Gutachten Nr. 20144578) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 349 Td
+(https://larevue.squirepattonboggs.com/cada-avis-favorable-pour-l-acces-au-code-source-d-un-logiciel-de-bercy_a2572.html) Tj
+ET
+0.043 0.373 0.647 rg
+76 347.88 436.152 0.5 re
+f
+0 0 0 rg
+BT
+/F1 9 Tf
+62 333 Td
+(ï  Consiglio di Stato Nr. 2270/2019 ñ Agenda Digitale) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 320 Td
+(https://www.agendadigitale.eu/cultura-digitale/laccesso-allalgoritmo-secondo-il-giudice-amministrativo/) Tj
+ET
+0.043 0.373 0.647 rg
+76 318.88 361.44 0.5 re
+f
+0 0 0 rg
+BT
+/F1 9 Tf
+62 304 Td
+(ï  Consiglio di Stato ñ Software und Herstellerrechte ñ Agenda Digitale) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 291 Td
+(https://www.agendadigitale.eu/documenti/algoritmi-nella-pa-accesso-al-software-e-diritti-del-produttore-i-paletti-del-consiglio-di-st) Tj
+ET
+0.043 0.373 0.647 rg
+76 289.88 455.68 0.5 re
+f
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 280 Td
+(ato/) Tj
+ET
+0.043 0.373 0.647 rg
+76 278.88 13.344 0.5 re
+f
+0 0 0 rg
+BT
+/F1 9 Tf
+62 264 Td
+(ï  FG Bremen 2 K 12/14) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 251 Td
+(https://www.finanzgericht-bremen.de/sixcms/media.php/13/2k_12_14_(2)_an.pdf) Tj
+ET
+0.043 0.373 0.647 rg
+76 249.88 285.456 0.5 re
+f
+0 0 0 rg
+BT
+/F1 9 Tf
+62 235 Td
+(ï  Bundestag ñ Kleine Anfrage 19/1058 (ELSTER)) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 222 Td
+(https://kleineanfragen.de/bundestag/19/1058-elektronische-erledigung-von-steueranmeldungen-und-erklaerungen-mit-elster.pdf) Tj
+ET
+0.043 0.373 0.647 rg
+76 220.88 451.32 0.5 re
+f
+0 0 0 rg
+BT
+/F1 9 Tf
+62 206 Td
+(ï  BVerfG 2 BvC 3/07) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 193 Td
+(https://www.bundesverfassungsgericht.de/SharedDocs/Entscheidungen/DE/2009/03/cs20090303_2bvc000307.html) Tj
+ET
+0.043 0.373 0.647 rg
+76 191.88 409.544 0.5 re
+f
+0 0 0 rg
+BT
+/F1 9 Tf
+62 177 Td
+(ï  VfGH V 85/11) Tj
+ET
+0.043 0.373 0.647 rg
+BT
+/F1 8 Tf
+76 164 Td
+(https://www.vfgh.gv.at/downloads/VfGH_V_85-96-11_e-voting.pdf) Tj
+ET
+0.043 0.373 0.647 rg
+76 162.88 233 0.5 re
+f
+0 0 0 rg
+BT
+/F1 8 Tf
+496.976 34 Td
+(Seite 5 / 5) Tj
+ET
+endstream 
+endobj
+76 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 761.24 159.168 769.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://cdbf.ch/de/1323/)>>>>
+endobj
+77 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 732.24 377.888 740.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.lu.ch/verwaltung/JSD/JSD_Projekte_und_Themen/Oeffentlichkeitsprinzip)>>>>
+endobj
+78 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 703.24 379.232 711.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.bk.admin.ch/dam/de/sd-web/OmKVvt8e0eVp/Em002-6%20FAQ-OSS.pdf)>>>>
+endobj
+79 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 674.24 530.856 682.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.ncsc.admin.ch/dam/ncsc/de/dokumente/ueber-ncsc/Open-Source-Strategie-BACS_DE.pdf.download.pdf/Open-Source-Strategie-BACS_DE.pdf)>>>>
+endobj
+80 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 663.24 172.48 671.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.ncsc.admin.ch/dam/ncsc/de/dokumente/ueber-ncsc/Open-Source-Strategie-BACS_DE.pdf.download.pdf/Open-Source-Strategie-BACS_DE.pdf)>>>>
+endobj
+81 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 634.24 522.376 642.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.swissmedic.ch/swissmedic/de/home/medizinprodukte/medizinprodukte-datenbank/technische-dokumentation.html)>>>>
+endobj
+82 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 605.24 531.272 613.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.swissmedic.ch/dam/swissmedic/de/dokumente/medizinprodukte/mep_urr/bw630_40_810e_pu_swissdamed_machine_to_machine_rest_api-documentation.pdf.download.pdf/BW630_40_810e_PU_swissdamed_Machine_to_Machine_REST_%20API_Documentation.pdf)>>>>
+endobj
+83 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 594.24 532.216 602.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.swissmedic.ch/dam/swissmedic/de/dokumente/medizinprodukte/mep_urr/bw630_40_810e_pu_swissdamed_machine_to_machine_rest_api-documentation.pdf.download.pdf/BW630_40_810e_PU_swissdamed_Machine_to_Machine_REST_%20API_Documentation.pdf)>>>>
+endobj
+84 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 583.24 160.488 591.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.swissmedic.ch/dam/swissmedic/de/dokumente/medizinprodukte/mep_urr/bw630_40_810e_pu_swissdamed_machine_to_machine_rest_api-documentation.pdf.download.pdf/BW630_40_810e_PU_swissdamed_Machine_to_Machine_REST_%20API_Documentation.pdf)>>>>
+endobj
+85 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 554.24 531.272 562.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.swissmedic.ch/swissmedic/de/home/medizinprodukte/medizinprodukte-datenbank/udi-eindeutige-produktidentifikation.html)>>>>
+endobj
+86 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 543.24 97.784 551.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.swissmedic.ch/swissmedic/de/home/medizinprodukte/medizinprodukte-datenbank/udi-eindeutige-produktidentifikation.html)>>>>
+endobj
+87 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 514.24 528.56 522.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.walderwyss.com/en/news/2026-02-20_swissmedic-publication-of-technical-documentation-for-m2m-registration-in-swissdamed)>>>>
+endobj
+88 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 503.24 116.008 511.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.walderwyss.com/en/news/2026-02-20_swissmedic-publication-of-technical-documentation-for-m2m-registration-in-swissdamed)>>>>
+endobj
+89 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 474.24 404.616 482.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://webgate.ec.europa.eu/eudamed-help/en/documentation/technical-documentation.html)>>>>
+endobj
+90 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 445.24 379.264 453.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://webgate.ec.europa.eu/eudamed-help/en/files/M2M%20-%20user%20guide.pdf)>>>>
+endobj
+91 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 416.24 289.016 424.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://lexing.law/wp-content/uploads/2014/05/33796487.pdf)>>>>
+endobj
+92 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 387.24 531.696 395.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://next.ink/14734/99038-la-justice-confirme-qu-un-code-source-logiciel-est-document-administratif-communicable-au-citoyen/)>>>>
+endobj
+93 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 376.24 78.224 384.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://next.ink/14734/99038-la-justice-confirme-qu-un-code-source-logiciel-est-document-administratif-communicable-au-citoyen/)>>>>
+endobj
+94 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 347.24 512.152 355.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://larevue.squirepattonboggs.com/cada-avis-favorable-pour-l-acces-au-code-source-d-un-logiciel-de-bercy_a2572.html)>>>>
+endobj
+95 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 318.24 437.44 326.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.agendadigitale.eu/cultura-digitale/laccesso-allalgoritmo-secondo-il-giudice-amministrativo/)>>>>
+endobj
+96 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 289.24 531.68 297.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.agendadigitale.eu/documenti/algoritmi-nella-pa-accesso-al-software-e-diritti-del-produttore-i-paletti-del-consiglio-di-stato/)>>>>
+endobj
+97 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 278.24 89.344 286.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.agendadigitale.eu/documenti/algoritmi-nella-pa-accesso-al-software-e-diritti-del-produttore-i-paletti-del-consiglio-di-stato/)>>>>
+endobj
+98 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 249.24 361.456 257.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.finanzgericht-bremen.de/sixcms/media.php/13/2k_12_14_(2)_an.pdf)>>>>
+endobj
+99 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 220.24 527.32 228.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://kleineanfragen.de/bundestag/19/1058-elektronische-erledigung-von-steueranmeldungen-und-erklaerungen-mit-elster.pdf)>>>>
+endobj
+100 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 191.24 485.544 199.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.bundesverfassungsgericht.de/SharedDocs/Entscheidungen/DE/2009/03/cs20090303_2bvc000307.html)>>>>
+endobj
+101 0 obj
+<</Type/Annot/Subtype/Link/Rect[76 162.24 309 170.4]/Border[0 0 0]/H/N/A<</S/URI/URI(https://www.vfgh.gv.at/downloads/VfGH_V_85-96-11_e-voting.pdf)>>>>
+endobj
+102 0 obj
+<</Type/Page/Parent 1 0 R/MediaBox[0 0 595 842]/Resources 4 0 R/Contents 75 0 R/Annots[76 0 R 77 0 R 78 0 R 79 0 R 80 0 R 81 0 R 82 0 R 83 0 R 84 0 R 85 0 R 86 0 R 87 0 R 88 0 R 89 0 R 90 0 R 91 0 R 92 0 R 93 0 R 94 0 R 95 0 R 96 0 R 97 0 R 98 0 R 99 0 R 100 0 R 101 0 R]>>
+endobj
+103 0 obj
+<</Type/Catalog/Pages 1 0 R>>
+endobj
+104 0 obj
+<</Root 103 0 R/Info<</Title(Zugang zum API-Beschrieb ñ Rechtsprechung und Vergleich swissdamed/EUDAMED)/Author(taxtsueri)>>/Type/XRef/Size 105/W[1 4 2]/Index[1 104]/Length 728>>stream
+        `     ∏        D    W        ˚    ¬    l        Í    ´     Ü    !`    "5    #    #Œ    @/    @—    AÇ    BM    C    C—    DÅ    E7    F    Fà    GF    H5    I    J    Kb    Læ    MÆ    Nt    OU    i“    jç    k5    l    l˝    mÎ    n¿    o∏    pq    qZ    r?    s    sø    tµ    uz    én    è8    è€    êô    ëe    íH    ì    ì∑    îç    ïL    ñ&    ñ˛    ó–    ò∂    ôö    ö=    öÓ    õü    új    ù4    ùÔ    û∏    üµ    ∏#    ∏™    πi    ∫     ª    º    ºˆ    æV    ø∂    ¡    ¬    ¬Û    √„    ƒ‘    ≈ö    ∆V    ∆ˇ    «Ì    »⁄    …¿     ï    Àå    ÃÉ    Õ=    Œ%    Œ¸    œ•    –»    –˜  
+endstream 
+endobj
+
+startxref
+53495
+%%EOF
