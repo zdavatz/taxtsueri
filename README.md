@@ -411,6 +411,10 @@ Das Kantonale Steueramt hat den Zugang zum API-Beschrieb mit Verfügung vom
 in `docs/rekurs/`. Dazu erzeugt `examples/rekurs_findings.rs` eine **Recherche-Notiz
 als PDF** (alle Urteile und Quellen im Text verlinkt):
 
+- Gegenstand: verlangt ist nur die **Spezifikation des Übertragungswegs** (Format, Protokoll,
+  Endpunkte, Authentifizierungsablauf) — weder Steuerdaten noch Zugangsdaten; die Verordnung
+  LS 631.121 verlangt selbst die Veröffentlichung der Zugangs- und Authentifizierungsvorgaben
+  (§§ 4 Abs. 2, 5) und setzt auf Verschlüsselung (§ 3 Abs. 2), nicht auf Geheimhaltung des Verfahrens;
 - Rechtsprechung zum Öffentlichkeitsprinzip bei IT-Dokumenten — Bundesgericht zum
   Kanton Zug (1C_136/2025 vom 2. Februar 2026: allgemein gehaltene Sicherheitsbegründung genügt nicht), BGE 142 II 313,
   BVGer A-4595/2020, VGr ZH VB.2019.00603 / VB.2021.00858 / VB.2024.00043, sowie die

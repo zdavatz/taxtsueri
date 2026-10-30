@@ -14,6 +14,10 @@ use linkpdf::{lk, save, t, Doc, Span};
 
 // ---- Fundstellen --------------------------------------------------------
 // Schweiz
+const U_VO: &str = "https://www.zh.ch/de/politik-staat/gesetze-beschluesse/gesetzessammlung/zhlex-ls/erlass-631_121-2011_10_18-2013_01_01-129.html";
+const U_STG: &str = "https://www.zh.ch/de/politik-staat/gesetze-beschluesse/gesetzessammlung/zhlex-ls/erlass-631_1-1997_06_08-1999_01_01-111.html";
+const U_ECH0119: &str = "https://www.ech.ch/de/ech/ech-0119/4.0.0";
+const U_KERCKHOFFS: &str = "https://de.wikipedia.org/wiki/Kerckhoffs%E2%80%99_Prinzip";
 const U_BGER_ZUG: &str = "https://www.bger.ch/ext/eurospider/live/de/php/aza/http/index.php?highlight_docid=aza%3A%2F%2F02-02-2026-1C_136-2025&lang=de&type=show_document&zoom=YES";
 const U_ZUG_ZW: &str = "https://www.zugerpresse.ch/zuger-news/detail/transparenz-statt-pauschalgeheimnis";
 const U_ZUG_BOTE: &str = "https://www.bote.ch/nachrichten/zentralschweiz/bundesgericht-zu-geheimhaltung-von-it-dokumenten-art-1691625";
@@ -100,6 +104,11 @@ fn findings() -> Doc {
          Steuerverwaltung sei öffentlich zugänglich zu machen, wurde weder in der Schweiz noch im \
          Ausland gefunden. Der Rekurs D10/2026 betrifft insofern eine offene Rechtsfrage. Tragfähig sind:",
     )]);
+    bullet(&mut d, vec![t(
+        "die Abgrenzung des Gegenstands: verlangt ist nur die Spezifikation des Übertragungswegs, \
+         nicht der Inhalt von Steuerdokumenten und keine Zugangsdaten; die Zürcher Verordnung \
+         verlangt selbst die Veröffentlichung der Zugangs- und Authentifizierungsvorgaben (Abschnitt 2);",
+    )]);
     let bz = u!(U_BGER_ZUG);
     bullet(&mut d, vec![
         t("das Urteil des Bundesgerichts "),
@@ -131,8 +140,79 @@ fn findings() -> Doc {
         t("."),
     ]);
 
-    // ---- 2. Zug ---------------------------------------------------------
-    h1(&mut d, "2. BGer 1C_136/2025 vom 2. Februar 2026 (Kanton Zug, IT-Dokumente)");
+    // ---- 2. Gegenstand: Übertragung, nicht Inhalt ------------------------
+    h1(&mut d, "2. Gegenstand des Gesuchs: wie übertragen wird – nicht was");
+    p(&mut d, vec![t(
+        "Verlangt ist nicht der Inhalt von Steuerdokumenten, sondern die Spezifikation, wie dieser \
+         Inhalt an das Steueramt zu übertragen ist. Eine professionelle Schnittstelle trennt drei \
+         Ebenen sauber:",
+    )]);
+    let (stg, ech) = (u!(U_STG), u!(U_ECH0119));
+    bullet(&mut d, vec![
+        t("Inhalt – die Steuerdaten der Pflichtigen: geschützt durch das Steuergeheimnis ("),
+        lk("§ 120 StG", stg),
+        t("). Nicht verlangt."),
+    ]);
+    bullet(&mut d, vec![t(
+        "Geheimnisse des Zugangs – Zugangscodes, Passwörter, private Schlüssel, Zertifikate: \
+         gehören der jeweiligen Person bzw. dem Steueramt. Nicht verlangt.",
+    )]);
+    bullet(&mut d, vec![
+        t("Spezifikation des Übertragungswegs – Datenformat, Protokoll, Endpunkte, Ablauf der \
+           Authentifizierung, Quittungen und Fehlercodes. Sie enthält weder Steuerdaten noch \
+           Zugangsdaten. Das Inhaltsformat ist mit "),
+        lk("eCH-0119 (Steuererklärung natürliche Personen)", ech),
+        t(" ohnehin öffentlich; es fehlt einzig die Beschreibung des Transports. Nur diese ist verlangt."),
+    ]);
+    let kerck = u!(U_KERCKHOFFS);
+    p(&mut d, vec![
+        t("Die Sicherheit einer Schnittstelle beruht auf der Geheimhaltung der Schlüssel, nicht des \
+           Verfahrens ("),
+        lk("Kerckhoffs’ Prinzip", kerck),
+        t("). Eine Schnittstelle, deren Sicherheit davon abhängt, dass ihre Beschreibung geheim bleibt, \
+           trennt diese Ebenen nicht sauber und entspricht nicht dem Stand der Technik. Genau so \
+           veröffentlichen Swissmedic und die EU-Kommission ihre M2M-Spezifikationen (Abschnitt 6), \
+           ebenso die Banken mit EBICS und ISO 20022 (camt.053) – die Schlüssel bleiben geheim, das \
+           Verfahren ist offen."),
+    ]);
+    h2(&mut d, "Was die Zürcher Verordnung selbst vorsieht (LS 631.121, Stand 1.7.2025)");
+    let vo = u!(U_VO);
+    bullet(&mut d, vec![
+        lk("§ 4 Abs. 2", vo),
+        t(": «Das kantonale Steueramt veröffentlicht die Voraussetzungen für den Zugang zu den \
+           Applikationen auf seiner Webseite.»"),
+    ]);
+    bullet(&mut d, vec![
+        lk("§ 5", vo),
+        t(": Authentifizierung «gemäss den auf der Webseite des kantonalen Steueramtes \
+           veröffentlichten Vorgaben»."),
+    ]);
+    bullet(&mut d, vec![
+        lk("§ 3 Abs. 2", vo),
+        t(": «Die erfassten Daten werden verschlüsselt übermittelt und auf dem Server abgelegt.» – \
+           Der Schutz der Daten liegt in der Verschlüsselung, nicht in der Geheimhaltung des Verfahrens."),
+    ]);
+    bullet(&mut d, vec![
+        lk("§ 13 Abs. 1", vo),
+        t(": Ausführungsbestimmungen ergehen als Weisungen an die Gemeindesteuerämter «oder als \
+           Nutzungsvorschriften für die Steuerpflichtigen und deren Vertreter». Wer Vertreter an \
+           technische Vorgaben bindet, muss sie ihnen auch bekanntgeben."),
+    ]);
+    bullet(&mut d, vec![
+        lk("§ 12 Abs. 2", vo),
+        t(": Für das Treuhänder-Register prüft das Steueramt die UID und lehnt nur offensichtlich nicht gewerbsmässige Anbieter ab; «Weitere Abklärungen werden nicht \
+           vorgenommen.»"),
+    ]);
+    p(&mut d, vec![t(
+        "Die Verordnung kennt also für Zugang und Authentifizierung eine Pflicht zur Veröffentlichung \
+         und keine Geheimhaltung des Verfahrens. Sie spricht allerdings nur von «Applikationen» des \
+         Steueramts; eine Schnittstelle für Drittsoftware regelt sie nicht ausdrücklich. Das Steueramt \
+         könnte daraus ableiten, die API falle nicht darunter – dann bleibt für sie erst recht keine \
+         Grundlage für Business-Plan und Gremium, und es gilt das IDG.",
+    )]);
+
+    // ---- 3. Zug ---------------------------------------------------------
+    h1(&mut d, "3. BGer 1C_136/2025 vom 2. Februar 2026 (Kanton Zug, IT-Dokumente)");
     let (zw, bote, zz, zp) = (u!(U_ZUG_ZW), u!(U_ZUG_BOTE), u!(U_ZUG_ZZ), u!(U_ZUG_ZP));
     p(&mut d, vec![
         t("Volltext: "),
@@ -204,9 +284,15 @@ fn findings() -> Doc {
          Zuger Fall die beantworteten Fragen zeigt beim Steueramt die Abgabe an \
          Treuhand-Softwarelieferanten, dass die Dokumentation zumindest teilweise nicht schutzwürdig ist.",
     )]);
+    bullet(&mut d, vec![t(
+        "Unterschied: PARAT verlangte Dokumente über Softwareprodukte, Hersteller, Serverstandorte, \
+         Administration und Verträge – also über die interne IT. Das Gesuch zum API-Beschrieb ist \
+         enger: Es betrifft nur die Spezifikation des Übertragungswegs, der für Aussenstehende \
+         bestimmt ist (Abschnitt 2).",
+    )]);
 
     // ---- 3. Weitere Schweizer Entscheide --------------------------------
-    h1(&mut d, "3. Weitere Schweizer Entscheide");
+    h1(&mut d, "4. Weitere Schweizer Entscheide");
     let b142 = u!(U_BGE142);
     bullet(&mut d, vec![
         lk("BGE 142 II 313 (1C_296/2015)", b142),
@@ -259,7 +345,7 @@ fn findings() -> Doc {
     ]);
 
     // ---- 4. Gegenargumente ----------------------------------------------
-    h1(&mut d, "4. Zu erwartende Gegenargumente");
+    h1(&mut d, "5. Zu erwartende Gegenargumente");
     let v142 = u!(U_VB2022_142);
     bullet(&mut d, vec![
         lk("VGr ZH VB.2022.00142", v142),
@@ -282,7 +368,7 @@ fn findings() -> Doc {
     ]);
 
     // ---- 5. swissdamed / EUDAMED ----------------------------------------
-    h1(&mut d, "5. Vergleich: swissdamed und EUDAMED");
+    h1(&mut d, "6. Vergleich: swissdamed und EUDAMED");
     let udi = u!(U_SM_UDI);
     p(&mut d, vec![
         t("Die Lage ist dieselbe wie beim Steueramt: Private müssen gesetzlich verpflichtet regulierte \
@@ -347,7 +433,7 @@ fn findings() -> Doc {
     )]);
 
     // ---- 6. Ausland -----------------------------------------------------
-    h1(&mut d, "6. Ausländische Entscheide (Rechtsvergleich)");
+    h1(&mut d, "7. Ausländische Entscheide (Rechtsvergleich)");
     h2(&mut d, "Frankreich");
     let (tapr, cada) = (u!(U_TA_PRESSE), u!(U_CADA));
     bullet(&mut d, vec![
@@ -392,7 +478,7 @@ fn findings() -> Doc {
     ]);
 
     // ---- 7. Rechtsgrundlagen --------------------------------------------
-    h1(&mut d, "7. Nicht abschliessend geprüfte Rechtsgrundlagen");
+    h1(&mut d, "8. Nicht abschliessend geprüfte Rechtsgrundlagen");
     let bacs = u!(U_BACS_OSS);
     bullet(&mut d, vec![
         t("EMBAG Art. 9 (Offenlegung von Quellcode, seit 1. Januar 2024 verbindlich, vgl. "),
@@ -406,8 +492,10 @@ fn findings() -> Doc {
     )]);
 
     // ---- 8. Argumentationskette -----------------------------------------
-    h1(&mut d, "8. Vorgeschlagene Argumentationskette für die Replik");
+    h1(&mut d, "9. Vorgeschlagene Argumentationskette für die Replik");
     for (i, s) in [
+        vec![t("Verlangt ist nur die Spezifikation des Übertragungswegs – weder Steuerdaten noch Zugangsdaten; die Sicherheit liegt bei Schlüsseln und Verschlüsselung ("), lk("§ 3 Abs. 2 LS 631.121", vo), t("; "), lk("Kerckhoffs’ Prinzip", kerck), t(").")],
+        vec![t("Die Verordnung verlangt selbst die Veröffentlichung der Zugangs- und Authentifizierungsvorgaben ("), lk("§§ 4 Abs. 2, 5 LS 631.121", vo), t(").")],
         vec![t("Der API-Beschrieb ist eine Information nach § 3 Abs. 2 und § 20 IDG ("), lk("VB.2021.00858", v858), t(").")],
         vec![t("Es gilt eine Vermutung für den Zugang; die Beweislast trägt das Steueramt ("), lk("BVGer A-4595/2020", b4595), t(").")],
         vec![t("Geheimhaltungsgründe sind konkret zu begründen, pauschale Sicherheits- oder Geheimnisargumente genügen nicht ("), lk("BGer 1C_136/2025", bz), t("; "), lk("VB.2019.00603", v603), t(").")],
@@ -424,7 +512,7 @@ fn findings() -> Doc {
     }
 
     // ---- 9. Offene Punkte -----------------------------------------------
-    h1(&mut d, "9. Offene Punkte vor dem Einreichen");
+    h1(&mut d, "10. Offene Punkte vor dem Einreichen");
     bullet(&mut d, vec![t("Prüfen, ob die Zuger Vorinstanz nach der Rückweisung (1C_136/2025) neu entschieden hat.")]);
     bullet(&mut d, vec![t("Alle Schweizer Entscheide im Volltext auf die zitierten Erwägungen prüfen.")]);
     bullet(&mut d, vec![t("TA Paris 2016 und CdS 2270/2019 im Original prüfen (bisher Auszug bzw. Sekundärquellen).")]);
@@ -435,6 +523,10 @@ fn findings() -> Doc {
     d.rule();
     d.para(10.5, 14.0, 6.0, true, 0.0, vec![t("Quellen")]);
     let quellen = [
+        ("Verordnung über die elektronische Einreichung der Steuererklärung (LS 631.121), §§ 3, 4, 5, 12, 13", U_VO),
+        ("Steuergesetz des Kantons Zürich (LS 631.1), § 120 Steuergeheimnis", U_STG),
+        ("eCH-0119 Steuererklärung natürliche Personen (öffentliches Datenformat)", U_ECH0119),
+        ("Kerckhoffs’ Prinzip", U_KERCKHOFFS),
         ("BGer 1C_136/2025 vom 2. Februar 2026 (Kanton Zug, IT-Dokumente) – Volltext", U_BGER_ZUG),
         ("BGer zum Kanton Zug – Zuger Woche, 11.03.2026", U_ZUG_ZW),
         ("BGer zum Kanton Zug – Bote der Urschweiz, 04.03.2026", U_ZUG_BOTE),
